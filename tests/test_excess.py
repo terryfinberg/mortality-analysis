@@ -1,3 +1,11 @@
+"""Baseline fitting and excess mortality.
+
+Tolerance policy: a quantity **defined** to be equal is asserted equal, at
+1e-9 for floating-point representation only; a quantity merely **expected to be
+close** gets a real tolerance. The 1e-6 on the fitted slope below is the one
+genuine tolerance in this file -- a least-squares solve is not exact
+arithmetic. Do not loosen the 1e-9s.
+"""
 import pandas as pd
 import pytest
 
@@ -30,7 +38,9 @@ def test_zero_excess_when_observed_matches_trend(linear_adjusted):
         adjusted, None, None, deaths, pop,
         baseline_start=2010, baseline_end=2019,
     )
-    assert res.table["excess_deaths"].abs().max() < 1.0
+    # Sitting exactly on the fitted trend means excess is exactly zero, not
+    # approximately zero. Measured residual is 0.0; the tolerance was 1.0.
+    assert res.table["excess_deaths"].abs().max() < 1e-9
 
 
 def test_covid_share_sums_to_100():

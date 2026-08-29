@@ -9,10 +9,10 @@ resolve it before continuing; later sections assume earlier ones passed.
 
 - [ ] `.\bootstrap.ps1` (Windows) or `./bootstrap.sh` completes without error
 - [ ] `.venv` directory exists
-- [ ] `python -m pytest` reports **61 passed**
+- [ ] `python -m pytest` reports **73 passed**
 - [ ] Jupyter kernel "Python (fragile-equilibrium)" appears in `jupyter kernelspec list`
 
-**Pass condition:** 61 tests pass on empty data.
+**Pass condition:** 73 tests pass on empty data.
 
 If `test_repo_ships_with_unpopulated_data` **fails** at this stage, someone has put values in
 `data/raw/`. Find out where they came from before proceeding.
@@ -60,15 +60,49 @@ If you fetched rather than typed:
 - [ ] every promoted row has `source_type` = `api` and a `fetched_from` string
 - [ ] `verified_by` is blank on every row you have not personally checked
 
-**Cross-checks before you continue:**
+**Cross-checks before you continue.**
 
-- [ ] For each year, the sum of `deaths` across age groups in `deaths_by_age.csv` is within
-      0.5 percent of the total in `us_annual_deaths.csv`. Larger gaps usually mean an
-      age-band collapse error or dropped "Not Stated" rows.
-- [ ] For each year, the sum of `population` across age groups is within 0.5 percent of
-      `us_population.csv`.
+The first is an **exact identity**, not a tolerance. It must hold to the death:
+
+- [ ] For each year: `sum(deaths across age groups)` + `not_stated` == `deaths` in
+      `us_annual_deaths.csv`. Exactly. No margin.
+
+      WONDER does not distribute "Not Stated" deaths among age groups, so the six bands fall
+      short of the published annual total by exactly the Not Stated count — around 130 deaths
+      a year, about 0.005 percent. That is why this is an identity and not a percentage check:
+      a threshold loose enough to catch a real collapse error is roughly a hundred times wider
+      than this gap, so a systematic shortfall would reconcile clean forever while being wrong
+      every single year. **A tolerance absorbs systematic bias; an identity cannot.**
+
+      `python -m src.fetch --reconcile` asserts this and raises on violation.
+
+- [ ] For each year: `sum(population across age groups)` == `population` in
+      `us_population.csv`. Exactly. No margin.
+
+      `us_population.csv` is sourced from the same WONDER export as the age bands, so both
+      sides of this are the same numbers and any difference is an arithmetic defect, not a
+      vintage difference. This used to be a 0.5 percent tolerance because the denominator came
+      from Census; it does not any more.
+
+- [ ] For each year, our computed crude rate equals WONDER's published `Crude Rate` column to
+      one decimal place.
+
+      This is the strongest check in the file, and the only one that reaches outside the
+      repository. WONDER computed that rate itself, from the same counts, without reference to
+      our code. Because our denominator is now WONDER's denominator, agreement is required
+      rather than hoped for, and disagreement localizes the defect to deaths, population, or
+      the rate arithmetic. `python -m src.fetch --reconcile` asserts it and raises on
+      violation.
+
+The rest are genuine tolerances, because they compare quantities that are not defined to be
+equal:
+
 - [ ] COVID deaths in any year do not exceed total deaths in that year.
 - [ ] No year has population moving by more than 2 percent from the prior year.
+
+> **The 2017/2018 seam is unaffected by any of this.** Moving the denominator to WONDER
+> removes the *cross-source* mismatch; it does not remove the bridged-race to single-race
+> vintage change at 2017/2018, which is internal to WONDER. File 4 still measures it.
 
 **Pass condition:** all four files complete, all cross-checks within tolerance.
 

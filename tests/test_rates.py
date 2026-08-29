@@ -1,3 +1,9 @@
+"""Rate arithmetic.
+
+Tolerance policy: a quantity **defined** to be equal is asserted equal, at
+1e-9 for floating-point representation only; a quantity merely **expected to be
+close** gets a real tolerance. Do not loosen a 1e-9 here.
+"""
 import pandas as pd
 
 from src import rates
@@ -35,4 +41,9 @@ def test_age_adjusted_equals_crude_when_structure_matches_standard(standard_pop)
 
     adj = rates.age_adjusted_rate(by_age, standard_pop)
     crude = by_age["deaths"].sum() / by_age["population"].sum() * 100_000
-    assert abs(adj.loc[0, "age_adjusted_rate"] - crude) < 1.0
+    # Identity, not an approximation: standardizing a population against its
+    # own age structure returns the crude rate. This is the only test proving
+    # direct standardization works, so it gets no room. The tolerance here was
+    # 1.0 -- against a rate near 1000 that is a 0.1% blind spot, wide enough to
+    # pass a systematically biased standardization. The measured residual is 0.
+    assert abs(adj.loc[0, "age_adjusted_rate"] - crude) < 1e-9

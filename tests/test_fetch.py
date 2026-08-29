@@ -687,6 +687,164 @@ def test_seam_is_none_when_only_one_side_is_present(tmp_path):
     assert fetch.load_seam(export_dir=export_dir) is None
 
 
+# ---------------------------------------------------------------------------
+# The annual identity
+# ---------------------------------------------------------------------------
+
+
+def _collapse_with_not_stated(not_stated: int):
+    frame = pd.DataFrame([
+        {"year": 2000, "age_band": band, "deaths": deaths}
+        for band, deaths in BAND_DEATHS
+    ] + [{"year": 2000, "age_band": "Not Stated", "deaths": not_stated}])
+    with warnings_as_errors() if not_stated == 0 else _nullcontext():
+        return fetch.collapse_age_bands(frame, ["deaths"], warn_pct=100.0)
+
+
+def _nullcontext():
+    class _C:
+        def __enter__(self):
+            return None
+
+        def __exit__(self, *exc):
+            return False
+
+    return _C()
+
+
+def test_annual_total_includes_not_stated():
+    """The published NVSR figure counts them; the six bands do not."""
+    result = _collapse_with_not_stated(3)
+    annual = fetch.derive_annual_deaths([result])
+
+    assert int(annual.loc[0, "deaths"]) == 663  # 660 banded + 3 unattributed
+    assert int(annual.loc[0, "not_stated"]) == 3
+
+
+def test_annual_identity_holds_exactly():
+    result = _collapse_with_not_stated(3)
+    annual = fetch.derive_annual_deaths([result])
+
+    fetch.assert_annual_identity(annual, result.frame)  # must not raise
+
+
+def test_annual_identity_catches_a_gap_far_below_any_percentage_tolerance():
+    """A 0.005% shortfall passes every drift threshold and is still wrong.
+
+    This is the whole reason the check is an identity: 3 deaths in 663 is
+    0.45%, and the real-world case is a hundredfold smaller still.
+    """
+    result = _collapse_with_not_stated(3)
+    annual = fetch.derive_annual_deaths([result])
+    annual.loc[0, "deaths"] = 660  # the banded sum, omitting Not Stated
+
+    with pytest.raises(fetch.FetchError, match="identity violated"):
+        fetch.assert_annual_identity(annual, result.frame)
+
+
+def test_annual_identity_is_not_a_tolerance():
+    """Off by one death must fail. No margin at all."""
+    result = _collapse_with_not_stated(3)
+    annual = fetch.derive_annual_deaths([result])
+    annual.loc[0, "deaths"] = 664
+
+    with pytest.raises(fetch.FetchError, match="identity violated"):
+        fetch.assert_annual_identity(annual, result.frame)
+
+
+def test_annual_deaths_with_no_unattributed_rows_still_carries_the_column():
+    result = _collapse_with_not_stated(0)
+    annual = fetch.derive_annual_deaths([result])
+
+    assert int(annual.loc[0, "not_stated"]) == 0
+    assert int(annual.loc[0, "deaths"]) == 660
+    fetch.assert_annual_identity(annual, result.frame)
+
+
+# ---------------------------------------------------------------------------
+# Population identity and the crude-rate check against WONDER
+# ---------------------------------------------------------------------------
+
+
+def test_population_identity_holds_exactly(band_frame):
+    result = fetch.collapse_age_bands(band_frame, ["deaths", "population"])
+    population = fetch.derive_population([result])
+
+    assert int(population.loc[0, "population"]) == 11_000_000  # 11 bands
+    fetch.assert_population_identity(population, result.frame)
+
+
+def test_population_identity_is_not_a_tolerance(band_frame):
+    """Both sides come from one export, so off by one person must fail."""
+    result = fetch.collapse_age_bands(band_frame, ["deaths", "population"])
+    population = fetch.derive_population([result])
+    population.loc[0, "population"] = 11_000_001
+
+    with pytest.raises(fetch.FetchError, match="Population identity violated"):
+        fetch.assert_population_identity(population, result.frame)
+
+
+def test_totals_are_read_from_wonders_own_rows(wonder_export):
+    """The Total rows are WONDER's published figures, not our restatement."""
+    totals = fetch.wonder_export_totals(fetch.parse_wonder_export(wonder_export))
+
+    assert list(totals["year"]) == [2000]
+    assert int(totals.loc[0, "deaths"]) == 660
+    assert totals.loc[0, "crude_rate"] == 6.0
+
+
+def test_export_without_total_rows_is_rejected(tmp_path):
+    """Without WONDER's totals there is no external check to run."""
+    text = _wonder_export_text().replace('"Total"\t', '\t')
+    path = tmp_path / "no_totals.txt"
+    path.write_text(text, encoding="utf-8")
+
+    with pytest.raises(fetch.ParseError, match="Show Totals"):
+        fetch.wonder_export_totals(fetch.parse_wonder_export(path))
+
+
+def test_crude_rate_matching_wonder_passes():
+    """660 deaths over 11,000,000 is 6.0 per 100,000, which is what WONDER says."""
+    annual = pd.DataFrame([{"year": 2000, "deaths": 660}])
+    population = pd.DataFrame([{"year": 2000, "population": 11_000_000}])
+    totals = pd.DataFrame([{"year": 2000, "crude_rate": 6.0}])
+
+    check = fetch.crude_rate_check(annual, population, totals)
+
+    assert bool(check.loc[0, "matches"]) is True
+    assert check.loc[0, "computed_crude_rate"] == 6.0
+    fetch.assert_crude_rate_matches_wonder(check)
+
+
+def test_crude_rate_disagreeing_with_wonder_raises():
+    """A denominator error shows up here even when both sides look plausible."""
+    annual = pd.DataFrame([{"year": 2000, "deaths": 660}])
+    population = pd.DataFrame([{"year": 2000, "population": 10_000_000}])
+    totals = pd.DataFrame([{"year": 2000, "crude_rate": 6.0}])
+
+    check = fetch.crude_rate_check(annual, population, totals)
+
+    assert bool(check.loc[0, "matches"]) is False
+    with pytest.raises(fetch.FetchError, match="disagrees with WONDER"):
+        fetch.assert_crude_rate_matches_wonder(check)
+
+
+def test_crude_rate_compared_at_wonders_own_precision():
+    """WONDER prints one decimal, so agreement is judged at one decimal.
+
+    661/11,000,000 is 6.00909 per 100,000, which WONDER would print as 6.0.
+    Demanding more precision than WONDER publishes would fail on its rounding.
+    """
+    annual = pd.DataFrame([{"year": 2000, "deaths": 661}])
+    population = pd.DataFrame([{"year": 2000, "population": 11_000_000}])
+    totals = pd.DataFrame([{"year": 2000, "crude_rate": 6.0}])
+
+    check = fetch.crude_rate_check(annual, population, totals)
+
+    assert check.loc[0, "computed_crude_rate"] == 6.0
+    assert bool(check.loc[0, "matches"]) is True
+
+
 def test_unconfirmed_series_cannot_be_fetched():
     """No identifier may enter SERIES except one read from a live response."""
     with pytest.raises(fetch.UnconfirmedSeriesError, match="--discover"):

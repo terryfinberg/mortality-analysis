@@ -58,6 +58,28 @@ Six groups are used throughout: 0-24, 25-44, 45-64, 65-74, 75-84, and 85 and ove
 
 The crude rate is deaths divided by mid-year population, expressed per 100,000. The age-adjusted rate is computed by direct standardization: age-specific rates are weighted by the 2000 standard population's age distribution and summed. Direct standardization answers the question "what would this population's death rate be if its age structure had not changed," which is the counterfactual most readers implicitly have in mind when they ask whether mortality is improving.
 
+#### Denominator source
+
+Population denominators are taken from the Population column of the same CDC WONDER extract that supplies the death counts, summed across the ten-year age groups, rather than fetched separately from Census Bureau estimates.
+
+WONDER's population figures are themselves NCHS-processed Census Bureau estimates, so this is a choice of vintage rather than a different underlying source. Taking numerator and denominator from one extract has two consequences we rely on. The sum of the six age-band populations equals the annual population by construction, so that relationship is asserted as an exact identity rather than checked against a tolerance. More importantly, WONDER publishes its own Crude Rate for each year, computed independently of this analysis from the same counts; because our denominator is WONDER's denominator, our computed crude rate must reproduce WONDER's published rate to the precision WONDER reports. It does so for every year in the series. This is an external check on the entire rate pipeline — death counts, population, and the rate arithmetic — against the issuing agency rather than against our own intermediate values. A Census denominator would have made agreement impossible and would have required explaining a discrepancy that bought nothing.
+
+This does not remove the vintage discontinuity at 2017/2018, which is internal to WONDER: population estimates are bridged-race through 2017 and single-race from 2018. That seam is measured directly and reported in section 6.1.
+
+#### Numerator difference between the two series
+
+The two rates are computed from slightly different numerators, by definition rather than by oversight, and we state it here so it is not discovered later.
+
+A small number of death certificates each year record no age. CDC WONDER reports these in a separate "Not Stated" row and does not distribute them among the age groups. The crude rate is therefore computed from the annual death total **including** Not Stated deaths, matching the published NVSR figure a reader would check against; the age-adjusted rate is computed from the six age bands, which **exclude** them, because they cannot be assigned to a band without inventing an allocation.
+
+In our extract the Not Stated count runs between 126 and 163 deaths per year against annual totals of roughly 2.5 million, or about 0.005 percent. The effect on any reported figure is far below the precision at which results are stated, and no conclusion in this paper turns on it. We report the relationship explicitly, and `data/raw/us_annual_deaths.csv` carries a `not_stated` column so that
+
+```
+sum(six age bands) + not_stated = annual total
+```
+
+holds exactly and can be checked by a reader rather than taken on trust. The pipeline asserts this as an exact identity, not as a tolerance: a percentage threshold wide enough to be useful for detecting real discrepancies is far wider than 0.005 percent, so a systematic shortfall of this kind would pass such a check indefinitely while being wrong every year.
+
 ### 3.2 Kitagawa decomposition
 
 The change in the crude rate between two periods splits exactly into two components:

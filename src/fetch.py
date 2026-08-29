@@ -559,6 +559,66 @@ def _coerce_count(value: object, context: str) -> int:
         raise ParseError(f"{context}: could not read {value!r} as a count.") from exc
 
 
+def _find_column(cols: Sequence[str], pattern: str) -> str | None:
+    for c in cols:
+        if c.strip().lower().endswith("code"):
+            continue
+        if re.search(pattern, c, re.I):
+            return c
+    return None
+
+
+def wonder_export_totals(export: WonderExport) -> pd.DataFrame:
+    """WONDER's own per-year Total rows: year, deaths, population, crude_rate.
+
+    These are the figures WONDER itself published for this query, so they are
+    an external check on our arithmetic rather than a restatement of it. The
+    grand-total row (no year) is excluded.
+    """
+    cols = list(export.frame.columns)
+    if "Notes" not in cols:
+        raise ParseError(
+            f"{export.path.name}: no Notes column, so per-year Total rows "
+            f"cannot be identified. Re-export with 'Show Totals' enabled."
+        )
+
+    year_col = _find_column(cols, r"^year$")
+    deaths_col = _find_column(cols, r"^deaths$")
+    pop_col = _find_column(cols, r"^population$")
+    rate_col = _find_column(cols, r"crude rate")
+    if year_col is None or deaths_col is None:
+        raise ParseError(f"{export.path.name}: Total rows lack Year or Deaths.")
+
+    rows = export.frame[
+        export.frame["Notes"].astype(str).str.strip().str.lower() == "total"
+    ]
+    out = []
+    for _, r in rows.iterrows():
+        year_text = str(r[year_col]).strip()
+        if not year_text.isdigit():
+            continue  # the grand total across all years
+        entry = {
+            "year": int(year_text),
+            "deaths": _coerce_count(r[deaths_col], f"{export.path.name} total deaths"),
+        }
+        if pop_col is not None:
+            entry["population"] = _coerce_count(
+                r[pop_col], f"{export.path.name} total population"
+            )
+        if rate_col is not None:
+            text = str(r[rate_col]).strip().strip('"').replace(",", "")
+            entry["crude_rate"] = float(text) if text else float("nan")
+        out.append(entry)
+
+    if not out:
+        raise ParseError(
+            f"{export.path.name}: no per-year Total rows found. Re-export with "
+            f"'Show Totals' enabled -- they are the external check on our "
+            f"own arithmetic."
+        )
+    return pd.DataFrame(out).sort_values("year").reset_index(drop=True)
+
+
 def wonder_export_to_grid(
     export: WonderExport, require_population: bool = True
 ) -> pd.DataFrame:
@@ -911,7 +971,7 @@ RAW_TARGETS: dict[str, dict[str, Any]] = {
     "annual_deaths": {
         "csv": "us_annual_deaths.csv",
         "keys": ["year"],
-        "values": ["deaths"],
+        "values": ["deaths", "not_stated"],
     },
     "population": {
         "csv": "us_population.csv",
@@ -1079,19 +1139,245 @@ def seam_verdict(seam: pd.DataFrame) -> dict[str, Any]:
     }
 
 
-def load_grid_for(
+@dataclass
+class LoadedExport:
+    """One export, collapsed to the six bands, plus WONDER's own Total rows."""
+
+    spec: ExportSpec
+    collapsed: CollapseResult
+    totals: pd.DataFrame
+    export: WonderExport
+
+
+def load_export_bundle(
     spec: ExportSpec, export_dir: Path | None = None, refresh: bool = False
-) -> pd.DataFrame | None:
-    """Parse one export and collapse it to the six bands. None if absent."""
+) -> LoadedExport | None:
+    """Parse and collapse one export, keeping WONDER's published totals."""
     export_dir = export_dir or WONDER_EXPORT_DIR
     path = export_dir / spec.filename
     if not path.exists():
         return None
-    grid, _export, _cached = load_export_cached(
+    grid, export, _cached = load_export_cached(
         spec.series, path, refresh=refresh, require_population=spec.require_population
     )
     value_cols = ["deaths"] + (["population"] if spec.require_population else [])
-    return collapse_age_bands(grid, value_cols).frame
+    return LoadedExport(
+        spec=spec,
+        collapsed=collapse_age_bands(grid, value_cols),
+        totals=wonder_export_totals(export),
+        export=export,
+    )
+
+
+def load_grid_for(
+    spec: ExportSpec, export_dir: Path | None = None, refresh: bool = False
+) -> CollapseResult | None:
+    """Parse one export and collapse it to the six bands. None if absent.
+
+    Returns the whole CollapseResult, not just the frame, because the
+    Not Stated total is needed to reconstruct the published annual figure.
+    """
+    bundle = load_export_bundle(spec, export_dir, refresh)
+    return None if bundle is None else bundle.collapsed
+
+
+def derive_annual_deaths(results: Sequence[CollapseResult]) -> pd.DataFrame:
+    """Annual total deaths on the NVSR definition, with Not Stated made explicit.
+
+    WONDER does not distribute Not Stated deaths among age groups, so the sum
+    of the six bands falls short of the published annual total by exactly the
+    Not Stated count -- around 130 deaths a year, roughly 0.005%. The published
+    figure, which is what a reviewer checks, includes them.
+
+    A percentage tolerance cannot police this: 0.005% sits far inside any
+    sensible drift threshold, so a systematic shortfall would reconcile clean
+    forever. The relationship is exact, so it is asserted as an identity:
+
+        deaths == sum(six age bands) + not_stated
+
+    ``not_stated`` is returned as its own column so the identity is auditable
+    in the CSV rather than implied by a number that happens to add up.
+    """
+    frames = []
+    for result in results:
+        banded = result.frame.groupby("year", as_index=False)["deaths"].sum()
+        ns = result.not_stated
+        if ns is not None and not ns.empty:
+            banded = banded.merge(
+                ns[["year", "deaths"]].rename(columns={"deaths": "not_stated"}),
+                on="year", how="left",
+            )
+        else:
+            banded["not_stated"] = 0
+        banded["not_stated"] = banded["not_stated"].fillna(0).astype(int)
+        banded["deaths"] = banded["deaths"] + banded["not_stated"]
+        frames.append(banded)
+
+    if not frames:
+        return pd.DataFrame(columns=["year", "deaths", "not_stated"])
+    out = pd.concat(frames, ignore_index=True)
+    return out.sort_values("year").reset_index(drop=True)[
+        ["year", "deaths", "not_stated"]
+    ]
+
+
+def derive_population(results: Sequence[CollapseResult]) -> pd.DataFrame:
+    """Mid-year resident population by year, summed from the six age bands.
+
+    Sourced from the WONDER export rather than fetched from Census separately,
+    which makes sum(bands) == annual population an exact identity instead of a
+    cross-source comparison needing a tolerance.
+
+    The deciding reason is external validation, not tidiness. WONDER publishes
+    a Crude Rate column. If our denominator is WONDER's denominator, then our
+    computed crude rate must reproduce WONDER's published rate for every year,
+    which checks the whole rate pipeline against an outside authority for free.
+    With a Census denominator it would not match, and the discrepancy would
+    have to be explained while buying nothing.
+
+    WONDER's population figures are themselves NCHS-processed Census estimates,
+    so this is a choice of vintage, not a change of underlying source.
+    """
+    frames = [r.frame.groupby("year", as_index=False)["population"].sum()
+              for r in results if "population" in r.frame.columns]
+    if not frames:
+        return pd.DataFrame(columns=["year", "population"])
+    return pd.concat(frames, ignore_index=True).sort_values("year").reset_index(drop=True)
+
+
+def assert_population_identity(population: pd.DataFrame, by_age: pd.DataFrame) -> None:
+    """sum(age bands) == annual population, exactly. No tolerance.
+
+    Exact because both sides come from the same export. Were the denominator
+    taken from Census instead, this could only ever be a tolerance.
+    """
+    banded = by_age.groupby("year")["population"].sum()
+    for _, row in population.iterrows():
+        year = row["year"]
+        expected = int(banded.get(year, 0))
+        if int(row["population"]) != expected:
+            raise FetchError(
+                f"Population identity violated for {year}: bands sum to "
+                f"{expected:,} but annual population is {int(row['population']):,}."
+            )
+
+
+# WONDER prints its Crude Rate to one decimal, so that is the precision at
+# which our own computation has to reproduce it.
+CRUDE_RATE_DECIMALS = 1
+
+
+def crude_rate_check(
+    annual: pd.DataFrame, population: pd.DataFrame, totals: pd.DataFrame
+) -> pd.DataFrame:
+    """Compare our computed crude rate against WONDER's published column.
+
+    An end-to-end check of deaths, population and the rate arithmetic against
+    an external authority: WONDER computed its rate independently of us, from
+    the same underlying counts.
+    """
+    merged = (
+        annual[["year", "deaths"]]
+        .merge(population[["year", "population"]], on="year")
+        .merge(totals[["year", "crude_rate"]], on="year", how="left")
+        .rename(columns={"crude_rate": "wonder_crude_rate"})
+    )
+    merged["computed_crude_rate"] = (
+        merged["deaths"] / merged["population"] * 100_000
+    ).round(CRUDE_RATE_DECIMALS)
+    merged["matches"] = (
+        merged["computed_crude_rate"] - merged["wonder_crude_rate"]
+    ).abs() < 10 ** -CRUDE_RATE_DECIMALS / 2
+    return merged
+
+
+def assert_crude_rate_matches_wonder(check: pd.DataFrame) -> None:
+    bad = check[~check["matches"] & check["wonder_crude_rate"].notna()]
+    if not bad.empty:
+        rows = "\n".join(
+            f"  {int(r['year'])}: computed {r['computed_crude_rate']}, "
+            f"WONDER published {r['wonder_crude_rate']}"
+            for _, r in bad.iterrows()
+        )
+        raise FetchError(
+            f"Computed crude rate disagrees with WONDER's published Crude Rate "
+            f"in {len(bad)} year(s):\n{rows}\n"
+            f"Deaths, population and the rate arithmetic all feed this, so the "
+            f"defect is in one of the three."
+        )
+
+
+def load_analysis_grids(
+    export_dir: Path | None = None, refresh: bool = False
+) -> dict[str, pd.DataFrame]:
+    """Collapse every present grid export, concatenated per series.
+
+    Absent exports are skipped rather than faked, so a partially exported
+    repository reconciles the years it has and reports the rest as not fetched.
+    """
+    export_dir = export_dir or WONDER_EXPORT_DIR
+    grids: dict[str, list[CollapseResult]] = {}
+    totals: list[pd.DataFrame] = []
+    for spec in GRID_EXPORTS:
+        bundle = load_export_bundle(spec, export_dir, refresh)
+        if bundle is None:
+            continue
+        grids.setdefault(spec.series, []).append(bundle.collapsed)
+        if spec.series == "deaths_by_age":
+            totals.append(bundle.totals)
+
+    out: dict[str, pd.DataFrame] = {}
+    for series, results in grids.items():
+        combined = pd.concat([r.frame for r in results], ignore_index=True)
+        dupes = combined.duplicated(subset=["year", "age_group"])
+        if dupes.any():
+            years = sorted(combined.loc[dupes, "year"].unique())
+            raise FetchError(
+                f"{series}: exports overlap on year(s) {years}. The grid "
+                f"boundaries are meant to be non-overlapping, so a year would "
+                f"be assembled from two databases."
+            )
+        out[series] = combined.sort_values(["year", "age_group"]).reset_index(drop=True)
+
+    # The annual total is derived from the same exports rather than fetched
+    # separately, so the identity below cannot drift apart from its own inputs.
+    if "deaths_by_age" in grids:
+        out["annual_deaths"] = derive_annual_deaths(grids["deaths_by_age"])
+        assert_annual_identity(out["annual_deaths"], out["deaths_by_age"])
+
+        out["population"] = derive_population(grids["deaths_by_age"])
+        assert_population_identity(out["population"], out["deaths_by_age"])
+
+        # External check: our rate arithmetic against WONDER's published one.
+        if totals:
+            check = crude_rate_check(
+                out["annual_deaths"],
+                out["population"],
+                pd.concat(totals, ignore_index=True),
+            )
+            assert_crude_rate_matches_wonder(check)
+            out["_crude_rate_check"] = check
+    return out
+
+
+def assert_annual_identity(annual: pd.DataFrame, by_age: pd.DataFrame) -> None:
+    """sum(age bands) + not_stated == annual total, exactly. No tolerance.
+
+    An exact relationship checked with a percentage tolerance absorbs
+    systematic bias: the Not Stated shortfall is 0.005% and would pass any
+    drift threshold indefinitely while being wrong every single year.
+    """
+    banded = by_age.groupby("year")["deaths"].sum()
+    for _, row in annual.iterrows():
+        year = row["year"]
+        expected = int(banded.get(year, 0)) + int(row["not_stated"])
+        if int(row["deaths"]) != expected:
+            raise FetchError(
+                f"Annual identity violated for {year}: "
+                f"bands({int(banded.get(year, 0)):,}) + "
+                f"not_stated({int(row['not_stated']):,}) = {expected:,}, "
+                f"but annual deaths is {int(row['deaths']):,}."
+            )
 
 
 def load_seam(
@@ -1107,7 +1393,7 @@ def load_seam(
     single = load_grid_for(single_spec, export_dir, refresh)
     if bridged is None or single is None:
         return None
-    return seam_comparison(bridged, single)
+    return seam_comparison(bridged.frame, single.frame)
 
 
 def render_seam_section(seam: pd.DataFrame | None) -> list[str]:
@@ -1183,10 +1469,45 @@ def render_seam_section(seam: pd.DataFrame | None) -> list[str]:
     return lines
 
 
+def render_crude_rate_section(check: pd.DataFrame | None) -> list[str]:
+    """Our computed crude rate against WONDER's published Crude Rate column."""
+    lines = ["## Crude rate check against WONDER", ""]
+    if check is None or check.empty:
+        lines += [
+            "No exports present, so the rate pipeline has not been checked "
+            "against WONDER's published Crude Rate column.",
+            "",
+        ]
+        return lines
+
+    n_ok = int(check["matches"].sum())
+    lines += [
+        "WONDER publishes a Crude Rate for each year. Because the denominator "
+        "here is WONDER's own population, our computed rate must reproduce it "
+        f"to {CRUDE_RATE_DECIMALS} decimal place. This checks deaths, "
+        "population and the rate arithmetic end to end against an external "
+        "authority, not against ourselves.",
+        "",
+        f"- **{n_ok} of {len(check)} year(s) match.**",
+        "",
+        "| year | deaths | population | computed | WONDER | match |",
+        "|---|---|---|---|---|---|",
+    ]
+    for _, r in check.iterrows():
+        lines.append(
+            f"| {int(r['year'])} | {int(r['deaths']):,} | "
+            f"{int(r['population']):,} | {r['computed_crude_rate']} | "
+            f"{r['wonder_crude_rate']} | {'yes' if r['matches'] else '**NO**'} |"
+        )
+    lines += [""]
+    return lines
+
+
 def render_report(
     report: pd.DataFrame,
     accessed: str | None = None,
     seam: pd.DataFrame | None = None,
+    crude_check: pd.DataFrame | None = None,
 ) -> str:
     """Render the reconciliation table as Markdown."""
     accessed = accessed or _today()
@@ -1194,9 +1515,10 @@ def render_report(
         f"# Reconciliation report {accessed}",
         "",
         "Generated by `python -m src.fetch --reconcile`. Compares the values "
-        "currently in `data/raw/*.csv` against values fetched from the CDC "
-        "Socrata API. Nothing in this report has been written into the raw "
-        "CSVs; promotion is a separate explicit step.",
+        "currently in `data/raw/*.csv` against values parsed from the CDC "
+        "WONDER exports in `data/raw/wonder_exports/`. Nothing in this report "
+        "has been written into the raw CSVs; promotion is a separate explicit "
+        "step, and it does not fill in `verified_by`.",
         "",
     ]
 
@@ -1205,13 +1527,13 @@ def render_report(
     lines += [f"- **{status}**: {n} cell(s)" for status, n in sorted(counts.items())]
     lines += [""]
 
-    if not SERIES:
+    absent = missing_exports()
+    if absent:
         lines += [
-            "> **No dataset identifiers are confirmed yet.** `SERIES` in "
-            "`src/fetch.py` is empty, so no series was fetched and every cell "
-            "below reports the current state of the raw CSVs only. Run "
-            "`python -m src.fetch --discover`, choose identifiers, and add "
-            "them before this report can show real drift.",
+            "> **Not all exports are present.** Cells shown as `not fetched` "
+            "have no source yet, not a source that disagrees. Missing: "
+            + ", ".join(f"`{s.filename}`" for s in absent)
+            + ".",
             "",
         ]
 
@@ -1238,6 +1560,7 @@ def render_report(
             lines.append("| " + " | ".join(cells) + " |")
         lines += [""]
 
+    lines += render_crude_rate_section(crude_check)
     lines += render_seam_section(seam)
 
     return "\n".join(lines)
@@ -1247,11 +1570,15 @@ def write_report(
     report: pd.DataFrame,
     accessed: str | None = None,
     seam: pd.DataFrame | None = None,
+    crude_check: pd.DataFrame | None = None,
 ) -> Path:
     accessed = accessed or _today()
     PROCESSED_DIR.mkdir(parents=True, exist_ok=True)
     path = PROCESSED_DIR / f"reconciliation_{accessed}.md"
-    path.write_text(render_report(report, accessed, seam=seam), encoding="utf-8")
+    path.write_text(
+        render_report(report, accessed, seam=seam, crude_check=crude_check),
+        encoding="utf-8",
+    )
     return path
 
 
@@ -1462,16 +1789,20 @@ def main(argv: list[str] | None = None) -> int:
         return 0
 
     if args.reconcile or args.check:
-        fetched: dict[str, pd.DataFrame] = {}
-        for series in RAW_TARGETS:
-            if series in SERIES:
-                raise NotImplementedError(
-                    f"Series {series!r} is confirmed but no parser is wired up yet."
-                )
+        fetched = load_analysis_grids(refresh=args.refresh)
+        absent = missing_exports()
+        if absent:
+            print(
+                "Exports not yet present ("
+                + ", ".join(s.filename for s in absent)
+                + ")\n",
+                file=sys.stderr,
+            )
+        crude_check = fetched.pop("_crude_rate_check", None)
         seam = load_seam(refresh=args.refresh)
         report = reconcile_all(fetched)
-        print(render_report(report, seam=seam))
-        path = write_report(report, seam=seam)
+        print(render_report(report, seam=seam, crude_check=crude_check))
+        path = write_report(report, seam=seam, crude_check=crude_check)
         print(f"\nReport written to {path}")
 
         if args.check:

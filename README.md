@@ -98,11 +98,17 @@ or the code.
 python -m pytest
 ```
 
-Sixty-one tests. They cover rate arithmetic, exact additivity of the Kitagawa decomposition,
-recovery of a known trend by the excess-mortality baseline fit, the loader's refusal to
-accept incomplete data, and the fetch layer: WONDER export parsing, age-band collapse
-arithmetic, "Not Stated" handling, cache behaviour, refusal to return partial data from a
-malformed response, and measurement of the bridged/single-race vintage seam. The fixtures are synthetic values with known analytic properties, chosen
+Seventy-three tests. They cover rate arithmetic, exact additivity of the Kitagawa
+decomposition, recovery of a known trend by the excess-mortality baseline fit, the loader's
+refusal to accept incomplete data, and the fetch layer: WONDER export parsing, age-band
+collapse arithmetic, "Not Stated" handling, cache behaviour, refusal to return partial data
+from a malformed response, the two exact identities, agreement with WONDER's published crude
+rate, and measurement of the bridged/single-race vintage seam.
+
+**Tolerance policy.** A quantity defined to be equal is asserted equal, at `1e-9` for
+floating-point representation only. A quantity merely expected to be close gets a real
+tolerance. Do not loosen a `1e-9` to make a failure go away — at that size it is reporting an
+arithmetic defect, not fixture noise. The fixtures are synthetic values with known analytic properties, chosen
 to be obviously unlike real U.S. figures so nobody mistakes a fixture for data.
 
 No test touches the network. The HTTP layer is mocked entirely.
