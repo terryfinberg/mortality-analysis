@@ -35,12 +35,49 @@ kernel, and runs the test suite. Expect about three minutes.
 ## Filling in the data
 
 1. Open `data/queries/cdc_wonder_queries.md` and follow each query.
-2. Enter values into the matching CSV in `data/raw/`.
+2. Enter values into the matching CSV in `data/raw/`, or retrieve them with
+   `python -m src.fetch` (see **Fetching** below).
 3. Fill `verified_by` and `verified_date` for each row you personally checked against the
    cited source. Do not fill these for values you copied from somewhere else.
 4. Run `python -m src.report`.
 
 `UAT_CHECKLIST.md` walks through this with checkpoints.
+
+### Provenance and attestation are different columns
+
+Each raw CSV carries three provenance columns, and they do not mean the same thing:
+
+| Column | Meaning | Who may write it |
+|---|---|---|
+| `source_type` | `api` if fetched, `manual` if typed in | either |
+| `fetched_from` | `fetch:<dataset_id>@<access_date>` | `src.fetch.promote()` |
+| `verified_by` | a person checked this value against the cited source | **a human, only** |
+
+This split is the point, not bookkeeping. The reason this repository ships empty is that a
+number carrying a citation looks verified whether or not anyone verified it. An automated
+fetch does not solve that; it changes the costume. A run against the wrong dataset, or the
+right dataset with a wrong filter, writes an impeccably precise `fetched_from` string onto a
+wrong number, and does so more convincingly than a hand transcription would.
+
+So `verified_by` is never machine-written. `src.fetch.promote()` fills `source_type` and
+`fetched_from` and leaves `verified_by` blank, which means **`UnverifiedDataError` still fires
+after a successful fetch**. Promotion gets the numbers into place; it does not sign them off.
+You do that, row by row, and the loader will not run in strict mode until you have.
+
+If `promote()` overwrites a value you had already signed off on, it clears your
+`verified_by` for that row. Your attestation was about the old number.
+
+## Fetching
+
+```bash
+python -m src.fetch --discover     # search the CDC Socrata catalog, print candidates
+python -m src.fetch --reconcile    # compare fetched values against data/raw/*.csv
+python -m src.fetch --check        # as --reconcile, exit non-zero on >0.5% drift
+```
+
+`--reconcile` writes `data/processed/reconciliation_<date>.md`. Nothing in the fetch path
+writes to `data/raw/*.csv`; parsed output lands in `data/raw/fetched/` and only the explicit,
+default-dry-run `promote()` copies it across.
 
 ## Running the analysis
 
@@ -61,10 +98,14 @@ or the code.
 python -m pytest
 ```
 
-Sixteen tests. They cover rate arithmetic, exact additivity of the Kitagawa decomposition,
-recovery of a known trend by the excess-mortality baseline fit, and the loader's refusal to
-accept incomplete data. The fixtures are synthetic values with known analytic properties,
-chosen to be obviously unlike real U.S. figures so nobody mistakes a fixture for data.
+Sixty-one tests. They cover rate arithmetic, exact additivity of the Kitagawa decomposition,
+recovery of a known trend by the excess-mortality baseline fit, the loader's refusal to
+accept incomplete data, and the fetch layer: WONDER export parsing, age-band collapse
+arithmetic, "Not Stated" handling, cache behaviour, refusal to return partial data from a
+malformed response, and measurement of the bridged/single-race vintage seam. The fixtures are synthetic values with known analytic properties, chosen
+to be obviously unlike real U.S. figures so nobody mistakes a fixture for data.
+
+No test touches the network. The HTTP layer is mocked entirely.
 
 `test_loader.py::test_repo_ships_with_unpopulated_data` fails once you populate the data.
 That is expected. Delete the test at that point.
@@ -87,6 +128,7 @@ paper/             Manuscript template, built manuscript, policy framework.
 | Module | Responsibility |
 |---|---|
 | `loader.py` | Read and validate inputs. Fails loudly on incomplete or unverified data. |
+| `fetch.py` | Retrieve inputs from CDC APIs, cache, reconcile against the raw CSVs. |
 | `rates.py` | Crude rates, age-specific rates, direct age standardization. |
 | `decomposition.py` | Kitagawa decomposition. |
 | `excess.py` | Baseline fitting and excess mortality. |

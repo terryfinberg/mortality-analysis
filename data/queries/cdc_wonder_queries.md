@@ -97,6 +97,102 @@ including an AI assistant; query the catalog and confirm the identifier and sche
 
 ---
 
+## The export files (primary path)
+
+WONDER is retrieved **by hand** and parsed from the saved export. This is not a workaround.
+The series is frozen history — final data for 2010–2023 will not change — and a WONDER export
+carries its complete query parameters in the file footer, so the export file *is* the
+reproducibility artifact. A reviewer replays the footer's query and gets the same file. That
+is stronger provenance than an XML client aimed at an endpoint whose schema has changed
+without notice, and a TSV parser is far more testable.
+
+Save exports to `data/raw/wonder_exports/` with **exactly** these names. `src/fetch.py` routes
+on the filename.
+
+**Four exports. None provisional.** 2024 is final in the Single Race database and that
+database carries population, so the analysis grid contains no provisional data at any point.
+
+| # | Filename | Database | Years | Cause | Show |
+|---|---|---|---|---|---|
+| 1 | `allcause_by_age_2010-2017_ucd-bridged.txt` | Underlying Cause of Death, 1999–2020 | 2010–2017 | All causes | Deaths, Population, Crude Rate |
+| 2 | `allcause_by_age_2018-2024_ucd-singlerace.txt` | Underlying Cause of Death, 2018–2024, Single Race | 2018–2024 | All causes | Deaths, Population, Crude Rate |
+| 3 | `covid_u071_by_age_2020-2024_ucd-singlerace.txt` | Underlying Cause of Death, 2018–2024, Single Race | 2020–2024 | **UCD ICD-10 = U07.1** | Deaths |
+| 4 | `wonder_ucd_allcause_2018-2020_bridged_SEAM.txt` | Underlying Cause of Death, 1999–2020 | 2018–2020 | All causes | Deaths, Population, Crude Rate |
+
+Files 1–3 are the analysis grid: 2010–2017 bridged-race, 2018–2024 single-race,
+non-overlapping, so no year is ever assembled from two databases.
+
+### File 4 is validation only. It never enters the grid.
+
+The grid changes population vintage at 2017/2018 — bridged-race before, single-race after —
+and that seam sits **inside the 2010–2019 pre-pandemic baseline window**, which is the
+paper's central comparison. File 4 re-reads 2018–2020 under the *old* bridged-race vintage,
+so the same years can be differenced against file 2 and the size of the discontinuity
+measured directly.
+
+Deaths are the same certificates under either vintage, so deaths should barely move; a deaths
+difference above 0.1 percent means the two exports are not the same query. Population is
+where a real difference lives, and it propagates into every age-specific rate.
+
+`python -m src.fetch --reconcile` reports the per-year, per-band deltas under a
+**Vintage seam** heading, and flags the seam as material above 0.5 percent. If it is
+material, the baseline trend fit contains a step, and that belongs in methods rather than in
+a reviewer's report. A fitted line through stepped data still looks like a line, which is
+exactly why this has to be measured rather than eyeballed.
+
+`src/fetch.py` will **not** merge file 4 into the analysis grid; a test asserts it.
+
+**Annual totals come free.** With *Show Totals* on, files 1 and 2 carry a per-year `Total` row,
+which can populate `us_annual_deaths.csv`. The NVSR figure remains the citable authority per
+Query 2; treat the WONDER total as the cross-check, and footnote any disagreement.
+
+### Click path
+
+> **Unverified.** `wonder.cdc.gov` returns HTTP 403 to this repository's tooling — an Akamai
+> edge block covering CDC's main web properties — so the steps below were written from prior
+> knowledge of the interface and could **not** be checked against the live site. WONDER
+> renumbers and relabels its request sections between databases and over time. Treat this as
+> a sketch to correct against what you actually see, not as a transcript.
+
+1. Open the database page and accept the data-use restrictions.
+2. **Organize table layout.** Group Results By `Year`, And By `Ten-Year Age Groups`. Leave
+   *Show Totals* checked.
+3. **Select location.** Leave at United States. Do not request state or county detail — the
+   API and the export both restrict sub-national breakdowns on confidentiality grounds, and
+   this analysis is national anyway.
+4. **Select demographics.** Ten-Year Age Groups: `All Ages`. Leave sex, race, Hispanic origin
+   at their defaults.
+5. **Select year and month.** Choose the year range from the table above.
+6. **Select cause of death.** All causes for files 1, 2 and 4. For file 3, open
+   **UCD – ICD-10 Codes**, search `U07.1`, and select it. Confirm you are in the *underlying*
+   cause selector, not multiple cause — see the distinction under Query 3; they differ by
+   10–15 percent and the analysis uses underlying.
+7. **Other sections** (weekday, autopsy, place of death): leave at defaults.
+8. Click **Send**, then on the results page use the **Export** button.
+
+For file 4, run the identical query as file 2 restricted to 2018–2020, but in the
+**1999–2020 (bridged-race)** database rather than the Single Race one. Everything except the
+database and the year range must match, or the comparison measures your query changes instead
+of the vintage change.
+
+### Two things that will break the parse
+
+**Use Export, not copy-paste.** The `---` footer carries the query parameters. `fetch.py`
+rejects an export without one, because a bare table of numbers is not a citable artifact and
+silently accepting one would discard the entire reason for taking this route.
+
+**A suppressed cell raises.** If any count comes back `Suppressed` or `Unreliable`, the parse
+fails rather than coercing it to zero — suppressed means unknown, and zero is a claim. At
+national level with ten-year bands this should not occur; if it does, something in the query
+is narrower than intended.
+
+`Not Stated` age rows are expected and handled: their deaths are summed into a separate
+reported total, and a warning names the year and percentage if they exceed 0.1 percent.
+WONDER reports `Not Applicable` for that row's population, which is correct — there is no
+population of people whose age was not recorded — and the parser accepts it there only.
+
+---
+
 ## Recording what you did
 
 Every value you enter into `data/raw/` must have:

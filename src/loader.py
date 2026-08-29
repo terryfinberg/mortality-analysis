@@ -7,7 +7,27 @@ figure or a manuscript number.
 
 Populate the CSVs in data/raw/ from the primary sources cited in each
 row's source_citation column before running anything else. See
-UAT_CHECKLIST.md section 1.
+UAT_CHECKLIST.md section 2.
+
+Provenance and attestation are recorded in three separate columns, and
+they mean different things:
+
+    source_type   How the value arrived: "api" if src/fetch.py retrieved
+                  it, "manual" if a person typed it in.
+    fetched_from  Machine provenance, "fetch:<dataset_id>@<access_date>".
+                  Written by src.fetch.promote(). Asserts only that these
+                  bytes came from that dataset on that date.
+    verified_by   Human attestation. A person opened the cited source and
+                  confirmed this value belongs here. Never written by a
+                  machine, under any circumstances.
+
+The distinction is load-bearing. A fetched value has perfect provenance
+and is still unverified: an automated run against the wrong dataset, or
+the right dataset with a wrong filter, produces an impeccable
+fetched_from string attached to a wrong number. Only verified_by
+satisfies strict mode, so promoting fetched values into these CSVs does
+not by itself make the analysis runnable -- a human still has to sign
+each row off. That is deliberate.
 """
 from __future__ import annotations
 
@@ -30,7 +50,14 @@ class IncompleteDataError(RuntimeError):
 
 
 class UnverifiedDataError(RuntimeError):
-    """Raised in strict mode when rows lack a verified_by attestation."""
+    """Raised in strict mode when rows lack a verified_by attestation.
+
+    Note that a row can be fully populated, carry a valid fetched_from
+    provenance string, and still raise this. Provenance is not
+    attestation: knowing where a number came from is not the same as
+    knowing it is the right number. Only a human filling verified_by
+    clears this error.
+    """
 
 
 def _require_complete(df: pd.DataFrame, cols: list[str], name: str) -> None:

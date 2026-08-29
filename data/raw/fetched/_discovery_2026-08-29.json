@@ -1,0 +1,3478 @@
+{
+  "deaths_by_age": [
+    {
+      "dataset_id": "9bhg-hcku",
+      "name": "Provisional COVID-19 Deaths by Sex and Age",
+      "updated_at": "2025-04-21",
+      "attribution": "NCHS/DVS",
+      "api_url": "https://data.cdc.gov/resource/9bhg-hcku.json",
+      "columns": [
+        [
+          "state",
+          "State",
+          "Text"
+        ],
+        [
+          "group",
+          "Group",
+          "Text"
+        ],
+        [
+          "data_as_of",
+          "Data As Of",
+          "Calendar date"
+        ],
+        [
+          "start_date",
+          "Start Date",
+          "Calendar date"
+        ],
+        [
+          "pneumonia_influenza_or_covid",
+          "Pneumonia, Influenza, or COVID-19 Deaths",
+          "Number"
+        ],
+        [
+          "year",
+          "Year",
+          "Number"
+        ],
+        [
+          "covid_19_deaths",
+          "COVID-19 Deaths",
+          "Number"
+        ],
+        [
+          "pneumonia_deaths",
+          "Pneumonia Deaths",
+          "Number"
+        ],
+        [
+          "footnote",
+          "Footnote",
+          "Text"
+        ],
+        [
+          "month",
+          "Month",
+          "Number"
+        ],
+        [
+          "sex",
+          "Sex",
+          "Text"
+        ],
+        [
+          "age_group",
+          "Age Group",
+          "Text"
+        ],
+        [
+          "total_deaths",
+          "Total Deaths",
+          "Number"
+        ],
+        [
+          "influenza_deaths",
+          "Influenza Deaths",
+          "Number"
+        ],
+        [
+          "end_date",
+          "End Date",
+          "Calendar date"
+        ],
+        [
+          "pneumonia_and_covid_19_deaths",
+          "Pneumonia and COVID-19 Deaths",
+          "Number"
+        ]
+      ],
+      "matched_query": "deaths by age group and year"
+    },
+    {
+      "dataset_id": "nr4s-juj3",
+      "name": "Provisional COVID-19 Deaths: Focus on Ages 0-18 Years",
+      "updated_at": "2025-04-21",
+      "attribution": "NCHS/DVS",
+      "api_url": "https://data.cdc.gov/resource/nr4s-juj3.json",
+      "columns": [
+        [
+          "start_week",
+          "Start Week",
+          "Text"
+        ],
+        [
+          "indicator",
+          "Indicator",
+          "Text"
+        ],
+        [
+          "covid_19_deaths",
+          "COVID-19 Deaths",
+          "Number"
+        ],
+        [
+          "age_group",
+          "Age group",
+          "Text"
+        ],
+        [
+          "sex",
+          "Sex",
+          "Text"
+        ],
+        [
+          "data_as_of",
+          "Data as of",
+          "Text"
+        ],
+        [
+          "race_group",
+          "Race or Hispanic Origin Group",
+          "Text"
+        ],
+        [
+          "end_week",
+          "End Week",
+          "Text"
+        ]
+      ],
+      "matched_query": "deaths by age group and year"
+    },
+    {
+      "dataset_id": "hk9y-quqm",
+      "name": "Conditions Contributing to COVID-19 Deaths, by State and Age, Provisional 2020-2023",
+      "updated_at": "2025-04-21",
+      "attribution": "NCHS/DVS",
+      "api_url": "https://data.cdc.gov/resource/hk9y-quqm.json",
+      "columns": [
+        [
+          "state",
+          "State",
+          "Text"
+        ],
+        [
+          "data_as_of",
+          "Data As Of",
+          "Calendar date"
+        ],
+        [
+          "covid_19_deaths",
+          "COVID-19 Deaths",
+          "Number"
+        ],
+        [
+          "icd10_codes",
+          "ICD10_codes",
+          "Text"
+        ],
+        [
+          "end_date",
+          "End Date",
+          "Calendar date"
+        ],
+        [
+          "start_date",
+          "Start Date",
+          "Calendar date"
+        ],
+        [
+          "year",
+          "Year",
+          "Number"
+        ],
+        [
+          "group",
+          "Group",
+          "Text"
+        ],
+        [
+          "month",
+          "Month",
+          "Number"
+        ],
+        [
+          "age_group",
+          "Age Group",
+          "Text"
+        ],
+        [
+          "condition",
+          "Condition",
+          "Text"
+        ],
+        [
+          "number_of_mentions",
+          "Number of Mentions",
+          "Number"
+        ],
+        [
+          "condition_group",
+          "Condition Group",
+          "Text"
+        ],
+        [
+          "flag",
+          "Flag",
+          "Text"
+        ]
+      ],
+      "matched_query": "deaths by age group and year"
+    },
+    {
+      "dataset_id": "y5bj-9g5w",
+      "name": "Weekly Counts of Deaths by Jurisdiction and Age",
+      "updated_at": "2025-04-21",
+      "attribution": "NCHS/DVS",
+      "api_url": "https://data.cdc.gov/resource/y5bj-9g5w.json",
+      "columns": [
+        [
+          "state_abbreviation",
+          "State Abbreviation",
+          "Text"
+        ],
+        [
+          "jurisdiction",
+          "Jurisdiction",
+          "Text"
+        ],
+        [
+          "suppress",
+          "Suppress",
+          "Text"
+        ],
+        [
+          "week_ending_date",
+          "Week Ending Date",
+          "Calendar date"
+        ],
+        [
+          "type",
+          "Type",
+          "Text"
+        ],
+        [
+          "number_of_deaths",
+          "Number of Deaths",
+          "Number"
+        ],
+        [
+          "age_group",
+          "Age Group",
+          "Text"
+        ],
+        [
+          "time_period",
+          "Time Period",
+          "Text"
+        ],
+        [
+          "note",
+          "Note",
+          "Text"
+        ],
+        [
+          "week",
+          "Week",
+          "Number"
+        ],
+        [
+          "year",
+          "Year",
+          "Number"
+        ]
+      ],
+      "matched_query": "deaths by age group and year"
+    },
+    {
+      "dataset_id": "3rge-nu2a",
+      "name": "Rates of COVID-19 Cases or Deaths by Age Group and Vaccination Status",
+      "updated_at": "2023-07-20",
+      "attribution": "CDC COVID-19 Response, Epidemiology Task Force",
+      "api_url": "https://data.cdc.gov/resource/3rge-nu2a.json",
+      "columns": [
+        [
+          "age_adj_vax_ir",
+          "Age adjusted vax IR",
+          "Number"
+        ],
+        [
+          "crude_irr",
+          "Crude IRR",
+          "Number"
+        ],
+        [
+          "crude_vax_ir",
+          "Crude vax IR",
+          "Number"
+        ],
+        [
+          "unvaccinated_population",
+          "Unvaccinated population",
+          "Number"
+        ],
+        [
+          "fully_vaccinated_population",
+          "Fully vaccinated population",
+          "Number"
+        ],
+        [
+          "vaccinated_with_outcome",
+          "Vaccinated with outcome",
+          "Number"
+        ],
+        [
+          "age_group",
+          "Age group",
+          "Text"
+        ],
+        [
+          "continuity_correction",
+          "Continuity correction",
+          "Number"
+        ],
+        [
+          "mmwr_week",
+          "MMWR week",
+          "Text"
+        ],
+        [
+          "unvaccinated_with_outcome",
+          "Unvaccinated with outcome",
+          "Number"
+        ],
+        [
+          "crude_unvax_ir",
+          "Crude unvax IR",
+          "Number"
+        ],
+        [
+          "age_adj_irr",
+          "Age adjusted IRR",
+          "Number"
+        ],
+        [
+          "age_adj_unvax_ir",
+          "Age adjusted unvax IR",
+          "Number"
+        ],
+        [
+          "vaccine_product",
+          "Vaccine product",
+          "Text"
+        ],
+        [
+          "month",
+          "month",
+          "Text"
+        ],
+        [
+          "outcome",
+          "outcome",
+          "Text"
+        ]
+      ],
+      "matched_query": "deaths by age group and year"
+    },
+    {
+      "dataset_id": "vsak-wrfu",
+      "name": "Provisional COVID-19 Deaths by Week, Sex, and Age",
+      "updated_at": "2025-04-21",
+      "attribution": "NCHS/DVS",
+      "api_url": "https://data.cdc.gov/resource/vsak-wrfu.json",
+      "columns": [
+        [
+          "state",
+          "State",
+          "Text"
+        ],
+        [
+          "mmwr_week",
+          "MMWR Week",
+          "Number"
+        ],
+        [
+          "data_as_of",
+          "Data as of",
+          "Calendar date"
+        ],
+        [
+          "covid_19_deaths",
+          "COVID-19 Deaths",
+          "Number"
+        ],
+        [
+          "age_group",
+          "Age Group",
+          "Text"
+        ],
+        [
+          "week_ending_date",
+          "End Week",
+          "Calendar date"
+        ],
+        [
+          "sex",
+          "Sex",
+          "Text"
+        ],
+        [
+          "total_deaths",
+          "Total Deaths",
+          "Number"
+        ]
+      ],
+      "matched_query": "deaths by age group and year"
+    },
+    {
+      "dataset_id": "nq6q-szvs",
+      "name": "Rates of TBI-related Deaths by Age Group - United States, 2001 - 2010",
+      "updated_at": "2017-10-25",
+      "attribution": "CDC National Center for Injury Prevention and Control, Division of Unintentional Injury Prevention",
+      "api_url": "https://data.cdc.gov/resource/nq6q-szvs.json",
+      "columns": [
+        [
+          "_0_4_yr",
+          "0\u20134 yr",
+          "Number"
+        ],
+        [
+          "_15_24_yr",
+          "15\u201324 yr",
+          "Number"
+        ],
+        [
+          "_45_64_yr",
+          "45\u201364 yr",
+          "Number"
+        ],
+        [
+          "_65_yr",
+          "65+ yr",
+          "Number"
+        ],
+        [
+          "_25_44_yr",
+          "25\u201344 yr",
+          "Number"
+        ],
+        [
+          "_5_14_yr",
+          "5\u201314 yr",
+          "Number"
+        ],
+        [
+          "year",
+          "Years",
+          "Text"
+        ]
+      ],
+      "matched_query": "deaths by age group and year"
+    },
+    {
+      "dataset_id": "ynw2-4viq",
+      "name": "Provisional Death Counts for Influenza, Pneumonia, and COVID-19",
+      "updated_at": "2025-04-21",
+      "attribution": "NCHS/DVS",
+      "api_url": "https://data.cdc.gov/resource/ynw2-4viq.json",
+      "columns": [
+        [
+          "end_week",
+          "End Week",
+          "Text"
+        ],
+        [
+          "mmwrweek",
+          "MMWRweek",
+          "Number"
+        ],
+        [
+          "influenza_deaths",
+          "Influenza Deaths",
+          "Number"
+        ],
+        [
+          "pneumonia_deaths",
+          "Pneumonia Deaths",
+          "Number"
+        ],
+        [
+          "pneumonia_or_influenza",
+          "Pneumonia or Influenza",
+          "Number"
+        ],
+        [
+          "mmwryear",
+          "MMWRyear",
+          "Text"
+        ],
+        [
+          "data_as_of",
+          "Data As Of",
+          "Text"
+        ],
+        [
+          "start_week",
+          "Start Week",
+          "Text"
+        ],
+        [
+          "week_ending_date",
+          "Week Ending Date",
+          "Calendar date"
+        ],
+        [
+          "pneumonia_influenza_or_covid",
+          "Pneumonia, Influenza, or COVID-19 Deaths",
+          "Number"
+        ],
+        [
+          "total_deaths",
+          "Total Deaths",
+          "Number"
+        ],
+        [
+          "group",
+          "Group",
+          "Text"
+        ],
+        [
+          "indicator",
+          "Indicator",
+          "Text"
+        ],
+        [
+          "age_group",
+          "Age Group",
+          "Text"
+        ],
+        [
+          "footnote",
+          "Footnote",
+          "Text"
+        ],
+        [
+          "covid_19_deaths",
+          "COVID-19 Deaths",
+          "Number"
+        ],
+        [
+          "jurisdiction",
+          "Jurisdiction",
+          "Text"
+        ]
+      ],
+      "matched_query": "deaths by age group and year"
+    },
+    {
+      "dataset_id": "bi63-dtpu",
+      "name": "NCHS - Leading Causes of Death: United States",
+      "updated_at": "2025-04-21",
+      "attribution": "NCHS/DVS",
+      "api_url": "https://data.cdc.gov/resource/bi63-dtpu.json",
+      "columns": [
+        [
+          "_113_cause_name",
+          "113 Cause Name",
+          "Text"
+        ],
+        [
+          "state",
+          "State",
+          "Text"
+        ],
+        [
+          "deaths",
+          "Deaths",
+          "Number"
+        ],
+        [
+          "cause_name",
+          "Cause Name",
+          "Text"
+        ],
+        [
+          "year",
+          "Year",
+          "Number"
+        ],
+        [
+          "aadr",
+          "Age-adjusted Death Rate",
+          "Number"
+        ]
+      ],
+      "matched_query": "NCHS deaths population age group"
+    },
+    {
+      "dataset_id": "v6ab-adf5",
+      "name": "NCHS - Childhood Mortality Rates",
+      "updated_at": "2025-04-21",
+      "attribution": "NCHS/DVS",
+      "api_url": "https://data.cdc.gov/resource/v6ab-adf5.json",
+      "columns": [
+        [
+          "mortality_rate",
+          "Death Rate",
+          "Number"
+        ],
+        [
+          "age_at_death",
+          "Age Group",
+          "Text"
+        ],
+        [
+          "year",
+          "Year",
+          "Number"
+        ]
+      ],
+      "matched_query": "NCHS deaths population age group"
+    },
+    {
+      "dataset_id": "jwta-jxbg",
+      "name": "Distribution of COVID-19 Deaths and Populations, by Jurisdiction, Age, and Race and Hispanic Origin",
+      "updated_at": "2025-04-21",
+      "attribution": "NCHS/DVS",
+      "api_url": "https://data.cdc.gov/resource/jwta-jxbg.json",
+      "columns": [
+        [
+          "state",
+          "State",
+          "Text"
+        ],
+        [
+          "weighted_distribution_of",
+          "Weighted distribution of population (%)",
+          "Number"
+        ],
+        [
+          "agegroup",
+          "AgeGroup",
+          "Text"
+        ],
+        [
+          "distribution_of_covid_19",
+          "Distribution of COVID-19 deaths (%)",
+          "Number"
+        ],
+        [
+          "end_week",
+          "End Date",
+          "Calendar date"
+        ],
+        [
+          "unweighted_distribution_of",
+          "Unweighted distribution of population (%)",
+          "Number"
+        ],
+        [
+          "start_week",
+          "Start Date",
+          "Calendar date"
+        ],
+        [
+          "difference_between_covid_weighted_pop",
+          "Difference between COVID-19 and weighted population %",
+          "Number"
+        ],
+        [
+          "suppression",
+          "Suppression",
+          "Text"
+        ],
+        [
+          "data_as_of",
+          "Data as of",
+          "Calendar date"
+        ],
+        [
+          "race_hispanic_origin",
+          "Race/Hispanic origin",
+          "Text"
+        ],
+        [
+          "count_of_covid_19_deaths",
+          "Count of COVID-19 deaths",
+          "Number"
+        ],
+        [
+          "difference_between_covid_unweighted_pop",
+          "Difference between COVID-19 and unweighted population %",
+          "Number"
+        ]
+      ],
+      "matched_query": "NCHS deaths population age group"
+    },
+    {
+      "dataset_id": "yrur-wghw",
+      "name": "Provisional COVID-19 death counts and rates by month, jurisdiction of residence, and demographic characteristics",
+      "updated_at": "2026-08-27",
+      "attribution": "NCHS/DVS",
+      "api_url": "https://data.cdc.gov/resource/yrur-wghw.json",
+      "columns": [
+        [
+          "year",
+          "year",
+          "Number"
+        ],
+        [
+          "crude_covid_rate_ann",
+          "crude_COVID_rate_ann",
+          "Number"
+        ],
+        [
+          "crude_covid_rate",
+          "crude_COVID_rate",
+          "Number"
+        ],
+        [
+          "data_as_of",
+          "data_as_of",
+          "Calendar date"
+        ],
+        [
+          "aa_covid_rate_ann",
+          "aa_COVID_rate_ann",
+          "Number"
+        ],
+        [
+          "group",
+          "group",
+          "Text"
+        ],
+        [
+          "month",
+          "month",
+          "Number"
+        ],
+        [
+          "footnote",
+          "footnote",
+          "Text"
+        ],
+        [
+          "covid_deaths",
+          "COVID_deaths",
+          "Number"
+        ],
+        [
+          "aa_covid_rate",
+          "aa_COVID_rate",
+          "Number"
+        ],
+        [
+          "subgroup2",
+          "subgroup2",
+          "Text"
+        ],
+        [
+          "subgroup1",
+          "subgroup1",
+          "Text"
+        ],
+        [
+          "jurisdiction_residence",
+          "jurisdiction_residence",
+          "Text"
+        ]
+      ],
+      "matched_query": "NCHS deaths population age group"
+    },
+    {
+      "dataset_id": "mpx5-t7tu",
+      "name": "Provisional COVID-19 death counts, rates, and percent of total deaths, by jurisdiction of residence",
+      "updated_at": "2026-08-27",
+      "attribution": "NCHS/DVS",
+      "api_url": "https://data.cdc.gov/resource/mpx5-t7tu.json",
+      "columns": [
+        [
+          "data_period_end",
+          "data_period_end",
+          "Calendar date"
+        ],
+        [
+          "covid_pct_of_total",
+          "COVID_pct_of_total",
+          "Number"
+        ],
+        [
+          "pct_change_wk",
+          "pct_change_wk",
+          "Number"
+        ],
+        [
+          "crude_covid_rate_ann",
+          "crude_COVID_rate_ann",
+          "Number"
+        ],
+        [
+          "aa_covid_rate_ann",
+          "aa_COVID_rate_ann",
+          "Number"
+        ],
+        [
+          "data_as_of",
+          "data_as_of",
+          "Calendar date"
+        ],
+        [
+          "group",
+          "Group",
+          "Text"
+        ],
+        [
+          "pct_diff_wk",
+          "pct_diff_wk",
+          "Number"
+        ],
+        [
+          "crude_covid_rate",
+          "crude_COVID_rate",
+          "Number"
+        ],
+        [
+          "aa_covid_rate",
+          "aa_COVID_rate",
+          "Number"
+        ],
+        [
+          "footnote",
+          "footnote",
+          "Text"
+        ],
+        [
+          "jurisdiction_residence",
+          "Jurisdiction_Residence",
+          "Text"
+        ],
+        [
+          "data_period_start",
+          "data_period_start",
+          "Calendar date"
+        ],
+        [
+          "covid_deaths",
+          "COVID_deaths",
+          "Number"
+        ]
+      ],
+      "matched_query": "age-adjusted death rates United States"
+    },
+    {
+      "dataset_id": "xbxb-epbu",
+      "name": "NCHS - Drug Poisoning Mortality by State: United States",
+      "updated_at": "2025-04-21",
+      "attribution": "NCHS/DVS",
+      "api_url": "https://data.cdc.gov/resource/xbxb-epbu.json",
+      "columns": [
+        [
+          "crude_death_rate",
+          "Crude Death Rate",
+          "Number"
+        ],
+        [
+          "population",
+          "Population",
+          "Number"
+        ],
+        [
+          "sex",
+          "Sex",
+          "Text"
+        ],
+        [
+          "upper_confidence_limit_for_age_adjusted_rate",
+          "Upper Confidence Limit for Age-adjusted Rate",
+          "Number"
+        ],
+        [
+          "lower_confidence_limit_for_crude_rate",
+          "Lower Confidence Limit for Crude Rate",
+          "Number"
+        ],
+        [
+          "age_adjusted_rate",
+          "Age-adjusted Rate",
+          "Number"
+        ],
+        [
+          "us_age_adjusted_rate",
+          "US Age-adjusted Rate",
+          "Number"
+        ],
+        [
+          "standard_error_for_age_adjusted_rate",
+          "Standard Error for Age-adjusted Rate",
+          "Number"
+        ],
+        [
+          "us_crude_rate",
+          "US Crude Rate",
+          "Number"
+        ],
+        [
+          "unit",
+          "Unit",
+          "Text"
+        ],
+        [
+          "state",
+          "State",
+          "Text"
+        ],
+        [
+          "state_crude_rate_in_range",
+          "State Crude Rate in Range",
+          "Text"
+        ],
+        [
+          "lower_confidence_limit_for_age_adjusted_rate",
+          "Lower Confidence Limit for Age-adjusted Rate",
+          "Number"
+        ],
+        [
+          "upper_confidence_limit_for_crude_rate",
+          "Upper Confidence Limit for Crude Rate",
+          "Number"
+        ],
+        [
+          "standard_error_for_crude_rate",
+          "Standard Error for Crude Rate",
+          "Number"
+        ],
+        [
+          "deaths",
+          "Deaths",
+          "Number"
+        ],
+        [
+          "race_and_hispanic_origin",
+          "Race and Hispanic Origin",
+          "Text"
+        ],
+        [
+          "year",
+          "Year",
+          "Number"
+        ],
+        [
+          "age_group",
+          "Age Group",
+          "Text"
+        ]
+      ],
+      "matched_query": "age-adjusted death rates United States"
+    },
+    {
+      "dataset_id": "jx6g-fdh6",
+      "name": "NCHS - Drug Poisoning Mortality by State: United States",
+      "updated_at": "2025-04-21",
+      "attribution": "NCHS/DVS",
+      "api_url": "https://data.cdc.gov/resource/jx6g-fdh6.json",
+      "columns": [
+        [
+          "crude_death_rate",
+          "Crude Death Rate",
+          "Number"
+        ],
+        [
+          "year",
+          "Year",
+          "Number"
+        ],
+        [
+          "age",
+          "Age",
+          "Text"
+        ],
+        [
+          "us_crude_rate",
+          "US Crude Rate",
+          "Number"
+        ],
+        [
+          "low_confidence_limit_for_crude_rate",
+          "Low Confidence Limit for Crude Rate",
+          "Number"
+        ],
+        [
+          "state",
+          "State",
+          "Text"
+        ],
+        [
+          "race_hispanic_origin",
+          "Race and Hispanic Origin",
+          "Text"
+        ],
+        [
+          "sex",
+          "Sex",
+          "Text"
+        ],
+        [
+          "us_age_adjusted_rate",
+          "US Age-adjusted Rate",
+          "Number"
+        ],
+        [
+          "state_crude_rate_in_range",
+          "State Crude Rate in Range",
+          "Text"
+        ],
+        [
+          "upper_confidence_limit_for_age_adjusted_rate",
+          "Upper Confidence Limit for Age-adjusted Rate",
+          "Number"
+        ],
+        [
+          "lower_confidence_limit_for_age_adjusted_rate",
+          "Lower Confidence Limit for Age-adjusted rate",
+          "Number"
+        ],
+        [
+          "standard_error_age_adjusted_rate",
+          "Standard Error Age-adjusted Rate",
+          "Number"
+        ],
+        [
+          "age_adjusted_rate",
+          "Age-adjusted Rate",
+          "Number"
+        ],
+        [
+          "upper_confidence_limit_for_crude_rate",
+          "Upper Confidence Limit for Crude Rate",
+          "Number"
+        ],
+        [
+          "standard_error_for_crude_rate",
+          "Standard Error for Crude Rate",
+          "Number"
+        ],
+        [
+          "population",
+          "Population",
+          "Number"
+        ],
+        [
+          "deaths",
+          "Deaths",
+          "Number"
+        ]
+      ],
+      "matched_query": "age-adjusted death rates United States"
+    },
+    {
+      "dataset_id": "pbkm-d27e",
+      "name": "NCHS - Drug Poisoning Mortality by County: United States",
+      "updated_at": "2025-04-21",
+      "attribution": "NCHS/DVS",
+      "api_url": "https://data.cdc.gov/resource/pbkm-d27e.json",
+      "columns": [
+        [
+          "year",
+          "Year",
+          "Number"
+        ],
+        [
+          "estimated_age_adjusted_death_rate_11_categories_in_ranges",
+          "Estimated Age-adjusted Death Rate, 16 Categories (in ranges)",
+          "Text"
+        ],
+        [
+          "population",
+          "Population",
+          "Number"
+        ],
+        [
+          "county",
+          "County",
+          "Text"
+        ],
+        [
+          "fips_state",
+          "FIPS State",
+          "Text"
+        ],
+        [
+          "state",
+          "State",
+          "Text"
+        ],
+        [
+          "st",
+          "ST",
+          "Text"
+        ],
+        [
+          "fips",
+          "FIPS",
+          "Text"
+        ]
+      ],
+      "matched_query": "age-adjusted death rates United States"
+    },
+    {
+      "dataset_id": "w9j2-ggv5",
+      "name": "NCHS - Death rates and life expectancy at birth",
+      "updated_at": "2025-04-21",
+      "attribution": "NCHS/DVS",
+      "api_url": "https://data.cdc.gov/resource/w9j2-ggv5.json",
+      "columns": [
+        [
+          "average_life_expectancy",
+          "Average Life Expectancy (Years)",
+          "Number"
+        ],
+        [
+          "sex",
+          "Sex",
+          "Text"
+        ],
+        [
+          "mortality",
+          "Age-adjusted Death Rate",
+          "Number"
+        ],
+        [
+          "year",
+          "Year",
+          "Number"
+        ],
+        [
+          "race",
+          "Race",
+          "Text"
+        ]
+      ],
+      "matched_query": "age-adjusted death rates United States"
+    },
+    {
+      "dataset_id": "6rkc-nb2q",
+      "name": "NCHS - Age-adjusted Death Rates for Selected Major Causes of Death",
+      "updated_at": "2025-04-21",
+      "attribution": "NCHS/DVS",
+      "api_url": "https://data.cdc.gov/resource/6rkc-nb2q.json",
+      "columns": [
+        [
+          "leading_causes",
+          "Cause",
+          "Text"
+        ],
+        [
+          "age_adjusted_death_rate",
+          "Age Adjusted Death Rate",
+          "Number"
+        ],
+        [
+          "year",
+          "Year",
+          "Number"
+        ]
+      ],
+      "matched_query": "age-adjusted death rates United States"
+    }
+  ],
+  "annual_deaths": [
+    {
+      "dataset_id": "9bhg-hcku",
+      "name": "Provisional COVID-19 Deaths by Sex and Age",
+      "updated_at": "2025-04-21",
+      "attribution": "NCHS/DVS",
+      "api_url": "https://data.cdc.gov/resource/9bhg-hcku.json",
+      "columns": [
+        [
+          "state",
+          "State",
+          "Text"
+        ],
+        [
+          "group",
+          "Group",
+          "Text"
+        ],
+        [
+          "data_as_of",
+          "Data As Of",
+          "Calendar date"
+        ],
+        [
+          "start_date",
+          "Start Date",
+          "Calendar date"
+        ],
+        [
+          "pneumonia_influenza_or_covid",
+          "Pneumonia, Influenza, or COVID-19 Deaths",
+          "Number"
+        ],
+        [
+          "year",
+          "Year",
+          "Number"
+        ],
+        [
+          "covid_19_deaths",
+          "COVID-19 Deaths",
+          "Number"
+        ],
+        [
+          "pneumonia_deaths",
+          "Pneumonia Deaths",
+          "Number"
+        ],
+        [
+          "footnote",
+          "Footnote",
+          "Text"
+        ],
+        [
+          "month",
+          "Month",
+          "Number"
+        ],
+        [
+          "sex",
+          "Sex",
+          "Text"
+        ],
+        [
+          "age_group",
+          "Age Group",
+          "Text"
+        ],
+        [
+          "total_deaths",
+          "Total Deaths",
+          "Number"
+        ],
+        [
+          "influenza_deaths",
+          "Influenza Deaths",
+          "Number"
+        ],
+        [
+          "end_date",
+          "End Date",
+          "Calendar date"
+        ],
+        [
+          "pneumonia_and_covid_19_deaths",
+          "Pneumonia and COVID-19 Deaths",
+          "Number"
+        ]
+      ],
+      "matched_query": "provisional death counts United States"
+    },
+    {
+      "dataset_id": "kn79-hsxy",
+      "name": "Provisional COVID-19 Death Counts in the United States by County",
+      "updated_at": "2025-04-21",
+      "attribution": "NCHS/DVS",
+      "api_url": "https://data.cdc.gov/resource/kn79-hsxy.json",
+      "columns": [
+        [
+          "start_week",
+          "Start Date",
+          "Calendar date"
+        ],
+        [
+          "data_as_of",
+          "Date as of",
+          "Calendar date"
+        ],
+        [
+          "county_fips_code",
+          "FIPS County Code",
+          "Number"
+        ],
+        [
+          "county_name",
+          "County name",
+          "Text"
+        ],
+        [
+          "covid_death",
+          "Deaths involving COVID-19",
+          "Number"
+        ],
+        [
+          "footnote",
+          "Footnote",
+          "Text"
+        ],
+        [
+          "urban_rural_code",
+          "Urban Rural Code",
+          "Text"
+        ],
+        [
+          "state_name",
+          "State",
+          "Text"
+        ],
+        [
+          "total_death",
+          "Deaths from All Causes",
+          "Number"
+        ],
+        [
+          "end_week",
+          "End Date",
+          "Calendar date"
+        ]
+      ],
+      "matched_query": "provisional death counts United States"
+    },
+    {
+      "dataset_id": "muzy-jte6",
+      "name": "Weekly Provisional Counts of Deaths by State and Select Causes, 2020-2023",
+      "updated_at": "2025-04-21",
+      "attribution": "NCHS/DVS",
+      "api_url": "https://data.cdc.gov/resource/muzy-jte6.json",
+      "columns": [
+        [
+          "mmwryear",
+          "MMWR Year",
+          "Text"
+        ],
+        [
+          "flag_alz",
+          "flag_alz",
+          "Text"
+        ],
+        [
+          "flag_cov19mcod",
+          "flag_cov19mcod",
+          "Text"
+        ],
+        [
+          "flag_inflpn",
+          "flag_inflpn",
+          "Text"
+        ],
+        [
+          "flag_allcause",
+          "flag_allcause",
+          "Text"
+        ],
+        [
+          "flag_cov19ucod",
+          "flag_cov19ucod",
+          "Text"
+        ],
+        [
+          "covid_19_u071_multiple_cause_of_death",
+          "COVID-19 (U071, Multiple Cause of Death)",
+          "Number"
+        ],
+        [
+          "malignant_neoplasms_c00_c97",
+          "Malignant neoplasms (C00-C97)",
+          "Number"
+        ],
+        [
+          "mmwrweek",
+          "MMWR Week",
+          "Text"
+        ],
+        [
+          "cerebrovascular_diseases",
+          "Cerebrovascular diseases (I60-I69)",
+          "Number"
+        ],
+        [
+          "flag_diab",
+          "flag_diab",
+          "Text"
+        ],
+        [
+          "alzheimer_disease_g30",
+          "Alzheimer disease (G30)",
+          "Number"
+        ],
+        [
+          "chronic_lower_respiratory",
+          "Chronic lower respiratory diseases (J40-J47)",
+          "Number"
+        ],
+        [
+          "nephritis_nephrotic_syndrome",
+          "Nephritis, nephrotic syndrome and nephrosis (N00-N07,N17-N19,N25-N27)",
+          "Number"
+        ],
+        [
+          "symptoms_signs_and_abnormal",
+          "Symptoms, signs and abnormal clinical and laboratory findings, not elsewhere classified (R00-R99)",
+          "Number"
+        ],
+        [
+          "natural_cause",
+          "Natural Cause",
+          "Number"
+        ],
+        [
+          "flag_sept",
+          "flag_sept",
+          "Text"
+        ],
+        [
+          "flag_otherunk",
+          "flag_otherunk",
+          "Text"
+        ],
+        [
+          "flag_otherresp",
+          "flag_otherresp",
+          "Text"
+        ],
+        [
+          "flag_hd",
+          "flag_hd",
+          "Text"
+        ],
+        [
+          "data_as_of",
+          "Data As Of",
+          "Calendar date"
+        ],
+        [
+          "flag_stroke",
+          "flag_stroke",
+          "Text"
+        ],
+        [
+          "flag_nephr",
+          "flag_nephr",
+          "Text"
+        ],
+        [
+          "diabetes_mellitus_e10_e14",
+          "Diabetes mellitus (E10-E14)",
+          "Number"
+        ],
+        [
+          "septicemia_a40_a41",
+          "Septicemia (A40-A41)",
+          "Number"
+        ],
+        [
+          "flag_neopl",
+          "flag_neopl",
+          "Text"
+        ],
+        [
+          "week_ending_date",
+          "Week Ending Date",
+          "Text"
+        ],
+        [
+          "flag_clrd",
+          "flag_clrd",
+          "Text"
+        ],
+        [
+          "flag_natcause",
+          "flag_natcause",
+          "Text"
+        ],
+        [
+          "jurisdiction_of_occurrence",
+          "Jurisdiction of Occurrence",
+          "Text"
+        ],
+        [
+          "all_cause",
+          "All Cause",
+          "Number"
+        ],
+        [
+          "other_diseases_of_respiratory",
+          "Other diseases of respiratory system (J00-J06,J30-J39,J67,J70-J98)",
+          "Number"
+        ],
+        [
+          "diseases_of_heart_i00_i09",
+          "Diseases of heart (I00-I09,I11,I13,I20-I51)",
+          "Number"
+        ],
+        [
+          "covid_19_u071_underlying_cause_of_death",
+          "COVID-19 (U071, Underlying Cause of Death)",
+          "Number"
+        ],
+        [
+          "influenza_and_pneumonia_j09_j18",
+          "Influenza and pneumonia (J09-J18)",
+          "Number"
+        ]
+      ],
+      "matched_query": "provisional death counts United States"
+    },
+    {
+      "dataset_id": "xkb8-kh2a",
+      "name": "VSRR Provisional Drug Overdose Death Counts",
+      "updated_at": "2026-08-12",
+      "attribution": "National Center for Health Statistics",
+      "api_url": "https://data.cdc.gov/resource/xkb8-kh2a.json",
+      "columns": [
+        [
+          "predicted_value",
+          "Predicted Value",
+          "Number"
+        ],
+        [
+          "year",
+          "Year",
+          "Number"
+        ],
+        [
+          "state_name",
+          "State Name",
+          "Text"
+        ],
+        [
+          "period",
+          "Period",
+          "Text"
+        ],
+        [
+          "month",
+          "Month",
+          "Text"
+        ],
+        [
+          "percent_complete",
+          "Percent Complete",
+          "Text"
+        ],
+        [
+          "footnote",
+          "Footnote",
+          "Text"
+        ],
+        [
+          "indicator",
+          "Indicator",
+          "Text"
+        ],
+        [
+          "data_value",
+          "Data Value",
+          "Number"
+        ],
+        [
+          "percent_pending_investigation",
+          "Percent Pending Investigation",
+          "Number"
+        ],
+        [
+          "footnote_symbol",
+          "Footnote Symbol",
+          "Text"
+        ],
+        [
+          "state",
+          "State",
+          "Text"
+        ]
+      ],
+      "matched_query": "provisional death counts United States"
+    },
+    {
+      "dataset_id": "hk9y-quqm",
+      "name": "Conditions Contributing to COVID-19 Deaths, by State and Age, Provisional 2020-2023",
+      "updated_at": "2025-04-21",
+      "attribution": "NCHS/DVS",
+      "api_url": "https://data.cdc.gov/resource/hk9y-quqm.json",
+      "columns": [
+        [
+          "state",
+          "State",
+          "Text"
+        ],
+        [
+          "data_as_of",
+          "Data As Of",
+          "Calendar date"
+        ],
+        [
+          "covid_19_deaths",
+          "COVID-19 Deaths",
+          "Number"
+        ],
+        [
+          "icd10_codes",
+          "ICD10_codes",
+          "Text"
+        ],
+        [
+          "end_date",
+          "End Date",
+          "Calendar date"
+        ],
+        [
+          "start_date",
+          "Start Date",
+          "Calendar date"
+        ],
+        [
+          "year",
+          "Year",
+          "Number"
+        ],
+        [
+          "group",
+          "Group",
+          "Text"
+        ],
+        [
+          "month",
+          "Month",
+          "Number"
+        ],
+        [
+          "age_group",
+          "Age Group",
+          "Text"
+        ],
+        [
+          "condition",
+          "Condition",
+          "Text"
+        ],
+        [
+          "number_of_mentions",
+          "Number of Mentions",
+          "Number"
+        ],
+        [
+          "condition_group",
+          "Condition Group",
+          "Text"
+        ],
+        [
+          "flag",
+          "Flag",
+          "Text"
+        ]
+      ],
+      "matched_query": "provisional death counts United States"
+    },
+    {
+      "dataset_id": "nr4s-juj3",
+      "name": "Provisional COVID-19 Deaths: Focus on Ages 0-18 Years",
+      "updated_at": "2025-04-21",
+      "attribution": "NCHS/DVS",
+      "api_url": "https://data.cdc.gov/resource/nr4s-juj3.json",
+      "columns": [
+        [
+          "start_week",
+          "Start Week",
+          "Text"
+        ],
+        [
+          "indicator",
+          "Indicator",
+          "Text"
+        ],
+        [
+          "covid_19_deaths",
+          "COVID-19 Deaths",
+          "Number"
+        ],
+        [
+          "age_group",
+          "Age group",
+          "Text"
+        ],
+        [
+          "sex",
+          "Sex",
+          "Text"
+        ],
+        [
+          "data_as_of",
+          "Data as of",
+          "Text"
+        ],
+        [
+          "race_group",
+          "Race or Hispanic Origin Group",
+          "Text"
+        ],
+        [
+          "end_week",
+          "End Week",
+          "Text"
+        ]
+      ],
+      "matched_query": "provisional death counts United States"
+    },
+    {
+      "dataset_id": "r8kw-7aab",
+      "name": "Provisional COVID-19 Death Counts by Week Ending Date and State",
+      "updated_at": "2026-08-27",
+      "attribution": "NCHS/DVS",
+      "api_url": "https://data.cdc.gov/resource/r8kw-7aab.json",
+      "columns": [
+        [
+          "end_date",
+          "End Date",
+          "Calendar date"
+        ],
+        [
+          "week_ending_date",
+          "Week Ending Date",
+          "Calendar date"
+        ],
+        [
+          "pneumonia_deaths",
+          "Pneumonia Deaths",
+          "Number"
+        ],
+        [
+          "pneumonia_and_covid_19_deaths",
+          "Pneumonia and COVID-19 Deaths",
+          "Number"
+        ],
+        [
+          "percent_of_expected_deaths",
+          "Percent of Expected Deaths",
+          "Number"
+        ],
+        [
+          "covid_19_deaths",
+          "COVID-19 Deaths",
+          "Number"
+        ],
+        [
+          "state",
+          "State",
+          "Text"
+        ],
+        [
+          "pneumonia_influenza_or_covid_19_deaths",
+          "Pneumonia, Influenza, or COVID-19 Deaths",
+          "Number"
+        ],
+        [
+          "total_deaths",
+          "Total Deaths",
+          "Number"
+        ],
+        [
+          "mmwr_week",
+          "MMWR Week",
+          "Number"
+        ],
+        [
+          "footnote",
+          "Footnote",
+          "Text"
+        ],
+        [
+          "year",
+          "Year",
+          "Text"
+        ],
+        [
+          "group",
+          "Group",
+          "Text"
+        ],
+        [
+          "data_as_of",
+          "Data as of",
+          "Calendar date"
+        ],
+        [
+          "month",
+          "Month",
+          "Number"
+        ],
+        [
+          "influenza_deaths",
+          "Influenza Deaths",
+          "Number"
+        ],
+        [
+          "start_date",
+          "Start Date",
+          "Calendar date"
+        ]
+      ],
+      "matched_query": "provisional death counts United States"
+    },
+    {
+      "dataset_id": "hmz2-vwda",
+      "name": "VSRR - State and National Provisional Counts for Live Births, Deaths, and Infant Deaths",
+      "updated_at": "2025-04-21",
+      "attribution": "NCHS/DVS",
+      "api_url": "https://data.cdc.gov/resource/hmz2-vwda.json",
+      "columns": [
+        [
+          "state",
+          "State",
+          "Text"
+        ],
+        [
+          "year",
+          "Year",
+          "Text"
+        ],
+        [
+          "data_value",
+          "Data Value",
+          "Number"
+        ],
+        [
+          "month",
+          "Month",
+          "Text"
+        ],
+        [
+          "period",
+          "Period",
+          "Text"
+        ],
+        [
+          "indicator",
+          "Indicator",
+          "Text"
+        ]
+      ],
+      "matched_query": "provisional death counts United States"
+    },
+    {
+      "dataset_id": "9dzk-mvmi",
+      "name": "Monthly Provisional Counts of Deaths by Select Causes, 2020-2023",
+      "updated_at": "2025-04-21",
+      "attribution": "NCHS/DVS",
+      "api_url": "https://data.cdc.gov/resource/9dzk-mvmi.json",
+      "columns": [
+        [
+          "symptoms_signs_and_abnormal",
+          "Symptoms, Signs and Abnormal Clinical and Laboratory Findings, Not Elsewhere Classified",
+          "Number"
+        ],
+        [
+          "other_diseases_of_respiratory",
+          "Other Diseases of Respiratory System",
+          "Number"
+        ],
+        [
+          "assault_homicide",
+          "Assault (Homicide)",
+          "Number"
+        ],
+        [
+          "intentional_self_harm_suicide",
+          "Intentional Self-Harm (Suicide)",
+          "Number"
+        ],
+        [
+          "accidents_unintentional",
+          "Accidents (Unintentional Injuries)",
+          "Number"
+        ],
+        [
+          "malignant_neoplasms",
+          "Malignant Neoplasms",
+          "Number"
+        ],
+        [
+          "natural_cause",
+          "Natural Cause",
+          "Number"
+        ],
+        [
+          "month",
+          "Month",
+          "Number"
+        ],
+        [
+          "end_date",
+          "End Date",
+          "Calendar date"
+        ],
+        [
+          "flag_drugod",
+          "flag_drugod",
+          "Text"
+        ],
+        [
+          "covid_19_multiple_cause_of",
+          "COVID-19 (Multiple Cause of Death)",
+          "Number"
+        ],
+        [
+          "alzheimer_disease",
+          "Alzheimer Disease",
+          "Number"
+        ],
+        [
+          "all_cause",
+          "All Cause",
+          "Number"
+        ],
+        [
+          "flag_homic",
+          "flag_homic",
+          "Text"
+        ],
+        [
+          "influenza_and_pneumonia",
+          "Influenza and Pneumonia",
+          "Number"
+        ],
+        [
+          "diabetes_mellitus",
+          "Diabetes Mellitus",
+          "Number"
+        ],
+        [
+          "flag_accid",
+          "flag_accid",
+          "Text"
+        ],
+        [
+          "diseases_of_heart",
+          "Diseases of Heart",
+          "Number"
+        ],
+        [
+          "septicemia",
+          "Septicemia",
+          "Number"
+        ],
+        [
+          "flag_mva",
+          "flag_mva",
+          "Text"
+        ],
+        [
+          "chronic_lower_respiratory",
+          "Chronic Lower Respiratory Diseases",
+          "Number"
+        ],
+        [
+          "data_as_of",
+          "Data As Of",
+          "Calendar date"
+        ],
+        [
+          "jurisdiction_of_occurrence",
+          "Jurisdiction of Occurrence",
+          "Text"
+        ],
+        [
+          "flag_suic",
+          "flag_suic",
+          "Text"
+        ],
+        [
+          "year",
+          "Year",
+          "Number"
+        ],
+        [
+          "start_date",
+          "Start Date",
+          "Calendar date"
+        ],
+        [
+          "cerebrovascular_diseases",
+          "Cerebrovascular Diseases",
+          "Number"
+        ],
+        [
+          "covid_19_underlying_cause",
+          "COVID-19 (Underlying Cause of Death)",
+          "Number"
+        ],
+        [
+          "drug_overdose",
+          "Drug Overdose",
+          "Number"
+        ],
+        [
+          "motor_vehicle_accidents",
+          "Motor Vehicle Accidents",
+          "Number"
+        ],
+        [
+          "nephritis_nephrotic_syndrome",
+          "Nephritis, Nephrotic Syndrome and Nephrosis",
+          "Number"
+        ]
+      ],
+      "matched_query": "monthly provisional counts of deaths"
+    },
+    {
+      "dataset_id": "ezfr-g6hf",
+      "name": "AH Monthly Provisional Counts of Deaths by Age Group and HHS region for Select Causes of Death, 2019-2021",
+      "updated_at": "2025-04-21",
+      "attribution": "NCHS/DVS",
+      "api_url": "https://data.cdc.gov/resource/ezfr-g6hf.json",
+      "columns": [
+        [
+          "flag_allcause",
+          "flag_allcause",
+          "Text"
+        ],
+        [
+          "naturalcause",
+          "NaturalCause",
+          "Number"
+        ],
+        [
+          "septicemia_a40_a41",
+          "Septicemia (A40-A41)",
+          "Number"
+        ],
+        [
+          "alzheimer_disease_g30",
+          "Alzheimer disease (G30)",
+          "Number"
+        ],
+        [
+          "influenza_and_pneumonia_j09",
+          "Influenza and pneumonia (J09-J18)",
+          "Number"
+        ],
+        [
+          "chronic_lower_respiratory",
+          "Chronic lower respiratory diseases (J40-J47)",
+          "Number"
+        ],
+        [
+          "other_diseases_of_respiratory",
+          "Other diseases of respiratory system (J00-J06,J30-J39,J67,J70-J98)",
+          "Number"
+        ],
+        [
+          "nephritis_nephrotic_syndrome",
+          "Nephritis, nephrotic syndrome and nephrosis (N00-N07,N17-N19,N25-N27)",
+          "Number"
+        ],
+        [
+          "cerebrovascular_diseases",
+          "Cerebrovascular diseases (I60-I69)",
+          "Number"
+        ],
+        [
+          "covid_19_u071_multiple_cause",
+          "COVID-19 (U071, Multiple Cause of Death)",
+          "Number"
+        ],
+        [
+          "note",
+          "Note",
+          "Text"
+        ],
+        [
+          "flag_natcause",
+          "flag_natcause",
+          "Text"
+        ],
+        [
+          "flag_neopl",
+          "flag_neopl",
+          "Text"
+        ],
+        [
+          "flag_diab",
+          "flag_diab",
+          "Text"
+        ],
+        [
+          "flag_inflpn",
+          "flag_inflpn",
+          "Text"
+        ],
+        [
+          "flag_nephr",
+          "flag_nephr",
+          "Text"
+        ],
+        [
+          "flag_hd",
+          "flag_hd",
+          "Text"
+        ],
+        [
+          "agegroup",
+          "AgeGroup",
+          "Text"
+        ],
+        [
+          "hhsregion",
+          "HHSRegion",
+          "Text"
+        ],
+        [
+          "date_of_death_month",
+          "Date Of Death Month",
+          "Number"
+        ],
+        [
+          "flag_alz",
+          "flag_alz",
+          "Text"
+        ],
+        [
+          "flag_sept",
+          "flag_sept",
+          "Text"
+        ],
+        [
+          "covid_19_u071_underlying",
+          "COVID-19 (U071, Underlying Cause of Death)",
+          "Number"
+        ],
+        [
+          "diseases_of_heart_i00_i09",
+          "Diseases of heart (I00-I09,I11,I13,I20-I51)",
+          "Number"
+        ],
+        [
+          "symptoms_signs_and_abnormal",
+          "Symptoms, signs and abnormal clinical and laboratory findings, not elsewhere classified (R00-R99)",
+          "Number"
+        ],
+        [
+          "diabetes_mellitus_e10_e14",
+          "Diabetes mellitus (E10-E14)",
+          "Number"
+        ],
+        [
+          "malignant_neoplasms_c00_c97",
+          "Malignant neoplasms (C00-C97)",
+          "Number"
+        ],
+        [
+          "allcause",
+          "AllCause",
+          "Number"
+        ],
+        [
+          "date_of_death_year",
+          "Date Of Death Year",
+          "Number"
+        ],
+        [
+          "flag_otherunk",
+          "flag_otherunk",
+          "Text"
+        ],
+        [
+          "flag_otherresp",
+          "flag_otherresp",
+          "Text"
+        ],
+        [
+          "flag_clrd",
+          "flag_clrd",
+          "Text"
+        ],
+        [
+          "flag_stroke",
+          "flag_stroke",
+          "Text"
+        ],
+        [
+          "flag_cov19mcod",
+          "flag_cov19mcod",
+          "Text"
+        ],
+        [
+          "analysisdate",
+          "AnalysisDate",
+          "Calendar date"
+        ],
+        [
+          "flag_cov19ucod",
+          "flag_cov19ucod",
+          "Text"
+        ]
+      ],
+      "matched_query": "monthly provisional counts of deaths"
+    },
+    {
+      "dataset_id": "65mz-jvh5",
+      "name": "AH Monthly Provisional Counts of Deaths for Select Causes of Death by Sex, Age, and Race and Hispanic Origin",
+      "updated_at": "2025-04-21",
+      "attribution": "NCHS/DVS",
+      "api_url": "https://data.cdc.gov/resource/65mz-jvh5.json",
+      "columns": [
+        [
+          "agegroup",
+          "AgeGroup",
+          "Text"
+        ],
+        [
+          "allcause",
+          "AllCause",
+          "Number"
+        ],
+        [
+          "influenza_and_pneumonia_j09",
+          "Influenza and pneumonia (J09-J18)",
+          "Number"
+        ],
+        [
+          "other_diseases_of_respiratory",
+          "Other diseases of respiratory system (J00-J06,J30-J39,J67,J70-J98)",
+          "Number"
+        ],
+        [
+          "symptoms_signs_and_abnormal",
+          "Symptoms, signs and abnormal clinical and laboratory findings, not elsewhere classified (R00-R99)",
+          "Number"
+        ],
+        [
+          "septicemia_a40_a41",
+          "Septicemia (A40-A41)",
+          "Number"
+        ],
+        [
+          "date_of_death_year",
+          "Date Of Death Year",
+          "Number"
+        ],
+        [
+          "covid_19_u071_underlying",
+          "COVID-19 (U071, Underlying Cause of Death)",
+          "Number"
+        ],
+        [
+          "cerebrovascular_diseases",
+          "Cerebrovascular diseases (I60-I69)",
+          "Number"
+        ],
+        [
+          "race_ethnicity",
+          "Race/Ethnicity",
+          "Text"
+        ],
+        [
+          "naturalcause",
+          "NaturalCause",
+          "Number"
+        ],
+        [
+          "date_of_death_month",
+          "Date Of Death Month",
+          "Number"
+        ],
+        [
+          "diseases_of_heart_i00_i09",
+          "Diseases of heart (I00-I09,I11,I13,I20-I51)",
+          "Number"
+        ],
+        [
+          "jurisdiction_of_occurrence",
+          "Jurisdiction of Occurrence",
+          "Text"
+        ],
+        [
+          "start_date",
+          "Start Date",
+          "Calendar date"
+        ],
+        [
+          "diabetes_mellitus_e10_e14",
+          "Diabetes mellitus (E10-E14)",
+          "Number"
+        ],
+        [
+          "malignant_neoplasms_c00_c97",
+          "Malignant neoplasms (C00-C97)",
+          "Number"
+        ],
+        [
+          "alzheimer_disease_g30",
+          "Alzheimer disease (G30)",
+          "Number"
+        ],
+        [
+          "nephritis_nephrotic_syndrome",
+          "Nephritis, nephrotic syndrome and nephrosis (N00-N07,N17-N19,N25-N27)",
+          "Number"
+        ],
+        [
+          "sex",
+          "Sex",
+          "Text"
+        ],
+        [
+          "chronic_lower_respiratory",
+          "Chronic lower respiratory diseases (J40-J47)",
+          "Number"
+        ],
+        [
+          "covid_19_u071_multiple_cause",
+          "COVID-19 (U071, Multiple Cause of Death)",
+          "Number"
+        ],
+        [
+          "analysisdate",
+          "AnalysisDate",
+          "Text"
+        ],
+        [
+          "end_date",
+          "End Date",
+          "Calendar date"
+        ]
+      ],
+      "matched_query": "monthly provisional counts of deaths"
+    },
+    {
+      "dataset_id": "r5pw-bk5t",
+      "name": "AH Monthly Provisional Counts of Deaths for Select Causes of Death by Age, and Race and Hispanic Origin",
+      "updated_at": "2025-04-21",
+      "attribution": "NCHS/DVS",
+      "api_url": "https://data.cdc.gov/resource/r5pw-bk5t.json",
+      "columns": [
+        [
+          "septicemia",
+          "Septicemia",
+          "Number"
+        ],
+        [
+          "jurisdiction_of_occurrence",
+          "Jurisdiction of Occurrence",
+          "Text"
+        ],
+        [
+          "year",
+          "Year",
+          "Text"
+        ],
+        [
+          "month",
+          "Month",
+          "Number"
+        ],
+        [
+          "race_and_hispanic_origin",
+          "Race and Hispanic Origin Group",
+          "Text"
+        ],
+        [
+          "malignant_neoplasms",
+          "Malignant Neoplasms",
+          "Number"
+        ],
+        [
+          "alzheimer_disease",
+          "Alzheimer Disease",
+          "Number"
+        ],
+        [
+          "nephritis_nephrotic_syndrome",
+          "Nephritis, Nephrotic Syndrome, and Nephrosis",
+          "Number"
+        ],
+        [
+          "covid_19_underlying_cause",
+          "COVID-19 (Underlying Cause of Death)",
+          "Number"
+        ],
+        [
+          "data_as_of",
+          "Data As Of",
+          "Calendar date"
+        ],
+        [
+          "start_date",
+          "Start Date",
+          "Calendar date"
+        ],
+        [
+          "age_group",
+          "Age Group",
+          "Text"
+        ],
+        [
+          "diseases_of_heart",
+          "Diseases of Heart",
+          "Number"
+        ],
+        [
+          "chronic_lower_respiratory",
+          "Chronic Lower Respiratory Diseases",
+          "Number"
+        ],
+        [
+          "influenza_and_pneumonia",
+          "Influenza and Pneumonia",
+          "Number"
+        ],
+        [
+          "diabetes_mellitus",
+          "Diabetes Mellitus",
+          "Number"
+        ],
+        [
+          "symptoms_signs_and_abnormal",
+          "Symptoms, Signs, and Abnormal Clinical and Laboratory Findings, Not Elsewhere Classified",
+          "Number"
+        ],
+        [
+          "covid_19_multiple_cause_of",
+          "COVID-19 (Multiple Cause of Death)",
+          "Number"
+        ],
+        [
+          "cerebrovascular_diseases",
+          "Cerebrovascular Diseases",
+          "Number"
+        ],
+        [
+          "other_diseases_of_respiratory",
+          "Other Diseases of Respiratory System",
+          "Number"
+        ],
+        [
+          "end_date",
+          "End Date",
+          "Calendar date"
+        ],
+        [
+          "all_cause",
+          "All Cause",
+          "Number"
+        ],
+        [
+          "natural_cause",
+          "Natural Cause",
+          "Number"
+        ]
+      ],
+      "matched_query": "monthly provisional counts of deaths"
+    },
+    {
+      "dataset_id": "bi63-dtpu",
+      "name": "NCHS - Leading Causes of Death: United States",
+      "updated_at": "2025-04-21",
+      "attribution": "NCHS/DVS",
+      "api_url": "https://data.cdc.gov/resource/bi63-dtpu.json",
+      "columns": [
+        [
+          "_113_cause_name",
+          "113 Cause Name",
+          "Text"
+        ],
+        [
+          "state",
+          "State",
+          "Text"
+        ],
+        [
+          "deaths",
+          "Deaths",
+          "Number"
+        ],
+        [
+          "cause_name",
+          "Cause Name",
+          "Text"
+        ],
+        [
+          "year",
+          "Year",
+          "Number"
+        ],
+        [
+          "aadr",
+          "Age-adjusted Death Rate",
+          "Number"
+        ]
+      ],
+      "matched_query": "NCHS deaths final annual"
+    },
+    {
+      "dataset_id": "mpx5-t7tu",
+      "name": "Provisional COVID-19 death counts, rates, and percent of total deaths, by jurisdiction of residence",
+      "updated_at": "2026-08-27",
+      "attribution": "NCHS/DVS",
+      "api_url": "https://data.cdc.gov/resource/mpx5-t7tu.json",
+      "columns": [
+        [
+          "data_period_end",
+          "data_period_end",
+          "Calendar date"
+        ],
+        [
+          "covid_pct_of_total",
+          "COVID_pct_of_total",
+          "Number"
+        ],
+        [
+          "pct_change_wk",
+          "pct_change_wk",
+          "Number"
+        ],
+        [
+          "crude_covid_rate_ann",
+          "crude_COVID_rate_ann",
+          "Number"
+        ],
+        [
+          "aa_covid_rate_ann",
+          "aa_COVID_rate_ann",
+          "Number"
+        ],
+        [
+          "data_as_of",
+          "data_as_of",
+          "Calendar date"
+        ],
+        [
+          "group",
+          "Group",
+          "Text"
+        ],
+        [
+          "pct_diff_wk",
+          "pct_diff_wk",
+          "Number"
+        ],
+        [
+          "crude_covid_rate",
+          "crude_COVID_rate",
+          "Number"
+        ],
+        [
+          "aa_covid_rate",
+          "aa_COVID_rate",
+          "Number"
+        ],
+        [
+          "footnote",
+          "footnote",
+          "Text"
+        ],
+        [
+          "jurisdiction_residence",
+          "Jurisdiction_Residence",
+          "Text"
+        ],
+        [
+          "data_period_start",
+          "data_period_start",
+          "Calendar date"
+        ],
+        [
+          "covid_deaths",
+          "COVID_deaths",
+          "Number"
+        ]
+      ],
+      "matched_query": "NCHS deaths final annual"
+    },
+    {
+      "dataset_id": "w9j2-ggv5",
+      "name": "NCHS - Death rates and life expectancy at birth",
+      "updated_at": "2025-04-21",
+      "attribution": "NCHS/DVS",
+      "api_url": "https://data.cdc.gov/resource/w9j2-ggv5.json",
+      "columns": [
+        [
+          "average_life_expectancy",
+          "Average Life Expectancy (Years)",
+          "Number"
+        ],
+        [
+          "sex",
+          "Sex",
+          "Text"
+        ],
+        [
+          "mortality",
+          "Age-adjusted Death Rate",
+          "Number"
+        ],
+        [
+          "year",
+          "Year",
+          "Number"
+        ],
+        [
+          "race",
+          "Race",
+          "Text"
+        ]
+      ],
+      "matched_query": "NCHS deaths final annual"
+    }
+  ],
+  "covid_deaths_by_age": [
+    {
+      "dataset_id": "mawz-airi",
+      "name": "AH Provisional COVID-19 Deaths by Age, United States, Week 40 2020 through Week 39 2021",
+      "updated_at": "2025-04-21",
+      "attribution": "NCHS/DVS",
+      "api_url": "https://data.cdc.gov/resource/mawz-airi.json",
+      "columns": [
+        [
+          "start_week",
+          "Start Week",
+          "Calendar date"
+        ],
+        [
+          "jurisdiction_of_residence",
+          "Jurisdiction of Residence",
+          "Text"
+        ],
+        [
+          "year",
+          "Year",
+          "Text"
+        ],
+        [
+          "end_week",
+          "End Week",
+          "Calendar date"
+        ],
+        [
+          "total_deaths",
+          "Total Deaths",
+          "Number"
+        ],
+        [
+          "data_as_of",
+          "Data As Of",
+          "Calendar date"
+        ],
+        [
+          "covid_19_deaths",
+          "COVID-19 Deaths",
+          "Number"
+        ],
+        [
+          "age_group",
+          "Age Group",
+          "Text"
+        ]
+      ],
+      "matched_query": "provisional COVID-19 deaths by age"
+    },
+    {
+      "dataset_id": "9bhg-hcku",
+      "name": "Provisional COVID-19 Deaths by Sex and Age",
+      "updated_at": "2025-04-21",
+      "attribution": "NCHS/DVS",
+      "api_url": "https://data.cdc.gov/resource/9bhg-hcku.json",
+      "columns": [
+        [
+          "state",
+          "State",
+          "Text"
+        ],
+        [
+          "group",
+          "Group",
+          "Text"
+        ],
+        [
+          "data_as_of",
+          "Data As Of",
+          "Calendar date"
+        ],
+        [
+          "start_date",
+          "Start Date",
+          "Calendar date"
+        ],
+        [
+          "pneumonia_influenza_or_covid",
+          "Pneumonia, Influenza, or COVID-19 Deaths",
+          "Number"
+        ],
+        [
+          "year",
+          "Year",
+          "Number"
+        ],
+        [
+          "covid_19_deaths",
+          "COVID-19 Deaths",
+          "Number"
+        ],
+        [
+          "pneumonia_deaths",
+          "Pneumonia Deaths",
+          "Number"
+        ],
+        [
+          "footnote",
+          "Footnote",
+          "Text"
+        ],
+        [
+          "month",
+          "Month",
+          "Number"
+        ],
+        [
+          "sex",
+          "Sex",
+          "Text"
+        ],
+        [
+          "age_group",
+          "Age Group",
+          "Text"
+        ],
+        [
+          "total_deaths",
+          "Total Deaths",
+          "Number"
+        ],
+        [
+          "influenza_deaths",
+          "Influenza Deaths",
+          "Number"
+        ],
+        [
+          "end_date",
+          "End Date",
+          "Calendar date"
+        ],
+        [
+          "pneumonia_and_covid_19_deaths",
+          "Pneumonia and COVID-19 Deaths",
+          "Number"
+        ]
+      ],
+      "matched_query": "provisional COVID-19 deaths by age"
+    },
+    {
+      "dataset_id": "nr4s-juj3",
+      "name": "Provisional COVID-19 Deaths: Focus on Ages 0-18 Years",
+      "updated_at": "2025-04-21",
+      "attribution": "NCHS/DVS",
+      "api_url": "https://data.cdc.gov/resource/nr4s-juj3.json",
+      "columns": [
+        [
+          "start_week",
+          "Start Week",
+          "Text"
+        ],
+        [
+          "indicator",
+          "Indicator",
+          "Text"
+        ],
+        [
+          "covid_19_deaths",
+          "COVID-19 Deaths",
+          "Number"
+        ],
+        [
+          "age_group",
+          "Age group",
+          "Text"
+        ],
+        [
+          "sex",
+          "Sex",
+          "Text"
+        ],
+        [
+          "data_as_of",
+          "Data as of",
+          "Text"
+        ],
+        [
+          "race_group",
+          "Race or Hispanic Origin Group",
+          "Text"
+        ],
+        [
+          "end_week",
+          "End Week",
+          "Text"
+        ]
+      ],
+      "matched_query": "provisional COVID-19 deaths by age"
+    },
+    {
+      "dataset_id": "hk9y-quqm",
+      "name": "Conditions Contributing to COVID-19 Deaths, by State and Age, Provisional 2020-2023",
+      "updated_at": "2025-04-21",
+      "attribution": "NCHS/DVS",
+      "api_url": "https://data.cdc.gov/resource/hk9y-quqm.json",
+      "columns": [
+        [
+          "state",
+          "State",
+          "Text"
+        ],
+        [
+          "data_as_of",
+          "Data As Of",
+          "Calendar date"
+        ],
+        [
+          "covid_19_deaths",
+          "COVID-19 Deaths",
+          "Number"
+        ],
+        [
+          "icd10_codes",
+          "ICD10_codes",
+          "Text"
+        ],
+        [
+          "end_date",
+          "End Date",
+          "Calendar date"
+        ],
+        [
+          "start_date",
+          "Start Date",
+          "Calendar date"
+        ],
+        [
+          "year",
+          "Year",
+          "Number"
+        ],
+        [
+          "group",
+          "Group",
+          "Text"
+        ],
+        [
+          "month",
+          "Month",
+          "Number"
+        ],
+        [
+          "age_group",
+          "Age Group",
+          "Text"
+        ],
+        [
+          "condition",
+          "Condition",
+          "Text"
+        ],
+        [
+          "number_of_mentions",
+          "Number of Mentions",
+          "Number"
+        ],
+        [
+          "condition_group",
+          "Condition Group",
+          "Text"
+        ],
+        [
+          "flag",
+          "Flag",
+          "Text"
+        ]
+      ],
+      "matched_query": "provisional COVID-19 deaths by age"
+    },
+    {
+      "dataset_id": "vsak-wrfu",
+      "name": "Provisional COVID-19 Deaths by Week, Sex, and Age",
+      "updated_at": "2025-04-21",
+      "attribution": "NCHS/DVS",
+      "api_url": "https://data.cdc.gov/resource/vsak-wrfu.json",
+      "columns": [
+        [
+          "state",
+          "State",
+          "Text"
+        ],
+        [
+          "mmwr_week",
+          "MMWR Week",
+          "Number"
+        ],
+        [
+          "data_as_of",
+          "Data as of",
+          "Calendar date"
+        ],
+        [
+          "covid_19_deaths",
+          "COVID-19 Deaths",
+          "Number"
+        ],
+        [
+          "age_group",
+          "Age Group",
+          "Text"
+        ],
+        [
+          "week_ending_date",
+          "End Week",
+          "Calendar date"
+        ],
+        [
+          "sex",
+          "Sex",
+          "Text"
+        ],
+        [
+          "total_deaths",
+          "Total Deaths",
+          "Number"
+        ]
+      ],
+      "matched_query": "provisional COVID-19 deaths by age"
+    },
+    {
+      "dataset_id": "3apk-4u4f",
+      "name": "Provisional COVID-19 Death Counts by Age in Years, 2020-2023",
+      "updated_at": "2025-04-21",
+      "attribution": "NCHS/DVS",
+      "api_url": "https://data.cdc.gov/resource/3apk-4u4f.json",
+      "columns": [
+        [
+          "data_as_of",
+          "Data as of",
+          "Calendar date"
+        ],
+        [
+          "age_years",
+          "Age Years",
+          "Text"
+        ],
+        [
+          "total_deaths",
+          "Total deaths",
+          "Number"
+        ],
+        [
+          "start_date",
+          "Start Date",
+          "Calendar date"
+        ],
+        [
+          "end_date",
+          "End Date",
+          "Calendar date"
+        ],
+        [
+          "sex",
+          "Sex",
+          "Text"
+        ],
+        [
+          "covid19_deaths",
+          "COVID-19 Deaths",
+          "Number"
+        ]
+      ],
+      "matched_query": "provisional COVID-19 deaths by age"
+    },
+    {
+      "dataset_id": "hc4f-j6nb",
+      "name": "Provisional Death Counts for Coronavirus Disease (COVID-19)",
+      "updated_at": "2025-04-21",
+      "attribution": "NCHS/DVS",
+      "api_url": "https://data.cdc.gov/resource/hc4f-j6nb.json",
+      "columns": [
+        [
+          "covid_deaths",
+          "All COVID-19 Deaths (U07.1)",
+          "Number"
+        ],
+        [
+          "group",
+          "Group",
+          "Text"
+        ],
+        [
+          "data_as_of",
+          "Data as of",
+          "Calendar date"
+        ],
+        [
+          "total_deaths",
+          "Deaths from All Causes",
+          "Number"
+        ],
+        [
+          "footnote",
+          "Footnote",
+          "Text"
+        ],
+        [
+          "pneumonia_influenza_and_covid_19_deaths",
+          "Pneumonia, Influenza, and COVID-19 Deaths",
+          "Number"
+        ],
+        [
+          "all_influenza_deaths_j09_j11",
+          "All Influenza Deaths (J09-J11)",
+          "Number"
+        ],
+        [
+          "pneumonia_and_covid_deaths",
+          "Deaths with Pneumonia and COVID-19 (J12.0-J18.9 and U07.1)",
+          "Number"
+        ],
+        [
+          "end_week",
+          "End week",
+          "Calendar date"
+        ],
+        [
+          "start_week",
+          "Start week",
+          "Calendar date"
+        ],
+        [
+          "indicator",
+          "Indicator",
+          "Text"
+        ],
+        [
+          "state",
+          "State",
+          "Text"
+        ],
+        [
+          "pneumonia_deaths",
+          "All Pneumonia Deaths (J12.0-J18.9)",
+          "Number"
+        ],
+        [
+          "percent_expected_deaths",
+          "Percent of Expected Deaths",
+          "Number"
+        ]
+      ],
+      "matched_query": "provisional COVID-19 deaths by age"
+    },
+    {
+      "dataset_id": "ks3g-spdg",
+      "name": "Provisional COVID-19 Deaths by Race and Hispanic Origin, and Age",
+      "updated_at": "2025-04-21",
+      "attribution": "NCHS/DVS",
+      "api_url": "https://data.cdc.gov/resource/ks3g-spdg.json",
+      "columns": [
+        [
+          "influenza_deaths",
+          "Influenza Deaths",
+          "Number"
+        ],
+        [
+          "state",
+          "State",
+          "Text"
+        ],
+        [
+          "start_week",
+          "Start Date",
+          "Calendar date"
+        ],
+        [
+          "footnote",
+          "Footnote",
+          "Text"
+        ],
+        [
+          "pneumonia_influenza_or_covid_19",
+          "Pneumonia, Influenza, or COVID-19 Deaths",
+          "Number"
+        ],
+        [
+          "end_week",
+          "End Date",
+          "Calendar date"
+        ],
+        [
+          "race_and_hispanic_origin",
+          "Race and Hispanic Origin Group",
+          "Text"
+        ],
+        [
+          "age_group_new",
+          "Age group",
+          "Text"
+        ],
+        [
+          "pneumonia_and_covid_19_deaths",
+          "Pneumonia and COVID-19 Deaths",
+          "Number"
+        ],
+        [
+          "covid_19_deaths",
+          "COVID-19 Deaths",
+          "Number"
+        ],
+        [
+          "data_as_of",
+          "Data as of",
+          "Calendar date"
+        ],
+        [
+          "total_deaths",
+          "Total Deaths",
+          "Number"
+        ],
+        [
+          "pneumonia_deaths",
+          "Pneumonia Deaths",
+          "Number"
+        ]
+      ],
+      "matched_query": "provisional COVID-19 deaths by age"
+    },
+    {
+      "dataset_id": "muzy-jte6",
+      "name": "Weekly Provisional Counts of Deaths by State and Select Causes, 2020-2023",
+      "updated_at": "2025-04-21",
+      "attribution": "NCHS/DVS",
+      "api_url": "https://data.cdc.gov/resource/muzy-jte6.json",
+      "columns": [
+        [
+          "mmwryear",
+          "MMWR Year",
+          "Text"
+        ],
+        [
+          "flag_alz",
+          "flag_alz",
+          "Text"
+        ],
+        [
+          "flag_cov19mcod",
+          "flag_cov19mcod",
+          "Text"
+        ],
+        [
+          "flag_inflpn",
+          "flag_inflpn",
+          "Text"
+        ],
+        [
+          "flag_allcause",
+          "flag_allcause",
+          "Text"
+        ],
+        [
+          "flag_cov19ucod",
+          "flag_cov19ucod",
+          "Text"
+        ],
+        [
+          "covid_19_u071_multiple_cause_of_death",
+          "COVID-19 (U071, Multiple Cause of Death)",
+          "Number"
+        ],
+        [
+          "malignant_neoplasms_c00_c97",
+          "Malignant neoplasms (C00-C97)",
+          "Number"
+        ],
+        [
+          "mmwrweek",
+          "MMWR Week",
+          "Text"
+        ],
+        [
+          "cerebrovascular_diseases",
+          "Cerebrovascular diseases (I60-I69)",
+          "Number"
+        ],
+        [
+          "flag_diab",
+          "flag_diab",
+          "Text"
+        ],
+        [
+          "alzheimer_disease_g30",
+          "Alzheimer disease (G30)",
+          "Number"
+        ],
+        [
+          "chronic_lower_respiratory",
+          "Chronic lower respiratory diseases (J40-J47)",
+          "Number"
+        ],
+        [
+          "nephritis_nephrotic_syndrome",
+          "Nephritis, nephrotic syndrome and nephrosis (N00-N07,N17-N19,N25-N27)",
+          "Number"
+        ],
+        [
+          "symptoms_signs_and_abnormal",
+          "Symptoms, signs and abnormal clinical and laboratory findings, not elsewhere classified (R00-R99)",
+          "Number"
+        ],
+        [
+          "natural_cause",
+          "Natural Cause",
+          "Number"
+        ],
+        [
+          "flag_sept",
+          "flag_sept",
+          "Text"
+        ],
+        [
+          "flag_otherunk",
+          "flag_otherunk",
+          "Text"
+        ],
+        [
+          "flag_otherresp",
+          "flag_otherresp",
+          "Text"
+        ],
+        [
+          "flag_hd",
+          "flag_hd",
+          "Text"
+        ],
+        [
+          "data_as_of",
+          "Data As Of",
+          "Calendar date"
+        ],
+        [
+          "flag_stroke",
+          "flag_stroke",
+          "Text"
+        ],
+        [
+          "flag_nephr",
+          "flag_nephr",
+          "Text"
+        ],
+        [
+          "diabetes_mellitus_e10_e14",
+          "Diabetes mellitus (E10-E14)",
+          "Number"
+        ],
+        [
+          "septicemia_a40_a41",
+          "Septicemia (A40-A41)",
+          "Number"
+        ],
+        [
+          "flag_neopl",
+          "flag_neopl",
+          "Text"
+        ],
+        [
+          "week_ending_date",
+          "Week Ending Date",
+          "Text"
+        ],
+        [
+          "flag_clrd",
+          "flag_clrd",
+          "Text"
+        ],
+        [
+          "flag_natcause",
+          "flag_natcause",
+          "Text"
+        ],
+        [
+          "jurisdiction_of_occurrence",
+          "Jurisdiction of Occurrence",
+          "Text"
+        ],
+        [
+          "all_cause",
+          "All Cause",
+          "Number"
+        ],
+        [
+          "other_diseases_of_respiratory",
+          "Other diseases of respiratory system (J00-J06,J30-J39,J67,J70-J98)",
+          "Number"
+        ],
+        [
+          "diseases_of_heart_i00_i09",
+          "Diseases of heart (I00-I09,I11,I13,I20-I51)",
+          "Number"
+        ],
+        [
+          "covid_19_u071_underlying_cause_of_death",
+          "COVID-19 (U071, Underlying Cause of Death)",
+          "Number"
+        ],
+        [
+          "influenza_and_pneumonia_j09_j18",
+          "Influenza and pneumonia (J09-J18)",
+          "Number"
+        ]
+      ],
+      "matched_query": "COVID-19 deaths underlying cause age group"
+    },
+    {
+      "dataset_id": "ynw2-4viq",
+      "name": "Provisional Death Counts for Influenza, Pneumonia, and COVID-19",
+      "updated_at": "2025-04-21",
+      "attribution": "NCHS/DVS",
+      "api_url": "https://data.cdc.gov/resource/ynw2-4viq.json",
+      "columns": [
+        [
+          "end_week",
+          "End Week",
+          "Text"
+        ],
+        [
+          "mmwrweek",
+          "MMWRweek",
+          "Number"
+        ],
+        [
+          "influenza_deaths",
+          "Influenza Deaths",
+          "Number"
+        ],
+        [
+          "pneumonia_deaths",
+          "Pneumonia Deaths",
+          "Number"
+        ],
+        [
+          "pneumonia_or_influenza",
+          "Pneumonia or Influenza",
+          "Number"
+        ],
+        [
+          "mmwryear",
+          "MMWRyear",
+          "Text"
+        ],
+        [
+          "data_as_of",
+          "Data As Of",
+          "Text"
+        ],
+        [
+          "start_week",
+          "Start Week",
+          "Text"
+        ],
+        [
+          "week_ending_date",
+          "Week Ending Date",
+          "Calendar date"
+        ],
+        [
+          "pneumonia_influenza_or_covid",
+          "Pneumonia, Influenza, or COVID-19 Deaths",
+          "Number"
+        ],
+        [
+          "total_deaths",
+          "Total Deaths",
+          "Number"
+        ],
+        [
+          "group",
+          "Group",
+          "Text"
+        ],
+        [
+          "indicator",
+          "Indicator",
+          "Text"
+        ],
+        [
+          "age_group",
+          "Age Group",
+          "Text"
+        ],
+        [
+          "footnote",
+          "Footnote",
+          "Text"
+        ],
+        [
+          "covid_19_deaths",
+          "COVID-19 Deaths",
+          "Number"
+        ],
+        [
+          "jurisdiction",
+          "Jurisdiction",
+          "Text"
+        ]
+      ],
+      "matched_query": "COVID-19 deaths underlying cause age group"
+    },
+    {
+      "dataset_id": "kn79-hsxy",
+      "name": "Provisional COVID-19 Death Counts in the United States by County",
+      "updated_at": "2025-04-21",
+      "attribution": "NCHS/DVS",
+      "api_url": "https://data.cdc.gov/resource/kn79-hsxy.json",
+      "columns": [
+        [
+          "start_week",
+          "Start Date",
+          "Calendar date"
+        ],
+        [
+          "data_as_of",
+          "Date as of",
+          "Calendar date"
+        ],
+        [
+          "county_fips_code",
+          "FIPS County Code",
+          "Number"
+        ],
+        [
+          "county_name",
+          "County name",
+          "Text"
+        ],
+        [
+          "covid_death",
+          "Deaths involving COVID-19",
+          "Number"
+        ],
+        [
+          "footnote",
+          "Footnote",
+          "Text"
+        ],
+        [
+          "urban_rural_code",
+          "Urban Rural Code",
+          "Text"
+        ],
+        [
+          "state_name",
+          "State",
+          "Text"
+        ],
+        [
+          "total_death",
+          "Deaths from All Causes",
+          "Number"
+        ],
+        [
+          "end_week",
+          "End Date",
+          "Calendar date"
+        ]
+      ],
+      "matched_query": "deaths involving COVID-19 age"
+    }
+  ]
+}

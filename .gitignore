@@ -5,7 +5,12 @@ __pycache__/
 .pytest_cache/
 .vscode/
 .claude/settings.local.json
+scratch/
 data/processed/*.csv
+data/processed/*.md
+# Fetch cache regenerates; the discovery snapshot is provenance, so it stays.
+data/raw/fetched/*
+!data/raw/fetched/_discovery_*.json
 figures/*.png
 figures/*.pdf
 .DS_Store

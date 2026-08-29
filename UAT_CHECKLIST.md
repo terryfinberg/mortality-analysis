@@ -9,10 +9,10 @@ resolve it before continuing; later sections assume earlier ones passed.
 
 - [ ] `.\bootstrap.ps1` (Windows) or `./bootstrap.sh` completes without error
 - [ ] `.venv` directory exists
-- [ ] `python -m pytest` reports **16 passed**
+- [ ] `python -m pytest` reports **61 passed**
 - [ ] Jupyter kernel "Python (fragile-equilibrium)" appears in `jupyter kernelspec list`
 
-**Pass condition:** 16 tests pass on empty data.
+**Pass condition:** 61 tests pass on empty data.
 
 If `test_repo_ships_with_unpopulated_data` **fails** at this stage, someone has put values in
 `data/raw/`. Find out where they came from before proceeding.
@@ -23,13 +23,42 @@ If `test_repo_ships_with_unpopulated_data` **fails** at this stage, someone has 
 
 This is the section that takes real time. Budget two to three hours.
 
-For each file, enter values, then fill `verified_by` and `verified_date` **only for rows you
-personally opened the source and checked**.
+Values reach the CSVs one of two ways: you type them in, or `src/fetch.py` retrieves them
+and `promote()` copies them across. Either way, **you** fill `verified_by` and
+`verified_date`, and only for rows where you personally opened the source and checked.
+
+### The three provenance columns
+
+| Column | Meaning | Who may write it |
+|---|---|---|
+| `source_type` | `api` if fetched, `manual` if typed in | either |
+| `fetched_from` | `fetch:<dataset_id>@<access_date>` | `src.fetch.promote()` |
+| `verified_by` | a person checked this value against the cited source | **a human, only** |
+
+Provenance is not attestation. `fetched_from` records where bytes came from; it cannot tell
+you the fetch pulled the right series with the right filter. Only `verified_by` says a person
+confirmed the number belongs here, and only `verified_by` satisfies the loader's strict mode.
+
+**Consequence to expect:** after a successful fetch and promote, the files will be fully
+populated and `python -m src.report` will still raise `UnverifiedDataError`. That is correct.
+Automation got the numbers into place; it did not sign them off. Do not work around it by
+pasting a value into `verified_by` — that is the exact failure this repository exists to
+prevent.
+
+If `promote()` changes a value you had already signed off on, it clears that row's
+`verified_by`. Re-check the new value and re-sign.
 
 - [ ] `data/raw/us_annual_deaths.csv`: from NVSR "Deaths: Final Data" Table B, per year
 - [ ] `data/raw/us_population.csv`: from Census Bureau NST-EST vintage files, July 1 column
 - [ ] `data/raw/deaths_by_age.csv`: from CDC WONDER Query 1, collapsed to six age groups
 - [ ] `data/raw/covid_deaths_by_age.csv`: from CDC WONDER Query 3, underlying cause U07.1
+
+If you fetched rather than typed:
+
+- [ ] `python -m src.fetch --reconcile` run, and `data/processed/reconciliation_<date>.md`
+      reviewed cell by cell rather than skimmed
+- [ ] every promoted row has `source_type` = `api` and a `fetched_from` string
+- [ ] `verified_by` is blank on every row you have not personally checked
 
 **Cross-checks before you continue:**
 
