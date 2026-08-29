@@ -1,0 +1,11 @@
+.venv/
+__pycache__/
+*.py[cod]
+.ipynb_checkpoints/
+.pytest_cache/
+.vscode/
+.claude/settings.local.json
+data/processed/*.csv
+figures/*.png
+figures/*.pdf
+.DS_Store
