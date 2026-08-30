@@ -96,7 +96,11 @@ def load_annual_deaths(strict: bool = True) -> pd.DataFrame:
 
 
 def load_population(strict: bool = True) -> pd.DataFrame:
-    """Mid-year U.S. resident population by year."""
+    """U.S. resident population by year.
+
+    July 1 resident population estimates, except 2010, which is the April 1
+    decennial count as carried by WONDER. Not "mid-year" for that one year.
+    """
     df = pd.read_csv(DATA_DIR / "us_population.csv")
     _require_complete(df, ["population"], "us_population.csv")
     if strict:

@@ -79,6 +79,29 @@ python -m src.fetch --check        # as --reconcile, exit non-zero on >0.5% drif
 writes to `data/raw/*.csv`; parsed output lands in `data/raw/fetched/` and only the explicit,
 default-dry-run `promote()` copies it across.
 
+## Data redistribution
+
+The raw CDC WONDER export files in `data/raw/wonder_exports/` are **committed deliberately**,
+not by accident. They are the reproducibility artifact: each carries WONDER's own
+query-parameter footer, so a reviewer gets the exact bytes the results were computed from and
+can replay the query rather than reconstruct it from a description.
+
+CDC WONDER data are in the public domain. Per the [CDC WONDER
+FAQ](https://wonder.cdc.gov/wonder/help/faq.html#10):
+
+> The public web site at http://wonder.cdc.gov is in the public domain, and only provides
+> access to public use data and information. You may access the information freely, and use,
+> copy, distribute or publish this information without additional or explicit permission.
+> Please do provide a citation to credit the authors and/or data providers.
+
+Citation is requested rather than required, and is provided: every export's footer contains
+WONDER's own suggested citation, and `data/queries/cdc_wonder_queries.md` records the database
+and query behind each file.
+
+Use is subject to the WONDER Data Use Restrictions — statistical reporting and analysis only,
+and no reported count or rate based on fewer than ten deaths. This analysis is national and
+its smallest cell is in the tens of thousands, so that rule is satisfied by a wide margin.
+
 ## Running the analysis
 
 ```bash
@@ -98,7 +121,7 @@ or the code.
 python -m pytest
 ```
 
-Seventy-three tests. They cover rate arithmetic, exact additivity of the Kitagawa
+Seventy-five tests. They cover rate arithmetic, exact additivity of the Kitagawa
 decomposition, recovery of a known trend by the excess-mortality baseline fit, the loader's
 refusal to accept incomplete data, and the fetch layer: WONDER export parsing, age-band
 collapse arithmetic, "Not Stated" handling, cache behaviour, refusal to return partial data

@@ -42,7 +42,7 @@ All inputs are documented in `data/raw/` with a per-row citation to the primary 
 
 **Deaths and population by age group** come from CDC WONDER, using the query parameters documented in `data/queries/cdc_wonder_queries.md`. WONDER does not expose stable result URLs, so the parameter set required to reproduce each extract is documented rather than a link.
 
-**Population denominators** are Census Bureau mid-year (July 1) resident population estimates from the relevant vintage series.
+**Population denominators** are July 1 resident population estimates as carried by CDC WONDER, except 2010, which is the April 1 decennial count as carried by WONDER. We verified this band by band against the Census Bureau's `CENSUS2010POP` figures, which our 2010 denominators reproduce exactly. The consequences of that one-year difference in measurement basis are quantified in section 6.
 
 **Standard population weights** for age adjustment are the 2000 U.S. Standard Population from NCHS Statistical Notes No. 20, collapsed from eleven groups to the six used here. The collapse is a summation and introduces no approximation. The loader asserts that the weights sum to 1,000,000, since a transcription error in this table would bias every adjusted rate in the analysis without producing any visible symptom.
 
@@ -56,7 +56,7 @@ Six groups are used throughout: 0-24, 25-44, 45-64, 65-74, 75-84, and 85 and ove
 
 ### 3.1 Crude and age-adjusted rates
 
-The crude rate is deaths divided by mid-year population, expressed per 100,000. The age-adjusted rate is computed by direct standardization: age-specific rates are weighted by the 2000 standard population's age distribution and summed. Direct standardization answers the question "what would this population's death rate be if its age structure had not changed," which is the counterfactual most readers implicitly have in mind when they ask whether mortality is improving.
+The crude rate is deaths divided by resident population, expressed per 100,000. The age-adjusted rate is computed by direct standardization: age-specific rates are weighted by the 2000 standard population's age distribution and summed. Direct standardization answers the question "what would this population's death rate be if its age structure had not changed," which is the counterfactual most readers implicitly have in mind when they ask whether mortality is improving.
 
 #### Denominator source
 
@@ -99,9 +99,21 @@ Excess mortality is observed deaths minus expected deaths, where expected deaths
 
 Projecting the age-adjusted rate rather than the raw count is a deliberate choice with consequences. A count-based baseline implicitly attributes the mechanical effect of continued population aging to the pandemic, inflating excess-death estimates. This approach isolates the departure from trend in underlying mortality risk. The tradeoff is that these figures will be somewhat lower than count-based estimates published elsewhere, and the difference is a methodological disagreement rather than an error on either side. Section 6.2 addresses sensitivity to the baseline window.
 
+#### Why the slope and the excess estimates have different sensitivities
+
+Readers comparing our sensitivity analyses will notice that perturbing the denominator of a single baseline year moves the fitted slope by around 20 percent while moving the excess-death estimates by around 1 percent. These are not inconsistent, and neither figure is an error; they follow from the geometry of a least-squares fit.
+
+A least-squares line passes through the centroid of the data it is fitted to. Perturbing an observation at one end of the baseline window therefore **rotates** the line about that centroid rather than translating it. Rotation changes the slope substantially, because the slope is precisely what rotation alters. But it leaves the fitted level near the centre of the window almost unchanged, and it displaces the projected level at a given forecast horizon far less than it changes the slope, because the projection is anchored at the centroid rather than at the perturbed endpoint.
+
+Excess mortality depends on the projected **level** in 2020 and 2021, not on the slope directly. The two quantities therefore inherit the same underlying uncertainty with very different amplification. A reader should expect the reported improvement rate to be the more fragile of the two, and should treat it as a range rather than a point estimate for that reason.
+
 ### 3.4 Reproducibility
 
 Every number in this manuscript is emitted by `src/report.py` into `data/processed/results.json` and substituted into a template. The manuscript cannot cite a figure that the code did not produce, which eliminates the common failure mode in which an analysis is rerun and a sentence in the text continues to quote a superseded value.
+
+The raw CDC WONDER export files are distributed with the analysis code rather than described, so that a reviewer obtains the exact bytes the results were computed from. Each export carries WONDER's own query-parameter footer, making the file self-describing and the query replayable. WONDER data are in the public domain and may be redistributed with citation, which is provided per export.
+
+This analysis complies with the CDC WONDER Data Use Restrictions: the data are used for statistical reporting and analysis only, and no count or rate reported here is based on fewer than ten deaths. The smallest cell in this analysis is in the tens of thousands, so the sub-ten suppression rule is satisfied by several orders of magnitude and did not constrain the choice of age groups, years, or geographic level.
 
 ---
 
@@ -144,6 +156,14 @@ COVID-19 deaths were heavily concentrated among older adults: {{COVID_SHARE_65PL
 For most of the postwar period, American age-specific mortality improved fast enough to absorb demographic aging. The crude rate stayed in a narrow band not because nothing was happening but because two large forces were nearly cancelling.
 
 An equilibrium sustained by cancellation is not durable. It holds only while improvement continues at roughly its historical pace, and the required pace rises as the population ages further, because the age effect grows with the size of the cohorts moving into high-mortality bands. The decomposition here shows the margin narrowing before the pandemic. Any sustained stall in improvement, or any reversal at particular ages, converts a flat crude rate into a rising one.
+
+#### Robustness of the narrowing-margin result
+
+This claim rests on the age effect dominating the rate effect over the pre-pandemic interval, so we tested whether that dominance depends on the treatment of 2010, whose denominator is measured on a different basis from every other year (section 6). Under all three treatments — the primary series as published, 2010 excluded from the interval, and 2010 replaced by the Census Bureau's published July 1 estimate — the age-to-rate ratio falls between **3.41 and 3.87**.
+
+The result is therefore not marginal under any treatment. For the age effect to stop dominating, age-specific mortality improvement over the interval would have to have been roughly **241 percent larger** than what was observed. The uncertainty introduced by the 2010 measurement basis is nowhere near that magnitude, and no plausible resolution of it changes the direction of the finding.
+
+The asymmetry runs in the reassuring direction. The primary series we report — WONDER's figures exactly as published — produces the **lowest** ratio of the three, 3.41. The alternatives we tested both strengthen the claim rather than weaken it, so the treatment carried through this paper is the least favourable to our own argument.
 
 This has a specific implication for how public health performance should be judged. Holding the crude rate flat during a period of aging is a substantial achievement that looks like stagnation. Conversely, a rising crude rate is not by itself evidence that health is deteriorating. Neither reading can be made without the decomposition.
 

@@ -112,12 +112,26 @@ on the filename.
 **Four exports. None provisional.** 2024 is final in the Single Race database and that
 database carries population, so the analysis grid contains no provisional data at any point.
 
-| # | Filename | Database | Years | Cause | Show |
-|---|---|---|---|---|---|
-| 1 | `allcause_by_age_2010-2017_ucd-bridged.txt` | Underlying Cause of Death, 1999–2020 | 2010–2017 | All causes | Deaths, Population, Crude Rate |
-| 2 | `allcause_by_age_2018-2024_ucd-singlerace.txt` | Underlying Cause of Death, 2018–2024, Single Race | 2018–2024 | All causes | Deaths, Population, Crude Rate |
-| 3 | `covid_u071_by_age_2020-2024_ucd-singlerace.txt` | Underlying Cause of Death, 2018–2024, Single Race | 2020–2024 | **UCD ICD-10 = U07.1** | Deaths |
-| 4 | `wonder_ucd_allcause_2018-2020_bridged_SEAM.txt` | Underlying Cause of Death, 1999–2020 | 2018–2020 | All causes | Deaths, Population, Crude Rate |
+| # | Filename | Database | Years | Cause | Show | Saved query URL |
+|---|---|---|---|---|---|---|
+| 1 | `allcause_by_age_2010-2017_ucd-bridged.txt` | Underlying Cause of Death, 1999–2020 | 2010–2017 | All causes | Deaths, Population, Crude Rate | |
+| 2 | `allcause_by_age_2018-2024_ucd-singlerace.txt` | Underlying Cause of Death, 2018–2024, Single Race | 2018–2024 | All causes | Deaths, Population, Crude Rate | |
+| 3 | `covid_u071_by_age_2020-2024_ucd-singlerace.txt` | Underlying Cause of Death, 2018–2024, Single Race | 2020–2024 | **UCD ICD-10 = U07.1** | Deaths | |
+| 4 | `wonder_ucd_allcause_2018-2020_bridged_SEAM.txt` | Underlying Cause of Death, 1999–2020 | 2018–2020 | All causes | Deaths, Population, Crude Rate | |
+
+### Saved query URLs
+
+WONDER's **Save** button stores a query and returns a link that re-runs it. Paste each link
+into the table above and into `saved_query_url` on the matching entry in `WONDER_EXPORTS`
+(`src/fetch.py`) as you run the export.
+
+**This supplements the written parameters; it does not replace them.** A saved query works
+only for as long as CDC keeps hosting it. The footer inside the export file works forever and
+travels with this repository. A reviewer in five years may find the link dead and the footer
+intact, so **do not delete the parameter table because the links look sufficient.**
+
+Nothing in `src/fetch.py` reads `saved_query_url` — no parse, cache key, or validation depends
+on it — deliberately, so it cannot quietly become load-bearing.
 
 Files 1–3 are the analysis grid: 2010–2017 bridged-race, 2018–2024 single-race,
 non-overlapping, so no year is ever assembled from two databases.

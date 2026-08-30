@@ -702,6 +702,18 @@ class ExportSpec:
     require_population: bool = True
     in_analysis_grid: bool = True
 
+    # WONDER's Save button stores a query and returns a link that re-runs it.
+    # That is better provenance than documented parameters, because a reviewer
+    # clicks rather than reconstructs.
+    #
+    # It is a SUPPLEMENT, never a replacement. A saved query works only while
+    # CDC keeps hosting it; the footer inside the export file works forever and
+    # travels with the repository. Nothing in this module reads this field --
+    # no parse, no cache key, no validation depends on it -- specifically so it
+    # cannot quietly become load-bearing and tempt someone into dropping the
+    # written parameters because the link looks sufficient.
+    saved_query_url: str = ""
+
 
 # Analysis grid: 2010-2017 from the bridged-race database, 2018-2024 from the
 # single-race one. Non-overlapping, so no year is assembled from two databases.
@@ -715,21 +727,27 @@ class ExportSpec:
 # population vintages and differenced. That seam sits inside the 2010-2019
 # pre-pandemic baseline window, which means an unmeasured step there would bias
 # the excess-mortality baseline fit without any visible symptom.
+# saved_query_url is filled in by hand as each export is run. Blank is fine
+# and always will be; see the note on the field.
 WONDER_EXPORTS: tuple[ExportSpec, ...] = (
     ExportSpec("allcause_by_age_2010-2017_ucd-bridged.txt", "deaths_by_age",
                tuple(range(2010, 2018)),
-               "Underlying Cause of Death, 1999-2020 (bridged-race)"),
+               "Underlying Cause of Death, 1999-2020 (bridged-race)",
+               saved_query_url=""),
     ExportSpec("allcause_by_age_2018-2024_ucd-singlerace.txt", "deaths_by_age",
                tuple(range(2018, 2025)),
-               "Underlying Cause of Death, 2018-2024, Single Race"),
+               "Underlying Cause of Death, 2018-2024, Single Race",
+               saved_query_url=""),
     ExportSpec("covid_u071_by_age_2020-2024_ucd-singlerace.txt", "covid_deaths_by_age",
                tuple(range(2020, 2025)),
                "Underlying Cause of Death, 2018-2024, Single Race",
-               require_population=False),
+               require_population=False,
+               saved_query_url=""),
     ExportSpec("wonder_ucd_allcause_2018-2020_bridged_SEAM.txt", "seam_bridged",
                (2018, 2019, 2020),
                "Underlying Cause of Death, 1999-2020 (bridged-race)",
-               in_analysis_grid=False),
+               in_analysis_grid=False,
+               saved_query_url=""),
 )
 
 SEAM_EXPORT = WONDER_EXPORTS[-1]
@@ -1222,7 +1240,12 @@ def derive_annual_deaths(results: Sequence[CollapseResult]) -> pd.DataFrame:
 
 
 def derive_population(results: Sequence[CollapseResult]) -> pd.DataFrame:
-    """Mid-year resident population by year, summed from the six age bands.
+    """Resident population by year, summed from the six age bands.
+
+    July 1 resident population estimates, except 2010, which is the April 1
+    decennial count as carried by WONDER. Verified band by band against Census
+    CENSUS2010POP: WONDER's 2010 figures are the decennial counts exactly, not
+    July 1 estimates, so "mid-year" is wrong for that one year.
 
     Sourced from the WONDER export rather than fetched from Census separately,
     which makes sum(bands) == annual population an exact identity instead of a

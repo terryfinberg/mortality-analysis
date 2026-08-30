@@ -6,6 +6,7 @@ mistake a fixture for data. The age bands, however, are the real WONDER
 spellings, because band handling is exactly what these tests exist to pin down.
 """
 import json
+from dataclasses import replace
 
 import pandas as pd
 import pytest
@@ -843,6 +844,32 @@ def test_crude_rate_compared_at_wonders_own_precision():
 
     assert check.loc[0, "computed_crude_rate"] == 6.0
     assert bool(check.loc[0, "matches"]) is True
+
+
+def test_saved_query_url_defaults_blank_and_stays_optional():
+    """Exports parse with no saved query link, because the footer is the artifact."""
+    assert all(s.saved_query_url == "" for s in fetch.WONDER_EXPORTS)
+
+
+def test_saved_query_url_does_not_affect_parsing(tmp_path):
+    """A dead CDC link must never change a result. It is for reviewers, not code."""
+    export_dir = tmp_path / "wonder_exports"
+    export_dir.mkdir()
+    spec = fetch.SEAM_EXPORT
+    (export_dir / spec.filename).write_text(
+        _wonder_export_text(years=(2018,)), encoding="utf-8"
+    )
+
+    without = fetch.load_export_bundle(spec, export_dir)
+    with_url = fetch.load_export_bundle(
+        replace(spec, saved_query_url="https://wonder.cdc.gov/saved/does-not-exist"),
+        export_dir,
+        refresh=True,
+    )
+
+    pd.testing.assert_frame_equal(without.collapsed.frame, with_url.collapsed.frame)
+    pd.testing.assert_frame_equal(without.totals, with_url.totals)
+    assert without.export.sha256 == with_url.export.sha256
 
 
 def test_unconfirmed_series_cannot_be_fetched():
