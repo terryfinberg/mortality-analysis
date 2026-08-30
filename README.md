@@ -61,26 +61,46 @@ kernel, and runs the test suite. Expect about three minutes.
 
 `UAT_CHECKLIST.md` walks through this with checkpoints.
 
-### Provenance and attestation are different columns
+### Provenance, attestation and corroboration are three different columns
 
-Each raw CSV carries three provenance columns, and they do not mean the same thing:
+They answer three different questions, and collapsing any two of them is how a repository
+ends up claiming more than it checked:
 
-| Column | Meaning | Who may write it |
+| Column | The claim | Who may write it |
 |---|---|---|
-| `source_type` | `api` if fetched, `manual` if typed in | either |
-| `fetched_from` | `fetch:<dataset_id>@<access_date>` | `src.fetch.promote()` |
-| `verified_by` | a person checked this value against the cited source | **a human, only** |
+| `source_citation` | *What this value is a copy of.* The export's footer `Dataset`, its query parameters, access date and sha256 | derived from the footer by `export_citation()` |
+| `fetched_from` | *Provenance.* `wonder-export:<filename>@sha256:<hash>` | `src.fetch.promote()` |
+| `verified_by` | *Attestation.* A person confirmed this value matches the cited export | **a human, only** |
+| `corroborated_against` | *Corroboration.* An **independent** publication reports the same figure — e.g. an NVSR volume and table | **a human, only** |
 
-This split is the point, not bookkeeping. The reason this repository ships empty is that a
-number carrying a citation looks verified whether or not anyone verified it. An automated
-fetch does not solve that; it changes the costume. A run against the wrong dataset, or the
-right dataset with a wrong filter, writes an impeccably precise `fetched_from` string onto a
-wrong number, and does so more convincingly than a hand transcription would.
+This split is the point, not bookkeeping. A number carrying a citation looks verified whether
+or not anyone verified it. An automated fetch does not solve that; it changes the costume. A
+run against the wrong dataset, or the right dataset with a wrong filter, writes an impeccably
+precise `fetched_from` string onto a wrong number, and does so more convincingly than a hand
+transcription would.
 
-So `verified_by` is never machine-written. `src.fetch.promote()` fills `source_type` and
-`fetched_from` and leaves `verified_by` blank, which means **`UnverifiedDataError` still fires
-after a successful fetch**. Promotion gets the numbers into place; it does not sign them off.
-You do that, row by row, and the loader will not run in strict mode until you have.
+**`source_citation` names the committed export**, not a published report the value did not
+come from. Every row's citation is derived from that export's own footer, so it cannot drift
+from the file it describes, and attesting to it is a claim anyone can check today against
+bytes in this repository.
+
+**Corroboration is deliberately separate, and deliberately incomplete.** Attestation says our
+number faithfully reproduces the source we took it from; corroboration says that source agrees
+with someone else. Only the second is an external check, and it is not available for every
+row — NVSR publishes annual totals, not the six-band grid, and a published report may not
+exist yet for the most recent years. **A blank `corroborated_against` means not corroborated.
+It does not mean corroboration failed, and the loader never requires it.** Partial
+corroboration stated as partial is worth more than complete attestation to a standard met on a
+sample.
+
+So `verified_by` is never machine-written. `src.fetch.promote()` fills `source_type`,
+`fetched_from` and `source_citation`, and leaves `verified_by` blank, which means
+**`UnverifiedDataError` still fires after a successful fetch**. Promotion gets the numbers into
+place; it does not sign them off. You do that, row by row, and the loader will not run in
+strict mode until you have.
+
+If `promote()` rewrites a row's `source_citation`, it clears `verified_by` too — a signature
+was made against what the old citation claimed.
 
 If `promote()` overwrites a value you had already signed off on, it clears your
 `verified_by` for that row. Your attestation was about the old number.
@@ -139,7 +159,7 @@ or the code.
 python -m pytest
 ```
 
-One hundred and eighteen tests. They cover rate arithmetic, exact additivity of the Kitagawa
+One hundred and twenty-six tests. They cover rate arithmetic, exact additivity of the Kitagawa
 decomposition, recovery of a known trend by the excess-mortality baseline fit, the loader's
 refusal to accept incomplete data, and the fetch layer: WONDER export parsing, age-band
 collapse arithmetic, "Not Stated" handling, cache behaviour, refusal to return partial data

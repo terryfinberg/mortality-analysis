@@ -43,13 +43,50 @@ Rows with age "Not Stated" must be recorded separately, not silently dropped. If
 
 **Populates:** `data/raw/us_annual_deaths.csv`
 
-Prefer the NVSR "Deaths: Final Data for [year]" PDF, Table B, over WONDER for this series.
-The published report is the citable authority and its total is what reviewers will check.
-Use WONDER only as a cross-check; if the two disagree, the NVSR figure wins and the
-discrepancy is worth a footnote.
+**Values come from the WONDER exports**, derived as `sum(six bands) + not_stated` from
+files 1 and 2 — the same export that supplies the age detail, so the annual identity is exact
+rather than a cross-source comparison. `source_citation` names that export.
 
-For provisional years, use CDC Vital Statistics Rapid Release:
-https://www.cdc.gov/nchs/nvss/vsrr.htm
+**NVSR is the corroboration source, not the value source.** The published "Deaths: Final Data
+for [year]" report, Table B, is what a reviewer will check, so where you have confirmed
+WONDER's total against it, record the volume and table in `corroborated_against` with the date
+in `corroborated_date`. If the two ever disagree, that is a finding: record both figures and
+footnote it rather than silently preferring either.
+
+This is a deliberate change from an earlier plan in which NVSR supplied the values. Citing a
+report the number did not come from makes attestation mean "I checked this against NVSR",
+which is a harder and differently-scoped claim than "I checked this against the committed
+export" — and one that cannot be met uniformly across years. See **Provenance, attestation and
+corroboration** in `README.md`.
+
+### NVSR availability for recent years — unresolved
+
+Whether "Deaths: Final Data for 2023" and "…for 2024" have been published **is not
+established here.** On 2026-08-30:
+
+- `www.cdc.gov` returns HTTP 403 to this repository's tooling, the same Akamai edge block that
+  covers WONDER, so the NVSR product listing could not be read.
+- `ftp.cdc.gov/pub/Health_Statistics/NCHS/Publications/NVSR/` **is** reachable, and neither
+  report was found on it.
+
+**That is not evidence they do not exist.** That mirror is plainly partial — roughly 41 issue
+directories spanning volumes 52 through 75, where NVSR publishes many issues per volume — so
+it can confirm a report exists and cannot confirm one does not. Do not let this harden into a
+claim that the reports are unpublished.
+
+What the same search *did* establish, and this is positive evidence: NVSR 75-05, posted
+2026-04-06, is *United States Life Tables, 2024*, and 74-06 is the 2023 edition. Life tables
+are computed from the final mortality file, so NCHS held final 2024 mortality data by April
+2026. That corroborates `status = final` for every year in the grid, independently of WONDER's
+own footer.
+
+Before relying on either report, check the live NCHS listing directly, and confirm the series
+is still running — if its cadence changed or it was retired, the corroboration for recent
+years has to come from somewhere else, and that is a different answer from "not yet
+published".
+
+For provisional years, were any ever to enter the grid, use CDC Vital Statistics Rapid
+Release: https://www.cdc.gov/nchs/nvss/vsrr.htm. None currently do.
 
 ---
 

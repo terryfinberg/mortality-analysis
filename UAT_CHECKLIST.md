@@ -9,10 +9,10 @@ resolve it before continuing; later sections assume earlier ones passed.
 
 - [ ] `.\bootstrap.ps1` (Windows) or `./bootstrap.sh` completes without error
 - [ ] `.venv` directory exists
-- [ ] `python -m pytest` reports **118 passed**
+- [ ] `python -m pytest` reports **126 passed**
 - [ ] Jupyter kernel "Python (fragile-equilibrium)" appears in `jupyter kernelspec list`
 
-**Pass condition:** 118 tests pass.
+**Pass condition:** 126 tests pass.
 
 `data/raw/` is now populated from the committed WONDER exports, so the old
 "repo ships empty" guard is gone. The check that replaced it is
@@ -166,8 +166,12 @@ means a stale kernel; restart and rerun.
 
 ## Section 6: Pre-submission
 
-- [ ] Re-verify five annual death totals against the NVSR PDFs, chosen at random. Any
-      mismatch means re-checking all of them.
+- [ ] Corroborate as many annual totals against NVSR "Deaths: Final Data" Table B as have a
+      published report, recording volume and table in `corroborated_against`. Any mismatch is
+      a finding, not a typo: record both figures and footnote it. Leave the rest blank —
+      blank means not corroborated, and the paper should state the count it actually achieved
+      rather than implying fifteen. See the availability note under Query 2 in
+      `data/queries/cdc_wonder_queries.md`.
 - [ ] Confirm the `status` column still matches its source. All 15 years are currently
       `final`: the grid takes 2018–2024 from the final Single Race database, not from VSRR,
       so no year is provisional. `promote_from_exports()` derives this from

@@ -42,22 +42,37 @@ EXPECTED_COLLAPSE = {
     "65-74": 90, "75-84": 100, "85+": 110,
 }
 
-WONDER_FOOTER = '''"---"
-"Dataset: Underlying Cause of Death, 1999-2020"
-"Query Parameters:"
-"Title: Fixture extract"
-"Group By: Year; Ten-Year Age Groups"
-"Show Totals: True"
-"---"
-"Caveats:"
-"Data are fictional."
-'''
+def _footer(
+    dataset: str = "Underlying Cause of Death, 1999-2020",
+    icd10: str | None = None,
+    query_date: str | None = "Jan 1, 2000 12:00:00 AM",
+) -> str:
+    """A WONDER-shaped footer.
+
+    Dataset and Query Date are parameters because
+    assert_export_footer_matches_spec checks them against the registry, and a
+    fixture that could not vary them could not test the failure cases.
+    """
+    lines = ['"---"', f'"Dataset: {dataset}"', '"Query Parameters:"',
+             '"Title: Fixture extract"']
+    if icd10 is not None:
+        lines.append(f'"ICD-10 Codes: {icd10}"')
+    lines += ['"Group By: Year; Ten-Year Age Groups"', '"Show Totals: True"',
+              '"---"']
+    if query_date is not None:
+        lines += [f'"Query Date: {query_date}"', '"---"']
+    lines += ['"Caveats:"', '"Data are fictional."']
+    return "\n".join(lines) + "\n"
+
+
+WONDER_FOOTER = _footer()
 
 
 def _wonder_export_text(
     not_stated: int | None = None,
     years: tuple[int, ...] = (2000,),
     population: int = 1_000_000,
+    footer: str | None = None,
 ) -> str:
     """Build a WONDER-shaped TSV export with a footer."""
     header = (
@@ -81,7 +96,7 @@ def _wonder_export_text(
             f'"Total"\t"{year}"\t"{year}"\t\t\t"{total}"\t'
             f'"{population * len(BAND_DEATHS)}"\t"6.0"'
         )
-    return "\n".join(lines) + "\n" + WONDER_FOOTER
+    return "\n".join(lines) + "\n" + (footer if footer is not None else WONDER_FOOTER)
 
 
 @pytest.fixture
@@ -725,7 +740,10 @@ def test_seam_end_to_end_from_export_files(tmp_path):
         _wonder_export_text(years=years, population=1_000_000), encoding="utf-8"
     )
     (export_dir / single_spec.filename).write_text(
-        _wonder_export_text(years=single_spec.years, population=1_006_000),
+        _wonder_export_text(
+            years=single_spec.years, population=1_006_000,
+            footer=_footer(dataset=single_spec.footer_dataset),
+        ),
         encoding="utf-8",
     )
 
@@ -944,6 +962,118 @@ def test_saved_query_url_does_not_affect_parsing(tmp_path):
     pd.testing.assert_frame_equal(without.collapsed.frame, with_url.collapsed.frame)
     pd.testing.assert_frame_equal(without.totals, with_url.totals)
     assert without.export.sha256 == with_url.export.sha256
+
+
+# ---------------------------------------------------------------------------
+# The footer vs. the registry
+# ---------------------------------------------------------------------------
+#
+# Every other check verifies the export against itself or against our
+# arithmetic. The crude-rate check compares WONDER's deaths over WONDER's
+# population against WONDER's own rate, so it validates the pipeline, not the
+# query -- an export run with the wrong filter passes all of them and simply
+# reports fewer deaths than it should. The footer is the only record of what was
+# actually asked.
+
+
+def _export_with_footer(tmp_path, spec, footer):
+    export_dir = tmp_path / "wonder_exports"
+    export_dir.mkdir(exist_ok=True)
+    (export_dir / spec.filename).write_text(
+        _wonder_export_text(years=spec.years, footer=footer), encoding="utf-8"
+    )
+    return export_dir
+
+
+def test_every_committed_export_footer_matches_its_spec():
+    """The real files, checked rather than read once and remembered."""
+    checked = 0
+    for spec in fetch.WONDER_EXPORTS:
+        path = fetch.WONDER_EXPORT_DIR / spec.filename
+        if not path.exists():
+            continue
+        export = fetch.parse_wonder_export(path)
+        fetch.assert_export_footer_matches_spec(spec, export)
+        assert spec.footer_dataset, f"{spec.filename} has no expected Dataset"
+        checked += 1
+    assert checked == 4
+
+
+def test_footer_naming_the_wrong_database_is_rejected(tmp_path):
+    """Bridged-race and single-race are different denominators."""
+    spec = fetch.SEAM_EXPORT
+    export_dir = _export_with_footer(
+        tmp_path, spec,
+        _footer(dataset="Underlying Cause of Death, 2018-2024, Single Race"),
+    )
+    with pytest.raises(fetch.FetchError) as excinfo:
+        fetch.load_export_bundle(spec, export_dir)
+    message = str(excinfo.value)
+    assert "registry expects: 'Underlying Cause of Death, 1999-2020'" in message
+    assert "Single Race" in message
+
+
+def test_an_all_cause_export_that_came_back_filtered_is_rejected(tmp_path):
+    """The dangerous direction: nothing else would notice.
+
+    A cause-filtered file standing in for an all-cause one parses cleanly, has
+    the right years, satisfies both identities among its own rows, and simply
+    understates every death count.
+    """
+    spec = fetch.SEAM_EXPORT
+    assert spec.icd10_codes == (), "this spec must be all-cause for the test"
+    export_dir = _export_with_footer(
+        tmp_path, spec, _footer(icd10="U07.1 (COVID-19)")
+    )
+    with pytest.raises(fetch.FetchError) as excinfo:
+        fetch.load_export_bundle(spec, export_dir)
+    assert "expected none (all causes)" in str(excinfo.value)
+
+
+def test_a_cause_specific_export_missing_its_code_is_rejected(tmp_path):
+    from dataclasses import replace
+
+    spec = replace(fetch.SEAM_EXPORT, icd10_codes=("U07.1",))
+    export_dir = _export_with_footer(tmp_path, spec, _footer())
+    with pytest.raises(fetch.FetchError) as excinfo:
+        fetch.load_export_bundle(spec, export_dir)
+    assert "all-cause where a cause-specific query was intended" in str(excinfo.value)
+
+
+def test_a_footer_with_no_access_date_is_rejected(tmp_path):
+    """The access date is what pins which population vintage a run used."""
+    spec = fetch.SEAM_EXPORT
+    export_dir = _export_with_footer(tmp_path, spec, _footer(query_date=None))
+    with pytest.raises(fetch.FetchError) as excinfo:
+        fetch.load_export_bundle(spec, export_dir)
+    assert "Query Date" in str(excinfo.value)
+
+
+def test_export_citation_is_built_from_the_footer():
+    """The citation must describe the file, not be typed alongside it."""
+    spec = next(s for s in fetch.WONDER_EXPORTS if s.icd10_codes)
+    export = fetch.parse_wonder_export(fetch.WONDER_EXPORT_DIR / spec.filename)
+    citation = fetch.export_citation(spec, export)
+
+    assert spec.filename in citation
+    assert export.short_hash in citation
+    assert spec.footer_dataset in citation
+    assert "U07.1" in citation
+    # The database it is NOT: the old citation claimed Multiple Cause of Death,
+    # which Query 3 warns differs from underlying cause by 10-15%.
+    assert "MCD" not in citation
+
+
+def test_citation_records_an_unpinned_year_range_as_unpinned():
+    """Export 2's footer has no Year/Month line, and the citation says so."""
+    spec = next(
+        s for s in fetch.GRID_EXPORTS
+        if s.series == "deaths_by_age" and 2024 in s.years
+    )
+    export = fetch.parse_wonder_export(fetch.WONDER_EXPORT_DIR / spec.filename)
+    citation = fetch.export_citation(spec, export)
+    assert "all years in the database at access" in citation
+    assert "2018-2024 in this file" in citation
 
 
 # ---------------------------------------------------------------------------

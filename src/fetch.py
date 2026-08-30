@@ -740,6 +740,18 @@ class ExportSpec:
     # would reject an export the user could not have produced any other way.
     require_totals: bool = True
 
+    # The exact string the footer's `Dataset:` line must carry. `database`
+    # above is a human description and carries annotations like
+    # "(bridged-race)" that WONDER never writes; this is what is actually
+    # compared, so the comparison can be exact rather than fuzzy.
+    footer_dataset: str = ""
+
+    # ICD-10 codes the footer must list, empty for an all-causes query. Empty
+    # also asserts the *absence* of an `ICD-10 Codes:` line: an all-cause export
+    # that came back filtered would otherwise pass every other check, and its
+    # deaths would simply be too low.
+    icd10_codes: tuple[str, ...] = ()
+
     # True only for an export taken from WONDER's Provisional Mortality
     # database. All four current exports come from final databases -- 2024 is
     # final in the Single Race one -- so no provisional data enters the grid.
@@ -795,6 +807,7 @@ WONDER_EXPORTS: tuple[ExportSpec, ...] = (
     ExportSpec("allcause_by_age_2010-2017_ucd-bridged.txt", "deaths_by_age",
                tuple(range(2010, 2018)),
                "Underlying Cause of Death, 1999-2020 (bridged-race)",
+               footer_dataset="Underlying Cause of Death, 1999-2020",
                sha256="213e10c77866cec1b13d29dab22c8d2f8968f4c5f733c3f2fe0906ee7f0e8e7d",
                saved_query_url=""),
     # This export's footer carries no Year/Month line, so the saved query may
@@ -804,6 +817,7 @@ WONDER_EXPORTS: tuple[ExportSpec, ...] = (
     ExportSpec("allcause_by_age_2018-2024_ucd-singlerace.txt", "deaths_by_age",
                tuple(range(2018, 2025)),
                "Underlying Cause of Death, 2018-2024, Single Race",
+               footer_dataset="Underlying Cause of Death, 2018-2024, Single Race",
                sha256="dd6beab886e526a0db17f6d74f788f8d7595b3a73cbc1a536594c8e3b0cf273d",
                saved_query_url="https://wonder.cdc.gov/controller/saved/D158/D518F643"),
     # No totals: a U07.1 query by ten-year band hits suppression in the young
@@ -813,6 +827,8 @@ WONDER_EXPORTS: tuple[ExportSpec, ...] = (
     ExportSpec("covid_u071_by_age_2020-2024_ucd-singlerace.txt", "covid_deaths_by_age",
                tuple(range(2020, 2025)),
                "Underlying Cause of Death, 2018-2024, Single Race",
+               footer_dataset="Underlying Cause of Death, 2018-2024, Single Race",
+               icd10_codes=("U07.1",),
                require_population=False,
                require_totals=False,
                sha256="7349a89a4a8cf8fff88342f4dec9d65f958d65bffdf329623e02f2bab0d51fb3",
@@ -820,6 +836,7 @@ WONDER_EXPORTS: tuple[ExportSpec, ...] = (
     ExportSpec("allcause_by_age_2018-2020_ucd-bridged_SEAM.txt", "seam_bridged",
                (2018, 2019, 2020),
                "Underlying Cause of Death, 1999-2020 (bridged-race)",
+               footer_dataset="Underlying Cause of Death, 1999-2020",
                in_analysis_grid=False,
                sha256="626ab1d3fda362f6bb96c37a2705d839691f2aef23b7645a71f7cf0c0ad863a8",
                saved_query_url=""),
@@ -1367,6 +1384,118 @@ def assert_export_years_match_spec(spec: ExportSpec, grid: pd.DataFrame) -> None
     )
 
 
+FOOTER_DATASET_KEY = "Dataset"
+FOOTER_ICD10_KEY = "ICD-10 Codes"
+FOOTER_ACCESS_KEY = "Query Date"
+
+
+def assert_export_footer_matches_spec(spec: ExportSpec, export: WonderExport) -> None:
+    """The footer must describe the query the registry says this file answers.
+
+    Every other check in this module verifies the export against itself or
+    against our arithmetic. The identities prove the numbers are internally
+    consistent; the crude-rate check compares WONDER's deaths over WONDER's
+    population against WONDER's own rate, so it validates the pipeline, not the
+    query. **An export run with the wrong filter passes all of them** and simply
+    reports fewer deaths than it should.
+
+    The footer is the only thing that says what was actually asked. Reading it
+    by eye works once, and then that reading lives in whoever's memory rather
+    than in the repository. Three things are checked:
+
+    * ``Dataset`` matches ``spec.footer_dataset`` exactly. Bridged-race and
+      single-race are different databases with different denominators, and the
+      seam between them is the subject of a whole section of the docs.
+    * ``ICD-10 Codes`` lists exactly the codes the spec expects, **and is absent
+      when the spec expects none.** An all-cause export that came back filtered
+      is the dangerous direction: nothing else would notice.
+    * An access date is present, because it is what pins which population
+      vintage a run used.
+    """
+    params = export.query_parameters
+    problems: list[str] = []
+
+    if spec.footer_dataset:
+        actual = params.get(FOOTER_DATASET_KEY, "")
+        if actual != spec.footer_dataset:
+            problems.append(
+                f"  Dataset\n"
+                f"    registry expects: {spec.footer_dataset!r}\n"
+                f"    footer says:      {actual!r}"
+            )
+
+    codes = params.get(FOOTER_ICD10_KEY)
+    if spec.icd10_codes:
+        if codes is None:
+            problems.append(
+                f"  ICD-10 Codes: expected {list(spec.icd10_codes)} but the "
+                f"footer has no '{FOOTER_ICD10_KEY}' line, so this export is "
+                f"all-cause where a cause-specific query was intended."
+            )
+        else:
+            missing = [c for c in spec.icd10_codes if c not in codes]
+            if missing:
+                problems.append(
+                    f"  ICD-10 Codes: expected {missing} in {codes!r}"
+                )
+    elif codes is not None:
+        problems.append(
+            f"  ICD-10 Codes: expected none (all causes) but the footer says "
+            f"{codes!r}. A filtered export standing in for an all-cause one "
+            f"understates every count, and no other check would catch it."
+        )
+
+    if not params.get(FOOTER_ACCESS_KEY, "").strip():
+        problems.append(
+            f"  {FOOTER_ACCESS_KEY}: missing or empty. The access date is what "
+            f"pins which population vintage this run used."
+        )
+
+    if problems:
+        raise FetchError(
+            f"{export.path.name}: the footer does not match the registry.\n"
+            + "\n".join(problems)
+            + f"\nEither this file is not the export the registry describes, or "
+            f"the spec in src/fetch.py is wrong. Resolve which before using it: "
+            f"the footer is the only record of what was actually asked."
+        )
+
+
+def export_citation(spec: ExportSpec, export: WonderExport) -> str:
+    """The ``source_citation`` for rows promoted out of this export.
+
+    Built from the parsed footer rather than typed, so it cannot drift from the
+    file it describes. Names the dataset, the query, the access date and the
+    content hash -- everything a reader needs to replay the query or to confirm
+    the bytes are the ones the value came from.
+
+    This describes **where the value came from**. Whether an independent
+    publication agrees with it is a separate claim recorded in
+    ``corroborated_against``; see the note on :data:`CORROBORATION_COLS`.
+    """
+    params = export.query_parameters
+    years = params.get("Year/Month")
+    if not years:
+        years = (
+            f"all years in the database at access "
+            f"({_format_year_range(spec.years)} in this file)"
+        )
+    parts = [
+        f"CDC WONDER export {export.path.name} (sha256:{export.short_hash})",
+        f"Dataset: {params.get(FOOTER_DATASET_KEY, '?')}",
+        f"Years: {years}",
+    ]
+    if params.get(FOOTER_ICD10_KEY):
+        parts.append(f"ICD-10 Codes: {params[FOOTER_ICD10_KEY]}")
+    else:
+        parts.append("Cause: all causes (no ICD-10 restriction)")
+    if params.get("Group By"):
+        parts.append(f"Group By: {params['Group By']}")
+    parts.append(f"Accessed: {params.get(FOOTER_ACCESS_KEY, '?')}")
+    parts.append("Committed in data/raw/wonder_exports/; footer is the artifact")
+    return ". ".join(parts) + "."
+
+
 def load_export_bundle(
     spec: ExportSpec, export_dir: Path | None = None, refresh: bool = False
 ) -> LoadedExport | None:
@@ -1378,6 +1507,7 @@ def load_export_bundle(
     grid, export, _cached = load_export_cached(
         spec.series, path, refresh=refresh, require_population=spec.require_population
     )
+    assert_export_footer_matches_spec(spec, export)
     assert_export_years_match_spec(spec, grid)
     value_cols = ["deaths"] + (["population"] if spec.require_population else [])
 
@@ -1992,6 +2122,30 @@ SOURCE_TYPE_MANUAL = "manual"
 
 PROVENANCE_COLS = ("source_type", "fetched_from")
 
+# A THIRD claim, distinct from provenance and from attestation.
+#
+#   fetched_from          PROVENANCE.  "This value came out of this export."
+#                         Machine-written, and true by construction.
+#   verified_by           ATTESTATION. "A person confirmed this value matches
+#                         the cited export." Human-only. Checkable for every
+#                         row, because the export is committed.
+#   corroborated_against  CORROBORATION. "An INDEPENDENT publication reports
+#                         the same figure." Human-only, and not available for
+#                         every row: NVSR publishes annual totals, not the
+#                         six-band grid, and a published report may not exist
+#                         yet for the most recent years.
+#
+# Keeping the last two apart is the point. Attestation says our number faithfully
+# reproduces the source we took it from; corroboration says the source agrees
+# with someone else. Collapsing them forces a choice between claiming more than
+# was checked and checking less than was possible.
+#
+# BLANK MEANS NOT CORROBORATED. It does not mean corroboration failed, and it
+# does not mean the value is suspect. The loader must never require these
+# columns -- a partial corroboration honestly labelled is worth more than a
+# complete one asserted to a standard met on a sample.
+CORROBORATION_COLS = ("corroborated_against", "corroborated_date")
+
 
 def provenance_string(dataset_id: str, accessed: str | None = None) -> str:
     """Build a ``fetched_from`` value: ``fetch:<dataset_id>@<access_date>``."""
@@ -2006,6 +2160,7 @@ def promote(
     accessed: str | None = None,
     raw_dir: Path | None = None,
     provenance: str | None = None,
+    citation: str | None = None,
 ) -> pd.DataFrame:
     """Copy fetched values into the raw CSV for ``series``. Dry run by default.
 
@@ -2054,7 +2209,8 @@ def promote(
 
     # These ship empty, so pandas reads them as all-NaN float columns and then
     # refuses a string assignment. Widen them to object before writing.
-    for col in (*PROVENANCE_COLS, "verified_by", "verified_date"):
+    for col in (*PROVENANCE_COLS, "verified_by", "verified_date",
+                *CORROBORATION_COLS):
         if col not in current.columns:
             current[col] = ""
         current[col] = current[col].astype("object")
@@ -2068,6 +2224,26 @@ def promote(
         lookup = key[0] if len(key) == 1 else key
         if lookup not in indexed.index:
             continue
+
+        # The citation describes where the row came from, so it is refreshed
+        # whenever this export supplies the row -- not only when the number
+        # moved. A citation naming a source the value did not come from is the
+        # defect this whole column exists to prevent, and it survives a rerun
+        # if it is only rewritten alongside a changed value.
+        if citation is not None and str(row.get("source_citation") or "") != citation:
+            changes.append({
+                **{k: row[k] for k in keys},
+                "column": "source_citation",
+                "old": "(previous citation)",
+                "new": "(export footer citation)",
+                "cleared_attestation": bool(str(row.get("verified_by") or "").strip()),
+            })
+            if not dry_run:
+                current.at[i, "source_citation"] = citation
+                # A signature was made against the old citation's claim.
+                current.at[i, "verified_by"] = ""
+                current.at[i, "verified_date"] = ""
+
         for col in value_cols:
             if col not in indexed.columns:
                 continue
@@ -2154,6 +2330,7 @@ def promote_from_exports(
         if bundle is None:
             continue
         prov = bundle.export.provenance()
+        cite = export_citation(spec, bundle.export)
         collapsed = bundle.collapsed
         tag = spec.filename
 
@@ -2164,15 +2341,15 @@ def promote_from_exports(
                 )
             record(f"deaths_by_age <- {tag}", promote(
                 "deaths_by_age", collapsed.frame, provenance=prov,
-                dry_run=dry_run, raw_dir=raw_dir,
+                citation=cite, dry_run=dry_run, raw_dir=raw_dir,
             ))
             record(f"annual_deaths <- {tag}", promote(
                 "annual_deaths", derive_annual_deaths([collapsed]),
-                provenance=prov, dry_run=dry_run, raw_dir=raw_dir,
+                provenance=prov, citation=cite, dry_run=dry_run, raw_dir=raw_dir,
             ))
             record(f"population <- {tag}", promote(
                 "population", derive_population([collapsed]),
-                provenance=prov, dry_run=dry_run, raw_dir=raw_dir,
+                provenance=prov, citation=cite, dry_run=dry_run, raw_dir=raw_dir,
             ))
         elif spec.series == "covid_deaths_by_age":
             # The grid names this column `deaths`; the target CSV calls it
@@ -2181,7 +2358,7 @@ def promote_from_exports(
             covid = collapsed.frame.rename(columns={"deaths": "covid_deaths"})
             record(f"covid_deaths_by_age <- {tag}", promote(
                 "covid_deaths_by_age", covid, provenance=prov,
-                dry_run=dry_run, raw_dir=raw_dir,
+                citation=cite, dry_run=dry_run, raw_dir=raw_dir,
             ))
 
     status_changes = _apply_annual_status(status_by_year, dry_run, raw_dir)

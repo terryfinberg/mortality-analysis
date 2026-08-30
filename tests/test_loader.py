@@ -47,6 +47,39 @@ def test_non_strict_loading_now_succeeds():
     assert population["population"].notna().all()
 
 
+def test_corroboration_columns_are_never_required():
+    """Blank corroboration means "not corroborated", never "failed".
+
+    Corroboration is a separate claim from attestation: attestation says the
+    value faithfully reproduces the export it was taken from, corroboration says
+    an independent publication reports the same figure. The second is not
+    available for every row -- NVSR publishes annual totals, not the six-band
+    grid -- so requiring it would force a choice between claiming more than was
+    checked and checking less than was possible.
+    """
+    import pandas as pd
+
+    for name in ("us_annual_deaths.csv", "us_population.csv",
+                 "deaths_by_age.csv", "covid_deaths_by_age.csv"):
+        frame = pd.read_csv(loader.DATA_DIR / name)
+        for col in ("corroborated_against", "corroborated_date"):
+            assert col in frame.columns, f"{name} is missing {col}"
+
+    # Entirely blank, and non-strict loading is unaffected by that.
+    loader.load_annual_deaths(strict=False)
+    loader.load_population(strict=False)
+
+    # And a populated corroboration must not substitute for attestation.
+    frame = pd.DataFrame({
+        "year": [2010],
+        "deaths": [1],
+        "verified_by": [""],
+        "corroborated_against": ["NVSR vol 71 no 5, Table B"],
+    })
+    with pytest.raises(loader.UnverifiedDataError):
+        loader._require_verified(frame, "us_annual_deaths.csv")
+
+
 def test_standard_population_sums_to_one_million():
     s = loader.load_standard_population()
     assert int(s.sum()) == 1_000_000
