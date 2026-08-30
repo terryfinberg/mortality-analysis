@@ -872,6 +872,127 @@ def test_saved_query_url_does_not_affect_parsing(tmp_path):
     assert without.export.sha256 == with_url.export.sha256
 
 
+# ---------------------------------------------------------------------------
+# Vintage uniformity
+# ---------------------------------------------------------------------------
+#
+# NOTE: the fixture below breaks this suite's usual rule that fixtures are
+# obviously-unreal numbers. It uses REAL published Census figures, deliberately,
+# because the whole point of the test is that this exact historical case is
+# non-uniform in a way its national total conceals. A synthetic stand-in would
+# only prove the arithmetic, not that the threshold catches the case it was
+# calibrated on.
+#
+# These values are a REGRESSION FIXTURE, not analysis input. Nothing in
+# data/raw/ should ever be populated from them -- the pipeline fetches its own.
+
+# Census Bureau, nc-est2020-agesex-res.csv (Vintage 2020), SEX=0, national.
+# CENSUS2010POP = April 1 2010 decennial count, which is what WONDER carries.
+# POPESTIMATE2010 = the published July 1 2010 estimate.
+CENSUS_2010_APRIL1 = {
+    "0-24": 104_853_555, "25-44": 82_134_554, "45-64": 81_489_445,
+    "65-74": 21_713_429, "75-84": 13_061_122, "85+": 5_493_433,
+}
+CENSUS_2010_JULY1 = {
+    "0-24": 104_886_738, "25-44": 82_192_810, "45-64": 81_769_346,
+    "65-74": 21_856_431, "75-84": 13_078_302, "85+": 5_543_516,
+}
+
+
+def _two_year_frame(year_a_pops, year_b_pops):
+    rows = []
+    for year, pops in ((2010, year_a_pops), (2011, year_b_pops)):
+        for band in fetch.AGE_GROUPS:
+            rows.append({"year": year, "age_group": band,
+                         "deaths": 1000, "population": pops[band]})
+    return pd.DataFrame(rows)
+
+
+def test_real_2010_april_to_july_is_flagged_non_uniform():
+    """The historical case the threshold was calibrated on.
+
+    Nationally +0.188%, which looks like a small uniform nudge. Band by band
+    it runs +0.032% to +0.912% -- a 28-fold spread that moved the age effect,
+    not just the rate effect.
+    """
+    frame = _two_year_frame(CENSUS_2010_APRIL1, CENSUS_2010_JULY1)
+
+    result = fetch.assess_vintage_uniformity(frame, 2010, 2011)
+
+    assert result.uniform is False
+    assert result.total_pct_change == pytest.approx(0.188, abs=0.002)
+    assert result.min_pct == pytest.approx(0.032, abs=0.002)
+    assert result.max_pct == pytest.approx(0.912, abs=0.002)
+    assert result.fold == pytest.approx(28.5, abs=0.5)
+    assert result.spread_ratio > fetch.VINTAGE_UNIFORMITY_SPREAD_MULTIPLE
+
+
+def test_the_national_total_alone_would_not_have_caught_it():
+    """The point of the function: the total looks benign and is not.
+
+    0.184% is small enough to wave through, which is exactly why the check
+    has to be at band level.
+    """
+    frame = _two_year_frame(CENSUS_2010_APRIL1, CENSUS_2010_JULY1)
+    result = fetch.assess_vintage_uniformity(frame, 2010, 2011)
+
+    assert abs(result.total_pct_change) < 0.2      # would pass any eyeball test
+    assert result.spread_pp > 4 * abs(result.total_pct_change)
+
+
+def test_a_proportional_revision_is_uniform():
+    """Every band up by exactly 1%: shares unchanged, books as a rate effect."""
+    uniform_b = {band: int(round(pop * 1.01))
+                 for band, pop in CENSUS_2010_APRIL1.items()}
+    frame = _two_year_frame(CENSUS_2010_APRIL1, uniform_b)
+
+    result = fetch.assess_vintage_uniformity(frame, 2010, 2011)
+
+    assert result.uniform is True
+    assert result.total_pct_change == pytest.approx(1.0, abs=0.001)
+    assert result.spread_pp < 0.01
+    assert "rate effect" in result.summary()
+
+
+def test_uniformity_verdict_names_the_consequence():
+    """A verdict nobody can act on is not worth returning."""
+    frame = _two_year_frame(CENSUS_2010_APRIL1, CENSUS_2010_JULY1)
+
+    summary = fetch.assess_vintage_uniformity(frame, 2010, 2011).summary()
+
+    assert "NON-UNIFORM" in summary
+    assert "age effect" in summary
+
+
+def test_uniformity_requires_all_six_bands():
+    """A missing band would silently narrow the spread it is measuring."""
+    frame = _two_year_frame(CENSUS_2010_APRIL1, CENSUS_2010_JULY1)
+    frame = frame[frame["age_group"] != "85+"]  # the largest mover
+
+    with pytest.raises(fetch.FetchError, match="expected all of"):
+        fetch.assess_vintage_uniformity(frame, 2010, 2011)
+
+
+def test_uniformity_raises_on_a_missing_year():
+    frame = _two_year_frame(CENSUS_2010_APRIL1, CENSUS_2010_JULY1)
+
+    with pytest.raises(fetch.FetchError, match="no rows for year"):
+        fetch.assess_vintage_uniformity(frame, 2010, 1999)
+
+
+def test_spread_against_a_near_zero_total_is_non_uniform():
+    """Offsetting band moves can net to zero nationally and still shift shares."""
+    offset = dict(CENSUS_2010_APRIL1)
+    offset["0-24"] = CENSUS_2010_APRIL1["0-24"] - 1_000_000
+    offset["85+"] = CENSUS_2010_APRIL1["85+"] + 1_000_000
+    frame = _two_year_frame(CENSUS_2010_APRIL1, offset)
+
+    result = fetch.assess_vintage_uniformity(frame, 2010, 2011)
+
+    assert abs(result.total_pct_change) < 0.001   # invisible in the total
+    assert result.uniform is False
+
+
 def test_unconfirmed_series_cannot_be_fetched():
     """No identifier may enter SERIES except one read from a live response."""
     with pytest.raises(fetch.UnconfirmedSeriesError, match="--discover"):

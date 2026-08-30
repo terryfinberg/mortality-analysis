@@ -121,7 +121,7 @@ or the code.
 python -m pytest
 ```
 
-Seventy-five tests. They cover rate arithmetic, exact additivity of the Kitagawa
+Eighty-two tests. They cover rate arithmetic, exact additivity of the Kitagawa
 decomposition, recovery of a known trend by the excess-mortality baseline fit, the loader's
 refusal to accept incomplete data, and the fetch layer: WONDER export parsing, age-band
 collapse arithmetic, "Not Stated" handling, cache behaviour, refusal to return partial data
@@ -145,6 +145,7 @@ That is expected. Delete the test at that point.
 data/raw/          Input CSVs with per-row citations. You fill these.
 data/queries/      CDC WONDER query parameters for reproducing each extract.
 data/processed/    results.json, generated.
+docs/              Method notes: denominator sourcing, vintages, discontinuities.
 src/               Analysis modules.
 tests/             pytest suite.
 figures/           Generated PNGs.

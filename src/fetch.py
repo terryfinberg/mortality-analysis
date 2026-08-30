@@ -1187,6 +1187,145 @@ def load_export_bundle(
     )
 
 
+# ---------------------------------------------------------------------------
+# Vintage uniformity
+# ---------------------------------------------------------------------------
+#
+# Distinguishing a real mortality change from a denominator restatement is a
+# BAND-LEVEL question. The national total cannot answer it, and looking only at
+# the total is the mistake this function exists to prevent.
+#
+#   UNIFORM revision      Every age-specific rate moves by the same proportion.
+#                         Population shares are untouched. Kitagawa books the
+#                         whole thing as a RATE effect, so it reads as a change
+#                         in mortality risk that never happened.
+#
+#   NON-UNIFORM revision  Shares move, and part of it lands in the AGE effect.
+#
+# Both can produce an identical national total, which is why the total is not
+# evidence either way.
+#
+# WORKED CASE, 2010. WONDER carries the April 1 decennial count for 2010 while
+# every other year is a July 1 estimate. Moving to the Census Bureau's published
+# July 1 figure is +0.188% nationally -- small, and easy to assume is a uniform
+# nudge. Band by band:
+#
+#     0-24   +0.032%      65-74  +0.659%
+#     25-44  +0.071%      75-84  +0.132%
+#     45-64  +0.343%      85+    +0.912%
+#
+# A 28-fold spread between smallest and largest. It moved the age effect
+# (99.43 -> 96.72), not only the rate effect. Inspecting the total alone would
+# have mis-attributed all of it to mortality.
+
+# Flag non-uniformity when the between-band spread exceeds this multiple of the
+# overall change. The 2010 case scores 4.67 -- 0.880 percentage points of spread
+# against a 0.188% total, a 28.8-fold ratio between the largest and smallest
+# band -- so 1.0 catches it with room to spare while leaving a genuinely
+# proportional revision (which scores ~1e-6) unflagged.
+VINTAGE_UNIFORMITY_SPREAD_MULTIPLE = 1.0
+
+# Below this, the overall change is too near zero for a ratio to mean anything
+# and any spread at all is non-uniform by definition.
+_NEGLIGIBLE_TOTAL_PCT = 1e-9
+
+
+@dataclass
+class VintageUniformity:
+    """Whether a population change is spread evenly across the age bands."""
+
+    frame: pd.DataFrame          # age_group, pop_a, pop_b, abs_change, pct_change
+    year_a: int
+    year_b: int
+    total_pct_change: float
+    min_pct: float
+    max_pct: float
+    spread_pp: float             # max - min, in percentage points
+    spread_ratio: float          # spread_pp / |total_pct_change|
+    fold: float                  # max / min, when both share a sign
+    uniform: bool
+
+    def summary(self) -> str:
+        verdict = (
+            "UNIFORM: expect this to book almost entirely as a rate effect, "
+            "which reads as a mortality change. Treat any apparent improvement "
+            "across this boundary with suspicion."
+            if self.uniform else
+            "NON-UNIFORM: the age shares move, so part of this lands in the age "
+            "effect. Report both effects, not just the rate effect."
+        )
+        return (
+            f"{self.year_a} -> {self.year_b}: total {self.total_pct_change:+.3f}%, "
+            f"bands {self.min_pct:+.3f}% to {self.max_pct:+.3f}% "
+            f"(spread {self.spread_pp:.3f} points, "
+            f"{self.spread_ratio:.2f}x the total"
+            + (f", {self.fold:.1f}-fold" if self.fold == self.fold else "")
+            + f").\n{verdict}"
+        )
+
+
+def assess_vintage_uniformity(
+    by_age: pd.DataFrame,
+    year_a: int,
+    year_b: int,
+    spread_multiple: float = VINTAGE_UNIFORMITY_SPREAD_MULTIPLE,
+) -> VintageUniformity:
+    """Is the population change between two years even across the age bands?
+
+    Answers the question the national total cannot: whether a change will book
+    as a rate effect (uniform, and therefore indistinguishable from a mortality
+    change) or split into the age effect (non-uniform).
+
+    Takes the frame explicitly rather than loading it, so it can be tested
+    without touching the exports.
+    """
+    a = by_age[by_age["year"] == year_a].set_index("age_group")["population"]
+    b = by_age[by_age["year"] == year_b].set_index("age_group")["population"]
+    missing = [y for y, s in ((year_a, a), (year_b, b)) if s.empty]
+    if missing:
+        raise FetchError(f"assess_vintage_uniformity: no rows for year(s) {missing}")
+
+    bands = [g for g in AGE_GROUPS if g in a.index and g in b.index]
+    if len(bands) != len(AGE_GROUPS):
+        raise FetchError(
+            f"assess_vintage_uniformity: expected all of {AGE_GROUPS}, got {bands}"
+        )
+
+    frame = pd.DataFrame({
+        "age_group": bands,
+        "pop_a": [int(a[g]) for g in bands],
+        "pop_b": [int(b[g]) for g in bands],
+    })
+    frame["abs_change"] = frame["pop_b"] - frame["pop_a"]
+    frame["pct_change"] = 100.0 * frame["abs_change"] / frame["pop_a"]
+
+    total_pct = 100.0 * (frame["pop_b"].sum() - frame["pop_a"].sum()) / frame["pop_a"].sum()
+    lo, hi = float(frame["pct_change"].min()), float(frame["pct_change"].max())
+    spread = hi - lo
+
+    if abs(total_pct) < _NEGLIGIBLE_TOTAL_PCT:
+        ratio = float("inf") if spread > 0 else 0.0
+    else:
+        ratio = spread / abs(total_pct)
+
+    fold = hi / lo if (lo > 0 and hi > 0) else float("nan")
+
+    # Plain Python scalars, not numpy ones: `uniform` is a verdict callers will
+    # test with `is False`, and np.False_ fails that.
+    return VintageUniformity(
+        frame=frame,
+        year_a=year_a,
+        year_b=year_b,
+        total_pct_change=float(total_pct),
+        min_pct=float(lo),
+        max_pct=float(hi),
+        spread_pp=float(spread),
+        spread_ratio=float(ratio),
+        uniform=bool(ratio <= spread_multiple),
+        fold=float(fold),
+    )
+
+
 def load_grid_for(
     spec: ExportSpec, export_dir: Path | None = None, refresh: bool = False
 ) -> CollapseResult | None:
