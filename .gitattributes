@@ -2,3 +2,20 @@
 *.ps1 text eol=crlf
 *.bat text eol=crlf
 *.cmd text eol=crlf
+
+# Raw source data is preserved byte for byte -- no line-ending conversion.
+#
+# The SHA-256s in data/raw/census/PROVENANCE.md are hashes of the files as the
+# Census Bureau served them, so that a reviewer can re-download and compare.
+# Under the blanket `* text=auto eol=lf` rule above, git normalised CRLF to LF
+# in the stored blob: nc-est2024-agesex-res.csv went in at 15,864 bytes against
+# the 16,171 that were downloaded. The hash then verifies on Windows, where
+# checkout restores CRLF, and fails on Linux, where it does not. A provenance
+# hash that depends on the checking platform is worse than none, because it
+# fails in a way that looks like tampering.
+#
+# The WONDER exports are covered for the same reason: their footers are the
+# citable artifact and their content hashes appear in `fetched_from` provenance
+# strings, so their bytes must not shift underneath them either.
+data/raw/census/* -text
+data/raw/wonder_exports/* -text
