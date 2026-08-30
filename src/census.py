@@ -35,6 +35,7 @@ Two file details are enforced here rather than described:
 from __future__ import annotations
 
 import datetime as dt
+import re
 from dataclasses import dataclass
 from pathlib import Path
 
@@ -301,3 +302,99 @@ def restatement(
 def accessed_on() -> str:
     """Today, ISO. Used only when recording a fresh download."""
     return dt.date.today().isoformat()
+
+
+# ---------------------------------------------------------------------------
+# Integrity
+# ---------------------------------------------------------------------------
+
+PROVENANCE_FILE = "PROVENANCE.md"
+
+# Matches a table row in PROVENANCE.md: | `file.csv` | `<64 hex>` | ...
+_PROVENANCE_ROW = re.compile(
+    r"^\|\s*`([^`]+)`\s*\|\s*`([0-9a-f]{64})`\s*\|", re.MULTILINE
+)
+
+
+def recorded_hashes(census_dir: Path | None = None) -> dict[str, str]:
+    """The SHA-256 each file is declared to have, read out of PROVENANCE.md.
+
+    A Census CSV carries no query footer the way a WONDER export does, so that
+    document is the only provenance these files have. Parsing it here is what
+    lets a test recompute the hashes rather than leaving them as numbers a human
+    might compare.
+    """
+    census_dir = census_dir or CENSUS_DIR
+    path = census_dir / PROVENANCE_FILE
+    if not path.exists():
+        raise CensusError(
+            f"No {PROVENANCE_FILE} in {census_dir}. These files have no "
+            f"embedded provenance, so without it there is nothing to verify "
+            f"them against."
+        )
+    found = dict(_PROVENANCE_ROW.findall(path.read_text(encoding="utf-8")))
+    if not found:
+        raise CensusError(
+            f"{path}: no file/hash rows parsed. The table must have rows of the "
+            f"form | `name.csv` | `<64 hex digits>` | ... -- if the format "
+            f"changed, this check silently verifies nothing, so it raises."
+        )
+    return found
+
+
+def verify_census_files(census_dir: Path | None = None) -> dict[str, str]:
+    """Recompute every committed Census file's hash against PROVENANCE.md.
+
+    Checked both ways. A file with no recorded hash is as much a hole as a
+    mismatch: it is a CSV in the input directory that nothing vouches for, and
+    it would be used by the analysis exactly as if it had been verified.
+    """
+    from .fetch import file_sha256  # local: keeps import order one-directional
+
+    census_dir = census_dir or CENSUS_DIR
+    declared = recorded_hashes(census_dir)
+    on_disk = sorted(p.name for p in census_dir.glob("*.csv"))
+
+    unrecorded = [name for name in on_disk if name not in declared]
+    if unrecorded:
+        raise CensusError(
+            f"CSV(s) in {census_dir} with no row in {PROVENANCE_FILE}: "
+            + ", ".join(unrecorded)
+            + ".\nAdd the file's URL, retrieval date and SHA-256 in the same "
+            "commit that adds the file. An unrecorded CSV is indistinguishable "
+            "from one somebody edited."
+        )
+
+    missing = [name for name in declared if name not in on_disk]
+    if missing:
+        raise CensusError(
+            f"{PROVENANCE_FILE} records file(s) that are not in {census_dir}: "
+            + ", ".join(sorted(missing))
+            + ". Either restore them or remove the rows."
+        )
+
+    verified: dict[str, str] = {}
+    mismatched: list[str] = []
+    for name in on_disk:
+        actual = file_sha256(census_dir / name)
+        if actual != declared[name]:
+            mismatched.append(
+                f"  {name}\n"
+                f"    {PROVENANCE_FILE}: {declared[name]}\n"
+                f"    on disk:        {actual}"
+            )
+        else:
+            verified[name] = actual
+
+    if mismatched:
+        raise CensusError(
+            "Committed Census bytes do not match the recorded hash:\n"
+            + "\n".join(mismatched)
+            + f"\nThese hashes are of the files as the Census Bureau served "
+            f"them, so a mismatch means the bytes moved after retrieval. Check "
+            f"for a line-ending rule (.gitattributes marks this directory "
+            f"-text for exactly that reason) before assuming the source "
+            f"changed. Do not update {PROVENANCE_FILE} to match the new bytes "
+            f"without establishing why they moved."
+        )
+    return verified

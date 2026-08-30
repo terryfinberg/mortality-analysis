@@ -9,10 +9,10 @@ resolve it before continuing; later sections assume earlier ones passed.
 
 - [ ] `.\bootstrap.ps1` (Windows) or `./bootstrap.sh` completes without error
 - [ ] `.venv` directory exists
-- [ ] `python -m pytest` reports **105 passed**
+- [ ] `python -m pytest` reports **115 passed**
 - [ ] Jupyter kernel "Python (fragile-equilibrium)" appears in `jupyter kernelspec list`
 
-**Pass condition:** 105 tests pass on empty data.
+**Pass condition:** 115 tests pass on empty data.
 
 If `test_repo_ships_with_unpopulated_data` **fails** at this stage, someone has put values in
 `data/raw/`. Find out where they came from before proceeding.

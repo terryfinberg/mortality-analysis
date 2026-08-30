@@ -740,6 +740,21 @@ class ExportSpec:
     # would reject an export the user could not have produced any other way.
     require_totals: bool = True
 
+    # SHA-256 of the committed export, so the bytes this repository's results
+    # were computed from are pinned rather than assumed.
+    #
+    # An export is immutable history: WONDER's final data for a closed year does
+    # not change, so this file should never change either. If it does, something
+    # is wrong -- a re-export under a different query, a partial download, an
+    # editor rewriting line endings -- and every number downstream moves with it.
+    # verify_export_hashes() turns that from a thing someone could check into a
+    # thing that fails.
+    #
+    # Blank means "not yet recorded", which is honest for an export that has not
+    # been run. It is not a licence to leave it blank: the test requires a hash
+    # for every export actually present on disk.
+    sha256: str = ""
+
     # WONDER's Save button stores a query and returns a link that re-runs it.
     # That is better provenance than documented parameters, because a reviewer
     # clicks rather than reconstructs.
@@ -772,6 +787,7 @@ WONDER_EXPORTS: tuple[ExportSpec, ...] = (
     ExportSpec("allcause_by_age_2010-2017_ucd-bridged.txt", "deaths_by_age",
                tuple(range(2010, 2018)),
                "Underlying Cause of Death, 1999-2020 (bridged-race)",
+               sha256="213e10c77866cec1b13d29dab22c8d2f8968f4c5f733c3f2fe0906ee7f0e8e7d",
                saved_query_url=""),
     # This export's footer carries no Year/Month line, so the saved query may
     # replay as "all dates" and pick up 2025 when WONDER adds it. For this file
@@ -780,6 +796,7 @@ WONDER_EXPORTS: tuple[ExportSpec, ...] = (
     ExportSpec("allcause_by_age_2018-2024_ucd-singlerace.txt", "deaths_by_age",
                tuple(range(2018, 2025)),
                "Underlying Cause of Death, 2018-2024, Single Race",
+               sha256="dd6beab886e526a0db17f6d74f788f8d7595b3a73cbc1a536594c8e3b0cf273d",
                saved_query_url="https://wonder.cdc.gov/controller/saved/D158/D518F643"),
     # No totals: a U07.1 query by ten-year band hits suppression in the young
     # bands, and WONDER disables totals for suppressed results. Nothing in the
@@ -790,11 +807,13 @@ WONDER_EXPORTS: tuple[ExportSpec, ...] = (
                "Underlying Cause of Death, 2018-2024, Single Race",
                require_population=False,
                require_totals=False,
+               sha256="7349a89a4a8cf8fff88342f4dec9d65f958d65bffdf329623e02f2bab0d51fb3",
                saved_query_url="https://wonder.cdc.gov/controller/saved/D158/D518F647"),
     ExportSpec("allcause_by_age_2018-2020_ucd-bridged_SEAM.txt", "seam_bridged",
                (2018, 2019, 2020),
                "Underlying Cause of Death, 1999-2020 (bridged-race)",
                in_analysis_grid=False,
+               sha256="626ab1d3fda362f6bb96c37a2705d839691f2aef23b7645a71f7cf0c0ad863a8",
                saved_query_url=""),
 )
 
@@ -806,6 +825,67 @@ def missing_exports(export_dir: Path | None = None) -> list[ExportSpec]:
     """Which expected export files are not yet on disk."""
     export_dir = export_dir or WONDER_EXPORT_DIR
     return [s for s in WONDER_EXPORTS if not (export_dir / s.filename).exists()]
+
+
+class IntegrityError(FetchError):
+    """A committed input's bytes do not match its recorded hash."""
+
+
+def verify_export_hashes(export_dir: Path | None = None) -> dict[str, str]:
+    """Recompute every present export's SHA-256 and check it against the registry.
+
+    A recorded hash that nobody recomputes is a claim, not a check. This is the
+    recompute. It exists because the one integrity defect this repository has
+    actually suffered -- git normalising CRLF inside a committed data file,
+    changing its bytes underneath a recorded hash -- was caught by reading a
+    warning, not by anything that could fail.
+
+    Raises on the first of three conditions: a present export with no recorded
+    hash, a mismatch, or a file in the directory that no spec claims. Returns
+    ``{filename: sha256}`` for the exports it verified.
+    """
+    export_dir = export_dir or WONDER_EXPORT_DIR
+    verified: dict[str, str] = {}
+    unrecorded: list[str] = []
+    mismatched: list[str] = []
+
+    for spec in WONDER_EXPORTS:
+        path = export_dir / spec.filename
+        if not path.exists():
+            continue  # absent exports are reported by missing_exports()
+        actual = file_sha256(path)
+        if not spec.sha256:
+            unrecorded.append(spec.filename)
+            continue
+        if actual != spec.sha256:
+            mismatched.append(
+                f"  {spec.filename}\n"
+                f"    registry: {spec.sha256}\n"
+                f"    on disk:  {actual}"
+            )
+        else:
+            verified[spec.filename] = actual
+
+    if unrecorded:
+        raise IntegrityError(
+            "Export(s) present on disk with no sha256 recorded in "
+            "WONDER_EXPORTS: " + ", ".join(unrecorded) + ".\n"
+            "Record the hash in src/fetch.py in the same commit that adds the "
+            "file. An unrecorded export is a file nobody can prove is the one "
+            "the results came from."
+        )
+    if mismatched:
+        raise IntegrityError(
+            "Committed export bytes do not match the recorded hash:\n"
+            + "\n".join(mismatched)
+            + "\nA WONDER export is immutable history and should never change. "
+            "If you re-exported deliberately, update the sha256 in "
+            "WONDER_EXPORTS and re-check every number that came from it. If you "
+            "did not, the file has been altered -- by an editor, a line-ending "
+            "rule, or a partial download -- and nothing computed from it is "
+            "trustworthy."
+        )
+    return verified
 
 
 def export_cache_path(series: str, sha256: str, ext: str = "csv") -> Path:

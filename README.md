@@ -121,7 +121,7 @@ or the code.
 python -m pytest
 ```
 
-One hundred and five tests. They cover rate arithmetic, exact additivity of the Kitagawa
+One hundred and fifteen tests. They cover rate arithmetic, exact additivity of the Kitagawa
 decomposition, recovery of a known trend by the excess-mortality baseline fit, the loader's
 refusal to accept incomplete data, and the fetch layer: WONDER export parsing, age-band
 collapse arithmetic, "Not Stated" handling, cache behaviour, refusal to return partial data
@@ -130,6 +130,14 @@ rate, rejection of an export whose years do not match the range the registry dec
 measurement of the bridged/single-race vintage seam, and the vintage-sensitivity findings —
 including a test that fails if `docs/denominator-methods.md` drifts from the code that
 computes its numbers.
+
+They also verify the committed data itself. Every WONDER export is hashed against the
+`sha256` recorded in `WONDER_EXPORTS`, and every Census file against
+`data/raw/census/PROVENANCE.md`, with cases that mutate a single byte to prove the check
+fires. A recorded hash nobody recomputes is a claim, not a check — and the one integrity
+defect this repository has actually had (git rewriting line endings inside a committed data
+file, moving its bytes underneath its recorded hash) was caught by reading a warning, not by
+anything that could fail.
 
 **Tolerance policy.** A quantity defined to be equal is asserted equal, at `1e-9` for
 floating-point representation only. A quantity merely expected to be close gets a real
