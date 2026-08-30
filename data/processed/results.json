@@ -1,0 +1,150 @@
+{
+  "years": {
+    "first": 2010,
+    "pre_pandemic": 2019,
+    "last": 2024
+  },
+  "crude_rate_first": 799.5,
+  "crude_rate_last": 903.4,
+  "adjusted_rate_first": 751.6,
+  "adjusted_rate_last": 732.4,
+  "decomposition": [
+    {
+      "interval": "2010-2019",
+      "total_change": 70.2,
+      "rate_effect": -29.2,
+      "age_effect": 99.4,
+      "ratio": 3.41
+    },
+    {
+      "interval": "2019-2024",
+      "total_change": 33.7,
+      "rate_effect": 7.7,
+      "age_effect": 26.0,
+      "ratio": 3.38
+    },
+    {
+      "interval": "2010-2024",
+      "total_change": 103.9,
+      "rate_effect": -24.4,
+      "age_effect": 128.4,
+      "ratio": 5.26
+    }
+  ],
+  "excess": {
+    "baseline": "2010-2019",
+    "baseline_slope": -1.779,
+    "total_2020_2021": 1117059,
+    "total_pandemic_era": 1656676,
+    "by_year": [
+      {
+        "year": 2010,
+        "excess_deaths": 14346,
+        "excess_pct": 0.6
+      },
+      {
+        "year": 2011,
+        "excess_deaths": 5413,
+        "excess_pct": 0.2
+      },
+      {
+        "year": 2012,
+        "excess_deaths": -15725,
+        "excess_pct": -0.6
+      },
+      {
+        "year": 2013,
+        "excess_deaths": -10237,
+        "excess_pct": -0.4
+      },
+      {
+        "year": 2014,
+        "excess_deaths": -27171,
+        "excess_pct": -1.0
+      },
+      {
+        "year": 2015,
+        "excess_deaths": 12858,
+        "excess_pct": 0.5
+      },
+      {
+        "year": 2016,
+        "excess_deaths": 6425,
+        "excess_pct": 0.2
+      },
+      {
+        "year": 2017,
+        "excess_deaths": 27673,
+        "excess_pct": 1.0
+      },
+      {
+        "year": 2018,
+        "excess_deaths": 5151,
+        "excess_pct": 0.2
+      },
+      {
+        "year": 2019,
+        "excess_deaths": -18830,
+        "excess_pct": -0.7
+      },
+      {
+        "year": 2020,
+        "excess_deaths": 475284,
+        "excess_pct": 16.3
+      },
+      {
+        "year": 2021,
+        "excess_deaths": 641776,
+        "excess_pct": 22.7
+      },
+      {
+        "year": 2022,
+        "excess_deaths": 345507,
+        "excess_pct": 11.8
+      },
+      {
+        "year": 2023,
+        "excess_deaths": 152040,
+        "excess_pct": 5.2
+      },
+      {
+        "year": 2024,
+        "excess_deaths": 42069,
+        "excess_pct": 1.4
+      }
+    ]
+  },
+  "covid_by_age": [
+    {
+      "age_group": "85+",
+      "covid_deaths": 275728,
+      "share_pct": 26.624308992154493
+    },
+    {
+      "age_group": "75-84",
+      "covid_deaths": 272384,
+      "share_pct": 26.301412190706095
+    },
+    {
+      "age_group": "65-74",
+      "covid_deaths": 235536,
+      "share_pct": 22.743367531683766
+    },
+    {
+      "age_group": "45-64",
+      "covid_deaths": 211267,
+      "share_pct": 20.39995171997586
+    },
+    {
+      "age_group": "25-44",
+      "covid_deaths": 37167,
+      "share_pct": 3.5888473144236572
+    },
+    {
+      "age_group": "0-24",
+      "covid_deaths": 3543,
+      "share_pct": 0.3421122510561255
+    }
+  ],
+  "covid_share_65plus": 75.7
+}

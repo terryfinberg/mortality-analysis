@@ -19,32 +19,59 @@ from src import loader
 # so strict loading must still refuse.
 
 
-def test_populated_data_is_still_unverified():
-    """Promotion fills fetched_from. It must not fill verified_by.
+def test_promotion_cannot_write_an_attestation(tmp_path):
+    """The durable invariant: a machine fills provenance, never attestation.
 
-    This is the live form of the repository's central claim: knowing where a
-    number came from is not the same as knowing it is the right number. The
-    values are in place and machine-provenanced, and strict mode still refuses
-    them until a human signs each row off.
+    This replaces test_populated_data_is_still_unverified, which asserted that
+    strict loading raised because nothing had been signed yet. That was true
+    until the rows were signed, and then it was just a statement about the
+    calendar. The guarantee worth keeping is the one that does not expire:
+    ``promote()`` is constructionally unable to vouch for a value, whatever the
+    current state of the repository's own CSVs.
     """
-    with pytest.raises(loader.UnverifiedDataError):
-        loader.load_annual_deaths(strict=True)
-    with pytest.raises(loader.UnverifiedDataError):
-        loader.load_population(strict=True)
-    with pytest.raises(loader.UnverifiedDataError):
-        loader.load_deaths_by_age(strict=True)
+    from src import fetch
+
+    raw = tmp_path / "raw"
+    raw.mkdir()
+    (raw / "us_population.csv").write_text(
+        "year,population,source_citation,source_type,fetched_from,"
+        "verified_by,verified_date\n2010,,cited,,,,\n",
+        encoding="utf-8",
+    )
+    values = pd.DataFrame([{"year": 2010, "population": 308_745_538}])
+
+    fetch.promote("population", values, provenance="wonder-export:x@sha256:abc",
+                  citation="a citation", dry_run=False, raw_dir=raw)
+
+    written = pd.read_csv(raw / "us_population.csv")
+    assert int(written.loc[0, "population"]) == 308_745_538
+    assert written.loc[0, "fetched_from"] == "wonder-export:x@sha256:abc"
+    assert written.loc[0, "source_type"] == "api"
+    assert pd.isna(written.loc[0, "verified_by"]) or not str(
+        written.loc[0, "verified_by"]
+    ).strip()
+    assert pd.isna(written.loc[0, "verified_date"]) or not str(
+        written.loc[0, "verified_date"]
+    ).strip()
 
 
-def test_non_strict_loading_now_succeeds():
-    """The counterpart: the data really is populated, so non-strict works."""
-    annual = loader.load_annual_deaths(strict=False)
-    population = loader.load_population(strict=False)
+def test_the_committed_data_is_signed_and_loads_strictly():
+    """Current state: a person attested these rows, so strict mode works."""
+    annual = loader.load_annual_deaths(strict=True)
+    population = loader.load_population(strict=True)
+    by_age = loader.load_deaths_by_age(strict=True)
 
     assert len(annual) == 15
     assert list(annual["year"]) == list(range(2010, 2025))
-    assert annual["deaths"].notna().all()
     assert len(population) == 15
-    assert population["population"].notna().all()
+    assert len(by_age) == 90
+
+    signed = pd.read_csv(loader.DATA_DIR / "us_annual_deaths.csv")
+    assert signed["verified_by"].notna().all()
+    assert signed["verified_date"].notna().all()
+    # A person, not a machine string. promote() writes fetched_from; nothing
+    # in src/fetch.py can write this column at all.
+    assert not signed["verified_by"].astype(str).str.contains("wonder-export").any()
 
 
 def test_corroboration_columns_are_never_required():
