@@ -107,6 +107,26 @@ def test_corroboration_columns_are_never_required():
         loader._require_verified(frame, "us_annual_deaths.csv")
 
 
+def test_corroboration_is_partial_and_that_is_the_point():
+    """2010 is corroborated; the other years are blank, and must stay loadable.
+
+    Blank means not corroborated. If a blank ever blocked loading, the column
+    would have become a second attestation requirement and the incentive would
+    be to fill it with whatever was to hand.
+    """
+    import pandas as pd
+
+    annual = pd.read_csv(loader.DATA_DIR / "us_annual_deaths.csv")
+    done = annual[annual["corroborated_against"].notna()]
+    assert list(done["year"]) == [2010]
+    assert "NVSR Vol. 61 No. 4" in done.iloc[0]["corroborated_against"]
+    assert done.iloc[0]["corroborated_date"] == "2026-08-30"
+
+    # Fourteen years still blank, and strict loading is indifferent to that.
+    assert annual["corroborated_against"].isna().sum() == 14
+    loader.load_annual_deaths(strict=True)
+
+
 def test_standard_population_sums_to_one_million():
     s = loader.load_standard_population()
     assert int(s.sum()) == 1_000_000

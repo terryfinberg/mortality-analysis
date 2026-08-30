@@ -140,6 +140,84 @@ def attest(
     return pd.DataFrame(signed)
 
 
+def corroborate(
+    source: str,
+    year: int,
+    files: list[str],
+    date: str | None = None,
+    raw_dir: Path | None = None,
+    dry_run: bool = True,
+) -> pd.DataFrame:
+    """Record that an independent publication reports the same figure.
+
+    A different claim from :func:`attest`, and deliberately a separate call.
+    Attestation says a value faithfully reproduces the export it came from;
+    corroboration says a source outside this repository agrees with it. Only
+    the second is external evidence, and it is available for some rows and not
+    others -- so it is recorded per year, never in bulk across the file.
+
+    ``source`` must name the publication precisely enough to be looked up: a
+    volume and a table, not "NVSR". Blank stays blank and means **not
+    corroborated**, never that corroboration was attempted and failed.
+    """
+    if not source or not source.strip():
+        raise AttestationError(
+            "corroborate() needs a source specific enough for a reader to "
+            "find: a volume and table, not a series name."
+        )
+    source = source.strip()
+    date = date or dt.date.today().isoformat()
+    raw_dir = raw_dir or RAW_DIR
+
+    written: list[dict] = []
+    for filename in files:
+        if filename not in ATTESTABLE:
+            raise AttestationError(
+                f"{filename!r} is not a known data file. Known: "
+                f"{sorted(ATTESTABLE)}"
+            )
+        path = raw_dir / filename
+        frame = pd.read_csv(path)
+        for col in ("corroborated_against", "corroborated_date"):
+            if col not in frame.columns:
+                frame[col] = ""
+            frame[col] = frame[col].astype("object")
+
+        rows = frame.index[frame["year"] == year]
+        if len(rows) == 0:
+            raise AttestationError(f"{filename}: no rows for year {year}.")
+
+        n = 0
+        for i in rows:
+            row = frame.loc[i]
+            missing = [c for c in ATTESTABLE[filename] if pd.isna(row.get(c))]
+            if missing:
+                continue
+            existing = _text(row.get("corroborated_against"))
+            if existing and existing != source:
+                raise AttestationError(
+                    f"{filename} row {i} ({year}) is already corroborated "
+                    f"against {existing!r}. Two independent sources agreeing "
+                    f"is worth recording, but not by overwriting the first: "
+                    f"decide which to keep, or widen the string deliberately."
+                )
+            if existing == source:
+                continue
+            written.append({"file": filename, "year": year,
+                            "age_group": row.get("age_group", "")})
+            if not dry_run:
+                frame.at[i, "corroborated_against"] = source
+                frame.at[i, "corroborated_date"] = date
+            n += 1
+
+        if n and not dry_run:
+            frame.to_csv(path, index=False)
+        verb = "would corroborate" if dry_run else "corroborated"
+        print(f"  {filename:26} {year}  {verb} {n:>3} row(s)")
+
+    return pd.DataFrame(written)
+
+
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(
         prog="python -m src.attest",
@@ -148,14 +226,40 @@ def main(argv: list[str] | None = None) -> int:
             "source. Dry run by default."
         ),
     )
-    parser.add_argument("--name", required=True,
+    parser.add_argument("--name", default=None,
                         help="the person making the attestation")
     parser.add_argument("--date", default=None, help="ISO date, default today")
     parser.add_argument("--file", action="append", dest="files",
                         help="limit to one file; repeatable")
     parser.add_argument("--write", action="store_true",
                         help="actually write (default is a dry run)")
+    parser.add_argument("--corroborate", metavar="SOURCE", default=None,
+                        help="record an independent source instead of signing; "
+                             "needs --year and at least one --file")
+    parser.add_argument("--year", type=int, default=None,
+                        help="with --corroborate, the reference year")
     args = parser.parse_args(argv)
+
+    if args.corroborate:
+        if args.year is None or not args.files:
+            parser.error("--corroborate needs --year and at least one --file")
+        diff = corroborate(
+            source=args.corroborate, year=args.year, files=args.files,
+            date=args.date, dry_run=not args.write,
+        )
+        print()
+        if args.write:
+            print(
+                f"Corroborated {len(diff)} row(s) for {args.year} against "
+                f"{args.corroborate!r}. Every other year stays blank, which "
+                f"means not corroborated -- not that it failed."
+            )
+        else:
+            print(f"Dry run: {len(diff)} row(s). Re-run with --write.")
+        return 0
+
+    if not args.name:
+        parser.error("--name is required when attesting")
 
     diff = attest(
         name=args.name, date=args.date, files=args.files,

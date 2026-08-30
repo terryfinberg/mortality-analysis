@@ -53,8 +53,18 @@ with the date in `corroborated_date`. If the two ever disagree, that is a findin
 figures and footnote it rather than silently preferring either.
 
 **Table B is not available for every year**, so the corroboration source differs by year
-rather than being uniform. The worked plan is in `UAT_CHECKLIST.md`, Section 6; the
-availability finding it rests on is immediately below.
+rather than being uniform. The worked plan, the year-by-year reference list and the resolved
+basis question are in `UAT_CHECKLIST.md`, Section 7; the availability finding they rest on is
+immediately below.
+
+Two results from that work belong here, because they govern any comparison against NVSR:
+
+- **NVSR totals include age-not-stated deaths**, per NVSR 61-4 Table 10 footnote 1. Compare
+  against `deaths`, which is `sum(six bands) + not_stated`, not against the band sum. Same
+  convention as WONDER.
+- **Never compare the age-adjusted rate.** NCHS standardises over eleven age groups and this
+  analysis uses six. The rates differ by construction, and a mismatch found that way is a
+  property of the grouping rather than a discrepancy worth chasing.
 
 This is a deliberate change from an earlier plan in which NVSR supplied the values. Citing a
 report the number did not come from makes attestation mean "I checked this against NVSR",

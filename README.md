@@ -3,16 +3,20 @@
 Reproducible analysis of U.S. mortality, decomposing changes in the crude death rate into
 age-specific mortality and population age-structure components.
 
-**Repository status: the data is populated and machine-provenanced. It is not yet attested,
-so strict loading still refuses it.**
+**Repository status: populated, attested, and running. Corroboration against independent
+publications is partial and deliberately labelled as such — 1 of 15 annual totals so far.**
 
 ## Where the data came from, and what is still missing
 
 `data/raw/*.csv` was populated by `python -m src.fetch --promote --write` from the four
 committed CDC WONDER exports in `data/raw/wonder_exports/`. Every row records which export it
-came from, by filename and content hash, in `fetched_from`. **Every row's `verified_by` is
-blank**, and `src/loader.py` raises `UnverifiedDataError` in strict mode until a human fills
-it in. `python -m src.report` will not run until you do.
+came from, by filename and content hash, in `fetched_from`. All 150 rows were then attested
+against those exports by a person, on 2026-08-30, so `python -m src.report` runs.
+
+**What is still open is corroboration**, which is a different claim: whether an *independent*
+publication reports the same figure. 2010 is corroborated three ways against NVSR Vol. 61
+No. 4. The rest are blank, and blank means not corroborated rather than failed — for 2024 no
+independent published source exists at all. See `UAT_CHECKLIST.md` Section 7.
 
 That gap is the point rather than an unfinished chore. An earlier version of this project
 carried mortality figures that had been transcribed rather than fetched and were never checked
@@ -159,7 +163,7 @@ or the code.
 python -m pytest
 ```
 
-One hundred and fifty-three tests. They cover rate arithmetic, exact additivity of the Kitagawa
+One hundred and sixty-six tests. They cover rate arithmetic, exact additivity of the Kitagawa
 decomposition, recovery of a known trend by the excess-mortality baseline fit, the loader's
 refusal to accept incomplete data, and the fetch layer: WONDER export parsing, age-band
 collapse arithmetic, "Not Stated" handling, cache behaviour, refusal to return partial data

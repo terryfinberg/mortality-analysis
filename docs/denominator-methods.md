@@ -273,6 +273,20 @@ claim the paper makes.
 April 1 count against July 1 estimates, as above. Input error 0.188%; slope
 leverage 11–20%; excess-mortality effect ~1%.
 
+**Corroborated by NVSR, not inferred from WONDER.** This was originally read off
+WONDER's own footer ("Population figures for 2010 are April 1 Census counts")
+and confirmed against `CENSUS2010POP`. NCHS states it independently in the
+publication of record: **NVSR Vol. 61 No. 4, *Deaths: Final Data for 2010*,
+Table B header note** — *"Rates are based on populations enumerated as of April
+1 for 2010 and estimated as of July 1 for 2009 using revised intercensal
+estimates."* Read directly on 2026-08-30.
+
+That matters because the whole treatment-C′ apparatus rests on the premise that
+2010 is measured on a different basis. The premise now has three independent
+supports: WONDER's footer, an exact band-by-band match against Census
+`CENSUS2010POP`, and NCHS's own statement in the report a reviewer will reach
+for.
+
 Three treatments, all reported:
 
 | treatment | interval | slope | excess 2020-21 | age-to-rate ratio |
