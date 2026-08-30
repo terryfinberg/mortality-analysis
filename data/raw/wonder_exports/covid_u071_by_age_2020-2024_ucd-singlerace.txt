@@ -1,0 +1,132 @@
+"Notes"	"Year"	"Year Code"	"Ten-Year Age Groups"	"Ten-Year Age Groups Code"	Deaths	Population	Crude Rate	Crude Rate Lower 95% Confidence Interval	Crude Rate Upper 95% Confidence Interval
+	"2020"	"2020"	"< 1 year"	"1"	35	3735010	0.9	0.7	1.3
+	"2020"	"2020"	"1-4 years"	"1-4"	19	15566282	0.1	0.1	0.2
+	"2020"	"2020"	"5-14 years"	"5-14"	49	40992134	0.1	0.1	0.2
+	"2020"	"2020"	"15-24 years"	"15-24"	501	42555684	1.2	1.1	1.3
+	"2020"	"2020"	"25-34 years"	"25-34"	2254	46069646	4.9	4.7	5.1
+	"2020"	"2020"	"35-44 years"	"35-44"	6079	42136192	14.4	14.1	14.8
+	"2020"	"2020"	"45-54 years"	"45-54"	16964	40366133	42.0	41.4	42.7
+	"2020"	"2020"	"55-64 years"	"55-64"	42090	42403677	99.3	98.3	100.2
+	"2020"	"2020"	"65-74 years"	"65-74"	76277	32549398	234.3	232.7	236.0
+	"2020"	"2020"	"75-84 years"	"75-84"	97030	16451547	589.8	586.1	593.5
+	"2020"	"2020"	"85+ years"	"85+"	109529	6658420	1645.0	1635.2	1654.7
+	"2020"	"2020"	"Not Stated"	"NS"	Suppressed	Not Applicable	Not Applicable	Not Applicable	Not Applicable
+	"2021"	"2021"	"< 1 year"	"1"	91	3564493	2.6	2.1	3.1
+	"2021"	"2021"	"1-4 years"	"1-4"	54	15262845	0.4	0.3	0.5
+	"2021"	"2021"	"5-14 years"	"5-14"	142	41739332	0.3	0.3	0.4
+	"2021"	"2021"	"15-24 years"	"15-24"	1401	43088663	3.3	3.1	3.4
+	"2021"	"2021"	"25-34 years"	"25-34"	6133	45495105	13.5	13.1	13.8
+	"2021"	"2021"	"35-44 years"	"35-44"	16006	43403854	36.9	36.3	37.4
+	"2021"	"2021"	"45-54 years"	"45-54"	36881	40688436	90.6	89.7	91.6
+	"2021"	"2021"	"55-64 years"	"55-64"	73725	42803064	172.2	171.0	173.5
+	"2021"	"2021"	"65-74 years"	"65-74"	102716	33666122	305.1	303.2	307.0
+	"2021"	"2021"	"75-84 years"	"75-84"	98807	16206075	609.7	605.9	613.5
+	"2021"	"2021"	"85+ years"	"85+"	80934	5975756	1354.4	1345.0	1363.7
+	"2021"	"2021"	"Not Stated"	"NS"	Suppressed	Not Applicable	Not Applicable	Not Applicable	Not Applicable
+	"2022"	"2022"	"< 1 year"	"1"	141	3683113	3.8	3.2	4.5
+	"2022"	"2022"	"1-4 years"	"1-4"	101	14855240	0.7	0.5	0.8
+	"2022"	"2022"	"5-14 years"	"5-14"	131	40899034	0.3	0.3	0.4
+	"2022"	"2022"	"15-24 years"	"15-24"	447	44341571	1.0	0.9	1.1
+	"2022"	"2022"	"25-34 years"	"25-34"	1640	45501300	3.6	3.4	3.8
+	"2022"	"2022"	"35-44 years"	"35-44"	3841	43695365	8.8	8.5	9.1
+	"2022"	"2022"	"45-54 years"	"45-54"	9678	40431645	23.9	23.5	24.4
+	"2022"	"2022"	"55-64 years"	"55-64"	24252	42085437	57.6	56.9	58.4
+	"2022"	"2022"	"65-74 years"	"65-74"	42062	33788439	124.5	123.3	125.7
+	"2022"	"2022"	"75-84 years"	"75-84"	51188	17520545	292.2	289.6	294.7
+	"2022"	"2022"	"85+ years"	"85+"	53070	6485868	818.2	811.3	825.2
+	"2022"	"2022"	"Not Stated"	"NS"	Suppressed	Not Applicable	Not Applicable	Not Applicable	Not Applicable
+	"2023"	"2023"	"< 1 year"	"1"	59	3648654	1.6	1.2	2.1
+	"2023"	"2023"	"1-4 years"	"1-4"	44	14862506	0.3	0.2	0.4
+	"2023"	"2023"	"5-14 years"	"5-14"	50	40987321	0.1	0.1	0.2
+	"2023"	"2023"	"15-24 years"	"15-24"	91	43886652	0.2	0.2	0.3
+	"2023"	"2023"	"25-34 years"	"25-34"	248	45542516	0.5	0.5	0.6
+	"2023"	"2023"	"35-44 years"	"35-44"	518	44390693	1.2	1.1	1.3
+	"2023"	"2023"	"45-54 years"	"45-54"	1136	40493781	2.8	2.6	3.0
+	"2023"	"2023"	"55-64 years"	"55-64"	3688	41854411	8.8	8.5	9.1
+	"2023"	"2023"	"65-74 years"	"65-74"	8894	34685284	25.6	25.1	26.2
+	"2023"	"2023"	"75-84 years"	"75-84"	15417	18368097	83.9	82.6	85.3
+	"2023"	"2023"	"85+ years"	"85+"	19786	6194980	319.4	314.9	323.8
+	"2023"	"2023"	"Not Stated"	"NS"	Suppressed	Not Applicable	Not Applicable	Not Applicable	Not Applicable
+	"2024 "	"2024"	"< 1 year"	"1"	53	3615598	1.5	1.1	1.9
+	"2024 "	"2024"	"1-4 years"	"1-4"	38	14983716	0.3	0.2	0.3
+	"2024 "	"2024"	"5-14 years"	"5-14"	33	41098826	0.1	0.1	0.1
+	"2024 "	"2024"	"15-24 years"	"15-24"	63	44797761	0.1	0.1	0.2
+	"2024 "	"2024"	"25-34 years"	"25-34"	136	46453864	0.3	0.2	0.3
+	"2024 "	"2024"	"35-44 years"	"35-44"	312	45539224	0.7	0.6	0.8
+	"2024 "	"2024"	"45-54 years"	"45-54"	723	40780356	1.8	1.6	1.9
+	"2024 "	"2024"	"55-64 years"	"55-64"	2130	41661725	5.1	4.9	5.3
+	"2024 "	"2024"	"65-74 years"	"65-74"	5587	35444962	15.8	15.3	16.2
+	"2024 "	"2024"	"75-84 years"	"75-84"	9942	19299813	51.5	50.5	52.5
+	"2024 "	"2024"	"85+ years"	"85+"	12409	6435143	192.8	189.4	196.2
+	"2024 "	"2024"	"Not Stated"	"NS"	0	Not Applicable	Not Applicable	Not Applicable	Not Applicable
+"---"
+"Dataset: Underlying Cause of Death, 2018-2024, Single Race"
+"Query Parameters:"
+"ICD-10 Codes: U07.1 (COVID-19)"
+"Year/Month: 2020; 2021; 2022; 2023; 2024"
+"Group By: Year; Ten-Year Age Groups"
+"Show Totals: Disabled"
+"Show Zero Values: True"
+"Show Suppressed: True"
+"Calculate Rates Per: 100,000"
+"Rate Options: Default intercensal populations for years 2001-2009 (except Infant Age Groups)"
+"---"
+"Help: See http://wonder.cdc.gov/wonder/help/ucd-expanded.html for more information."
+"---"
+"Query Date: Aug 30, 2026 2:45:57 AM"
+"---"
+"Suggested Citation: Centers for Disease Control and Prevention, National Center for Health Statistics. National Vital Statistics"
+"System, Mortality 2018-2024 on CDC WONDER Online Database, released in 2026. Data are from the Multiple Cause of Death Files,"
+"2018-2024, as compiled from data provided by the 57 vital statistics jurisdictions through the Vital Statistics Cooperative"
+"Program. Accessed at http://wonder.cdc.gov/ucd-icd10-expanded.html on Aug 30, 2026 2:45:57 AM"
+"---"
+Messages:
+"1. Totals are not available for these results due to suppression constraints. More Information:"
+"http://wonder.cdc.gov/wonder/help/faq.html#Privacy."
+"---"
+Caveats:
+"1. Data are Suppressed when the data meet the criteria for confidentiality constraints. More information:"
+"http://wonder.cdc.gov/wonder/help/ucd-expanded.html#Assurance of Confidentiality."
+"2. Deaths of persons with Age ""Not Stated"" are included in ""All"" counts and rates, but are not distributed among age groups,"
+"so are not included in age-specific counts, age-specific rates or in any age-adjusted rates. More information:"
+"http://wonder.cdc.gov/wonder/help/ucd-expanded.html#Not Stated."
+"3. The method used to calculate 95% confidence intervals is documented here: More information:"
+"http://wonder.cdc.gov/wonder/help/ucd-expanded.html#Confidence-Intervals."
+"4. The population figures for year 2024 are single-race estimates of the July 1 resident population, from the Vintage 2024"
+"postcensal series released by the Census Bureau on June 27, 2024. The 2024 series is based on the Modified Blended Base produced"
+"by the US Census Bureau in lieu of the April 1, 2020 decennial population count. The Modified Blended Base consists of the blend"
+"of Vintage 2020 postcensal population estimates for April 1, 2020, 2020 Demographic Analysis Estimates, and 2020 Census data"
+"from the internal Census Edited File (CEF). The population figures for year 2023 are single-race estimates of the July 1"
+"resident population, from the Vintage 2023 postcensal series released by the Census Bureau on June 27, 2024. The 2023 series is"
+"based on the Modified Blended Base produced by the US Census Bureau in lieu of the April 1, 2020 decennial population count. The"
+"Modified Blended Base consists of the blend of Vintage 2020 postcensal population estimates for April 1, 2020, 2020 Demographic"
+"Analysis Estimates, and 2020 Census data from the internal Census Edited File (CEF). The population figures for years 2022 are"
+"single-race estimates of the July 1 resident population, from the Vintage 2022 postcensal series released by the Census Bureau"
+"on June 22, 2023. The 2022 series is based on the Modified Blended Base produced by the US Census Bureau in lieu of the April 1,"
+"2020 decennial population count. The Modified Blended Base consists of the blend of Vintage 2020 postcensal population estimates"
+"for April 1, 2020, 2020 Demographic Analysis Estimates, and 2020 Census data from the internal Census Edited File (CEF). The"
+"population figures for years 2021 are single-race estimates of the July 1 resident population, based on the Blended Base"
+"produced by the US Census Bureau in lieu of the April 1, 2020 decennial population count, from the Vintage 2021 postcensal"
+"series released by the Census Bureau on June 30, 2022. The population figures for year 2020 are single-race estimates of the"
+"July 1 resident population, from the Vintage 2020 postcensal series based on April 2010 Census, released by the Census Bureau on"
+"July 27, 2021. The population figures for year 2019 are single-race estimates of the July 1 resident population, from the"
+"Vintage 2019 postcensal series based on April 2010 Census, released by the Census Bureau on June 25, 2020. The population"
+"figures for year 2018 are single-race estimates of the July 1 resident population, from the Vintage 2018 postcensal series based"
+"on April 2010 Census, released by the Census Bureau on June 20, 2019. More information:"
+"http://wonder.cdc.gov/wonder/help/ucd-expanded.html#Population Data."
+"5. The population figures used in the calculation of death rates for the age group 'under 1 year' are the estimates of the"
+"resident population that is under one year of age. More information: http://wonder.cdc.gov/wonder/help/ucd-expanded.html#Age"
+"Group."
+"6. Connecticut population estimates for 2022 and later years are reported for 9 planning regions as county equivalent areas,"
+"instead of the former 8 legacy counties in the Vintage 2022 postcensal series released by the Census Bureau on June 22, 2023,"
+"and in the Vintage 2023 postcensal series released by the Census Bureau on June 27, 2024. Populations estimates for the former"
+"counties are not available for 2022 and later years. More information:"
+"http://wonder.cdc.gov/wonder/help/ucd-expanded.html#Connecticut-2022."
+"7. After the creation of the final 2023 dataset, North Carolina updated the cause of death information for over 900 death"
+"certificates to include a cause of death code indicating drug overdose (ICD-10 underlying cause-of-death codes: X40-X44,"
+"X60-X64, X85, and Y10-Y14). Jurisdictions can continue to update death certificates after the closing of the mortality file. As"
+"a result, users should consider that the actual death count for drug overdose deaths for North Carolina in 2023 is over 4,400"
+"deaths, with a crude rate of approximately 41.0 per 100,000 population, and an age-adjusted rate of approximately 42.1 per"
+"100,000 population. These deaths will not be updated on the final mortality datasets."
+"8. Changes to cause of death classification affect reporting trends. More information:"
+"http://wonder.cdc.gov/wonder/help/ucd-expanded.html#ICD-10 Changes."

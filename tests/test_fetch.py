@@ -166,7 +166,10 @@ def test_grid_drops_the_total_row(wonder_export):
 
     assert len(grid) == len(BAND_DEATHS)
     assert grid["deaths"].sum() == sum(d for _, d in BAND_DEATHS)
-    assert set(grid.columns) == {"year", "age_band", "deaths", "population"}
+    assert set(grid.columns) == {
+        "year", "age_band", "deaths", "population", "deaths_suppressed"
+    }
+    assert not grid["deaths_suppressed"].any()
 
 
 def test_export_without_footer_is_rejected(tmp_path):
@@ -186,6 +189,64 @@ def test_suppressed_count_raises_rather_than_becoming_zero(tmp_path):
 
     with pytest.raises(fetch.ParseError, match="[Ss]uppressed"):
         fetch.wonder_export_to_grid(fetch.parse_wonder_export(path))
+
+
+def test_suppressed_not_stated_is_bounded_not_rejected(tmp_path):
+    """WONDER suppresses below ten, so a suppressed cell is known to be <= 9.
+
+    The Not Stated row never enters the six-band grid, so taking the bound
+    there cannot put a fabricated number into any rate. Rejecting the export
+    over it would block a file the user could not have produced any other way.
+    """
+    text = _wonder_export_text(not_stated=3).replace('"3"\t"Not Applicable"',
+                                                     '"Suppressed"\t"Not Applicable"')
+    path = tmp_path / "suppressed_ns.txt"
+    path.write_text(text, encoding="utf-8")
+
+    grid = fetch.wonder_export_to_grid(fetch.parse_wonder_export(path))
+    ns_row = grid[grid["age_band"] == "Not Stated"].iloc[0]
+
+    assert int(ns_row["deaths"]) == fetch.SUPPRESSION_UPPER_BOUND
+    assert bool(ns_row["deaths_suppressed"]) is True
+    # The six real bands are untouched and unflagged.
+    assert not grid[grid["age_band"] != "Not Stated"]["deaths_suppressed"].any()
+
+
+def test_suppressed_not_stated_is_marked_in_the_collapse(tmp_path):
+    """A bounded figure must not be reported as though it were exact."""
+    text = _wonder_export_text(not_stated=3).replace('"3"\t"Not Applicable"',
+                                                     '"Suppressed"\t"Not Applicable"')
+    path = tmp_path / "suppressed_ns2.txt"
+    path.write_text(text, encoding="utf-8")
+
+    grid = fetch.wonder_export_to_grid(fetch.parse_wonder_export(path))
+    with pytest.warns(UserWarning, match="at most"):
+        result = fetch.collapse_age_bands(grid, ["deaths", "population"])
+
+    assert bool(result.not_stated.loc[0, "suppressed"]) is True
+    assert "at most" in result.warnings[0]
+
+
+def test_a_suppressed_analysis_band_still_raises(tmp_path):
+    """The bound is usable only where the cell is not an analysis input."""
+    text = _wonder_export_text().replace('"90"', '"Suppressed"', 1)
+    path = tmp_path / "suppressed_band.txt"
+    path.write_text(text, encoding="utf-8")
+
+    with pytest.raises(fetch.ParseError, match="[Ss]uppressed"):
+        fetch.wonder_export_to_grid(fetch.parse_wonder_export(path))
+
+
+def test_totals_are_optional_only_where_they_are_unused(tmp_path):
+    """WONDER disables totals on suppressed queries; requiring them everywhere
+    would reject an export the user could not produce another way."""
+    covid = next(s for s in fetch.WONDER_EXPORTS
+                 if s.series == "covid_deaths_by_age")
+    allcause = next(s for s in fetch.GRID_EXPORTS
+                    if s.series == "deaths_by_age")
+
+    assert covid.require_totals is False   # crude-rate check does not use it
+    assert allcause.require_totals is True  # crude-rate check does use it
 
 
 def test_missing_show_column_names_what_to_re_export(tmp_path):

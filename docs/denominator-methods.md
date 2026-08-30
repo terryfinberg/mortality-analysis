@@ -76,6 +76,18 @@ A **28.8-fold** spread; 0.880 percentage points against a 0.188% total, scoring
 rate effect. Inspecting the total alone would have mis-attributed all of it to
 mortality.
 
+**Why these numbers are recomputed from source rather than quoted.** The
+national figure above was `+0.184%` for a while — the value implied by an
+*interpolated* July 1 denominator, calculated before the published Census
+estimate was found. Once the published figure superseded it, the stale number
+survived in code comments and a working note, and propagated into discussion
+outside this repository. It was caught only because a test recomputed the
+percentage from the source band figures instead of asserting the number someone
+had written down. A quoted constant would have agreed with itself indefinitely.
+That is the case for the method, not an argument about carelessness: derived
+figures go stale silently, and the only reliable defence is recomputing them
+from their inputs.
+
 `tests/test_fetch.py` pins this case as a regression fixture using the real
 published Census figures. That deviates from the suite's usual
 obviously-unreal-fixtures rule, deliberately: a synthetic stand-in would prove
@@ -93,10 +105,19 @@ subsection rather than bundling them.
 ### 1. Per-year vintage chain
 
 WONDER carries each year at the vintage current when that year was first
-estimated, never revised backward. The bridged file documents this per year; the
-2018–2024 file does not, but behaves identically — its 2023 equals Census
-Vintage 2023 exactly and its 2024 equals Vintage 2024 exactly, both to the
-person.
+estimated, never revised backward. Its 2023 equals Census Vintage 2023 exactly
+and its 2024 equals Vintage 2024 exactly, both to the person.
+
+WONDER's own documentation of this is **inconsistent between exports of the same
+database**. The bridged export states the vintage per year. The all-cause
+2018–2024 export (file 2) carries no population caveat at all. The COVID
+2020–2024 export (file 3), from the *same* single-race database, does state it —
+2024 from Vintage 2024, 2023 from Vintage 2023, 2022 from Vintage 2022, each
+released by the Census Bureau on a named date, and each built on the Modified
+Blended Base used in lieu of the April 1 2020 decennial count. So the caveat's
+absence from file 2 is not evidence that its denominators are single-vintage.
+Read the vintage attribution off whichever export documents it, and confirm
+against Census rather than relying on the footer being complete.
 
 This is what NCHS itself does when it publishes rates, which is why our crude
 rates reproduce WONDER's. **It is a feature.** The cost is that a trend fit

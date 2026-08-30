@@ -278,6 +278,11 @@ def collapse_age_bands(
         .sum()
         .rename(columns={count_col: count_col})
     )
+    if "deaths_suppressed" in unattributed.columns:
+        flags = unattributed.groupby(year_col)["deaths_suppressed"].any()
+        ns["suppressed"] = ns[year_col].map(flags).fillna(False).astype(bool)
+    else:
+        ns["suppressed"] = False
     attributed_totals = frame.groupby(year_col)[count_col].sum()
     ns["pct_of_deaths"] = ns.apply(
         lambda r: 100.0 * r[count_col]
@@ -288,8 +293,11 @@ def collapse_age_bands(
     messages: list[str] = []
     for _, row in ns.iterrows():
         if row["pct_of_deaths"] > warn_pct:
+            qualifier = (
+                "at most " if row.get("suppressed") else ""
+            )
             msg = (
-                f"Age not stated for {int(row[count_col]):,} deaths in "
+                f"Age not stated for {qualifier}{int(row[count_col]):,} deaths in "
                 f"{int(row[year_col])} ({row['pct_of_deaths']:.3f}% of deaths), "
                 f"above the {warn_pct}% threshold. Note this in the "
                 f"manuscript's limitations section."
@@ -451,6 +459,19 @@ WONDER_EXPORT_DIR = RAW_DIR / "wonder_exports"
 _SUPPRESSION_TOKENS = frozenset(
     {"suppressed", "unreliable", "not applicable", "missing", "n/a", ""}
 )
+
+# WONDER suppresses a cell when it holds fewer than ten deaths, so a suppressed
+# cell is not wholly unknown: it is known to be at most nine.
+#
+# That bound is only usable where the cell is not an analysis input. A
+# suppressed *age band* still raises -- substituting a bound for a number the
+# rates are computed from would put a fabricated value in the numerator. A
+# suppressed *Not Stated* row is different: it never enters the six-band grid,
+# it is reported separately, and its only downstream use is the check on
+# whether unattributed deaths exceed 0.1% of the total. Taking the upper bound
+# there is conservative in the right direction -- it can only make that check
+# fire more readily, never less.
+SUPPRESSION_UPPER_BOUND = 9
 
 
 def file_sha256(path: Path) -> str:
@@ -669,10 +690,19 @@ def wonder_export_to_grid(
         ),
         "age_band": work[age_col].astype(str).str.strip(),
     })
-    out["deaths"] = [
-        _coerce_count(v, f"{export.path.name} deaths @ {b}")
-        for v, b in zip(work[deaths_col], out["age_band"])
-    ]
+    deaths, suppressed = [], []
+    for value, band in zip(work[deaths_col], out["age_band"]):
+        token = str(value).strip().strip('"').lower()
+        if canonical_band(band) == NOT_STATED and token in _SUPPRESSION_TOKENS:
+            # At most nine, and never an analysis input. See the note on
+            # SUPPRESSION_UPPER_BOUND for why the bound is usable only here.
+            deaths.append(SUPPRESSION_UPPER_BOUND)
+            suppressed.append(True)
+        else:
+            deaths.append(_coerce_count(value, f"{export.path.name} deaths @ {band}"))
+            suppressed.append(False)
+    out["deaths"] = deaths
+    out["deaths_suppressed"] = suppressed
     if pop_col is not None:
         pops = []
         for value, band in zip(work[pop_col], out["age_band"]):
@@ -701,6 +731,14 @@ class ExportSpec:
     database: str
     require_population: bool = True
     in_analysis_grid: bool = True
+
+    # WONDER's per-year Total rows are the external check on our own arithmetic,
+    # so they are required wherever that check runs -- which is the all-cause
+    # grid, via crude_rate_check(). They are NOT available everywhere: on a
+    # suppressed query WONDER disables totals itself ("Totals are not available
+    # for these results due to suppression constraints"), so demanding them
+    # would reject an export the user could not have produced any other way.
+    require_totals: bool = True
 
     # WONDER's Save button stores a query and returns a link that re-runs it.
     # That is better provenance than documented parameters, because a reviewer
@@ -738,10 +776,15 @@ WONDER_EXPORTS: tuple[ExportSpec, ...] = (
                tuple(range(2018, 2025)),
                "Underlying Cause of Death, 2018-2024, Single Race",
                saved_query_url=""),
+    # No totals: a U07.1 query by ten-year band hits suppression in the young
+    # bands, and WONDER disables totals for suppressed results. Nothing in the
+    # pipeline uses this export's totals -- the crude-rate check runs on the
+    # all-cause grid -- so their absence costs nothing.
     ExportSpec("covid_u071_by_age_2020-2024_ucd-singlerace.txt", "covid_deaths_by_age",
                tuple(range(2020, 2025)),
                "Underlying Cause of Death, 2018-2024, Single Race",
                require_population=False,
+               require_totals=False,
                saved_query_url=""),
     ExportSpec("wonder_ucd_allcause_2018-2020_bridged_SEAM.txt", "seam_bridged",
                (2018, 2019, 2020),
@@ -1179,10 +1222,16 @@ def load_export_bundle(
         spec.series, path, refresh=refresh, require_population=spec.require_population
     )
     value_cols = ["deaths"] + (["population"] if spec.require_population else [])
+
+    if spec.require_totals:
+        totals = wonder_export_totals(export)
+    else:
+        totals = pd.DataFrame(columns=["year", "deaths", "population", "crude_rate"])
+
     return LoadedExport(
         spec=spec,
         collapsed=collapse_age_bands(grid, value_cols),
-        totals=wonder_export_totals(export),
+        totals=totals,
         export=export,
     )
 
