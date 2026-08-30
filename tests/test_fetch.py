@@ -716,11 +716,17 @@ def test_seam_end_to_end_from_export_files(tmp_path):
         s for s in fetch.GRID_EXPORTS
         if s.series == "deaths_by_age" and 2018 in s.years
     )
+    # Each file must carry exactly the years its spec declares, or
+    # assert_export_years_match_spec rejects it. The seam is then measured on
+    # the overlap: the seam export's three years against the single-race
+    # export's seven.
+    assert fetch.SEAM_EXPORT.years == years
     (export_dir / fetch.SEAM_EXPORT.filename).write_text(
         _wonder_export_text(years=years, population=1_000_000), encoding="utf-8"
     )
     (export_dir / single_spec.filename).write_text(
-        _wonder_export_text(years=years, population=1_006_000), encoding="utf-8"
+        _wonder_export_text(years=single_spec.years, population=1_006_000),
+        encoding="utf-8",
     )
 
     seam = fetch.load_seam(export_dir=export_dir)
@@ -743,7 +749,7 @@ def test_seam_is_none_when_only_one_side_is_present(tmp_path):
     export_dir = tmp_path / "wonder_exports"
     export_dir.mkdir()
     (export_dir / fetch.SEAM_EXPORT.filename).write_text(
-        _wonder_export_text(years=(2018,)), encoding="utf-8"
+        _wonder_export_text(years=fetch.SEAM_EXPORT.years), encoding="utf-8"
     )
 
     assert fetch.load_seam(export_dir=export_dir) is None
@@ -908,8 +914,15 @@ def test_crude_rate_compared_at_wonders_own_precision():
 
 
 def test_saved_query_url_defaults_blank_and_stays_optional():
-    """Exports parse with no saved query link, because the footer is the artifact."""
-    assert all(s.saved_query_url == "" for s in fetch.WONDER_EXPORTS)
+    """Exports parse with no saved query link, because the footer is the artifact.
+
+    Asserts the property rather than the current contents of the registry: the
+    field defaults blank, and blank stays valid for a real entry. File 1 was
+    exported before the field existed and will never carry a link, so a
+    populated URL must never become a precondition for anything.
+    """
+    assert fetch.ExportSpec("x.txt", "s", (2020,), "db").saved_query_url == ""
+    assert any(s.saved_query_url == "" for s in fetch.WONDER_EXPORTS)
 
 
 def test_saved_query_url_does_not_affect_parsing(tmp_path):
@@ -918,7 +931,7 @@ def test_saved_query_url_does_not_affect_parsing(tmp_path):
     export_dir.mkdir()
     spec = fetch.SEAM_EXPORT
     (export_dir / spec.filename).write_text(
-        _wonder_export_text(years=(2018,)), encoding="utf-8"
+        _wonder_export_text(years=spec.years), encoding="utf-8"
     )
 
     without = fetch.load_export_bundle(spec, export_dir)
@@ -931,6 +944,77 @@ def test_saved_query_url_does_not_affect_parsing(tmp_path):
     pd.testing.assert_frame_equal(without.collapsed.frame, with_url.collapsed.frame)
     pd.testing.assert_frame_equal(without.totals, with_url.totals)
     assert without.export.sha256 == with_url.export.sha256
+
+
+# ---------------------------------------------------------------------------
+# Declared years vs. the file
+# ---------------------------------------------------------------------------
+#
+# ExportSpec.years is otherwise used only by the tests, for grid coverage and
+# non-overlap, and by load_seam() to pick the single-race spec -- so without
+# the assertion below it reads like a guard while guarding nothing.
+#
+# The motivating case is export 2, whose footer carries no Year/Month line: its
+# saved query may replay as "all dates" and pick up 2025 once WONDER adds it,
+# with no change to the link. The widened file would otherwise parse cleanly,
+# join the analysis grid, and extend the crude-rate check by a year.
+
+
+def _seam_export_at(export_dir, years):
+    (export_dir / fetch.SEAM_EXPORT.filename).write_text(
+        _wonder_export_text(years=years), encoding="utf-8"
+    )
+    return fetch.SEAM_EXPORT
+
+
+def test_export_carrying_an_undeclared_year_is_rejected(tmp_path):
+    """The export-2 replay hazard: a file that came back one year wider."""
+    export_dir = tmp_path / "wonder_exports"
+    export_dir.mkdir()
+    spec = _seam_export_at(export_dir, fetch.SEAM_EXPORT.years + (2021,))
+
+    with pytest.raises(fetch.FetchError) as excinfo:
+        fetch.load_export_bundle(spec, export_dir)
+
+    message = str(excinfo.value)
+    # Both ranges named outright, so the diagnosis needs neither file opened.
+    assert "declares: 2018-2020" in message
+    assert "contains:       2018-2021" in message
+    assert "present in the file but not declared: 2021" in message
+
+
+def test_export_missing_a_declared_year_is_rejected(tmp_path):
+    """Truncation is as wrong as widening, and just as quiet."""
+    export_dir = tmp_path / "wonder_exports"
+    export_dir.mkdir()
+    spec = _seam_export_at(export_dir, (2018, 2020))
+
+    with pytest.raises(fetch.FetchError) as excinfo:
+        fetch.load_export_bundle(spec, export_dir)
+
+    message = str(excinfo.value)
+    assert "declares: 2018-2020" in message
+    assert "contains:       2018, 2020" in message
+    assert "declared but absent from the file: 2019" in message
+
+
+def test_matching_years_load_without_complaint(tmp_path):
+    """The check must not fire on the case it exists to permit."""
+    export_dir = tmp_path / "wonder_exports"
+    export_dir.mkdir()
+    spec = _seam_export_at(export_dir, fetch.SEAM_EXPORT.years)
+
+    bundle = fetch.load_export_bundle(spec, export_dir)
+
+    assert sorted(bundle.collapsed.frame["year"].unique()) == list(spec.years)
+
+
+def test_year_range_formatting_collapses_contiguous_runs():
+    """The message is only readable if 2018-2024 does not print as seven years."""
+    assert fetch._format_year_range([2018, 2019, 2020, 2021]) == "2018-2021"
+    assert fetch._format_year_range([2018, 2020, 2021]) == "2018, 2020-2021"
+    assert fetch._format_year_range([2024]) == "2024"
+    assert fetch._format_year_range([]) == "(none)"
 
 
 # ---------------------------------------------------------------------------

@@ -121,12 +121,13 @@ or the code.
 python -m pytest
 ```
 
-Eighty-two tests. They cover rate arithmetic, exact additivity of the Kitagawa
+Ninety tests. They cover rate arithmetic, exact additivity of the Kitagawa
 decomposition, recovery of a known trend by the excess-mortality baseline fit, the loader's
 refusal to accept incomplete data, and the fetch layer: WONDER export parsing, age-band
 collapse arithmetic, "Not Stated" handling, cache behaviour, refusal to return partial data
 from a malformed response, the two exact identities, agreement with WONDER's published crude
-rate, and measurement of the bridged/single-race vintage seam.
+rate, rejection of an export whose years do not match the range the registry declares, and
+measurement of the bridged/single-race vintage seam.
 
 **Tolerance policy.** A quantity defined to be equal is asserted equal, at `1e-9` for
 floating-point representation only. A quantity merely expected to be close gets a real

@@ -114,10 +114,19 @@ database carries population, so the analysis grid contains no provisional data a
 
 | # | Filename | Database | Years | Cause | Show | Saved query URL |
 |---|---|---|---|---|---|---|
-| 1 | `allcause_by_age_2010-2017_ucd-bridged.txt` | Underlying Cause of Death, 1999–2020 | 2010–2017 | All causes | Deaths, Population, Crude Rate | |
-| 2 | `allcause_by_age_2018-2024_ucd-singlerace.txt` | Underlying Cause of Death, 2018–2024, Single Race | 2018–2024 | All causes | Deaths, Population, Crude Rate | |
-| 3 | `covid_u071_by_age_2020-2024_ucd-singlerace.txt` | Underlying Cause of Death, 2018–2024, Single Race | 2020–2024 | **UCD ICD-10 = U07.1** | Deaths | |
-| 4 | `wonder_ucd_allcause_2018-2020_bridged_SEAM.txt` | Underlying Cause of Death, 1999–2020 | 2018–2020 | All causes | Deaths, Population, Crude Rate | |
+| 1 | `allcause_by_age_2010-2017_ucd-bridged.txt` | Underlying Cause of Death, 1999–2020 | 2010–2017 | All causes | Deaths, Population, Crude Rate | none — see below |
+| 2 | `allcause_by_age_2018-2024_ucd-singlerace.txt` | Underlying Cause of Death, 2018–2024, Single Race | 2018–2024 | All causes | Deaths, Population, Crude Rate | https://wonder.cdc.gov/controller/saved/D158/D518F643 ⚠ |
+| 3 | `covid_u071_by_age_2020-2024_ucd-singlerace.txt` | Underlying Cause of Death, 2018–2024, Single Race | 2020–2024 | **UCD ICD-10 = U07.1** | Deaths | https://wonder.cdc.gov/controller/saved/D158/D518F647 |
+| 4 | `allcause_by_age_2018-2020_ucd-bridged_SEAM.txt` | Underlying Cause of Death, 1999–2020 | 2018–2020 | All causes | Deaths, Population, Crude Rate | |
+
+Links for 2 and 3 verified live on 2026-08-29. **File 1 has no saved link and will not get
+one:** it was exported before this field existed, and re-running a query against frozen
+1999–2020 history purely to mint a link would buy nothing the footer does not already carry.
+Blank is a valid state here, not an outstanding task.
+
+⚠ **File 2's link may not replay to the same years.** Its footer carries no `Year/Month`
+line, so a replay may return whatever the database holds at that time rather than 2018–2024.
+See "What pins export 2" in `docs/denominator-methods.md`.
 
 ### Saved query URLs
 
@@ -146,7 +155,16 @@ measured directly.
 
 Deaths are the same certificates under either vintage, so deaths should barely move; a deaths
 difference above 0.1 percent means the two exports are not the same query. Population is
-where a real difference lives, and it propagates into every age-specific rate.
+where a real difference could live, and it would propagate into every age-specific rate.
+
+**Measured 2026-08-30: both are exactly zero.** All 18 overlapping cells agree to the person
+in deaths and population, so the 2017/2018 boundary carries no vintage step. The reasoning
+is that these queries carry no race stratification, and bridged-race and single-race are two
+race-detail treatments of the same Census vintage. See "The bridged/single-race seam,
+measured" in `docs/denominator-methods.md` for the mechanism and, more importantly, for the
+limits of what a zero here licenses. **File 4 stays in the repository and stays out of the
+grid.** A null result is a measurement, and it holds only for as long as the inputs it was
+computed from are the ones on disk.
 
 `python -m src.fetch --reconcile` reports the per-year, per-band deltas under a
 **Vintage seam** heading, and flags the seam as material above 0.5 percent. If it is

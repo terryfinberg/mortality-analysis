@@ -766,16 +766,21 @@ class ExportSpec:
 # pre-pandemic baseline window, which means an unmeasured step there would bias
 # the excess-mortality baseline fit without any visible symptom.
 # saved_query_url is filled in by hand as each export is run. Blank is fine
-# and always will be; see the note on the field.
+# and always will be; see the note on the field. File 1 was exported before
+# this field existed and is not being re-run to populate it.
 WONDER_EXPORTS: tuple[ExportSpec, ...] = (
     ExportSpec("allcause_by_age_2010-2017_ucd-bridged.txt", "deaths_by_age",
                tuple(range(2010, 2018)),
                "Underlying Cause of Death, 1999-2020 (bridged-race)",
                saved_query_url=""),
+    # This export's footer carries no Year/Month line, so the saved query may
+    # replay as "all dates" and pick up 2025 when WONDER adds it. For this file
+    # the pinned artifact is the committed export and its data rows, not the
+    # link. See docs/denominator-methods.md, "What pins export 2".
     ExportSpec("allcause_by_age_2018-2024_ucd-singlerace.txt", "deaths_by_age",
                tuple(range(2018, 2025)),
                "Underlying Cause of Death, 2018-2024, Single Race",
-               saved_query_url=""),
+               saved_query_url="https://wonder.cdc.gov/controller/saved/D158/D518F643"),
     # No totals: a U07.1 query by ten-year band hits suppression in the young
     # bands, and WONDER disables totals for suppressed results. Nothing in the
     # pipeline uses this export's totals -- the crude-rate check runs on the
@@ -785,8 +790,8 @@ WONDER_EXPORTS: tuple[ExportSpec, ...] = (
                "Underlying Cause of Death, 2018-2024, Single Race",
                require_population=False,
                require_totals=False,
-               saved_query_url=""),
-    ExportSpec("wonder_ucd_allcause_2018-2020_bridged_SEAM.txt", "seam_bridged",
+               saved_query_url="https://wonder.cdc.gov/controller/saved/D158/D518F647"),
+    ExportSpec("allcause_by_age_2018-2020_ucd-bridged_SEAM.txt", "seam_bridged",
                (2018, 2019, 2020),
                "Underlying Cause of Death, 1999-2020 (bridged-race)",
                in_analysis_grid=False,
@@ -1210,6 +1215,70 @@ class LoadedExport:
     export: WonderExport
 
 
+def _format_year_range(years: Iterable[int]) -> str:
+    """Render years compactly, collapsing contiguous runs: ``2018-2020, 2022``."""
+    ys = sorted({int(y) for y in years})
+    if not ys:
+        return "(none)"
+    runs: list[list[int]] = [[ys[0], ys[0]]]
+    for y in ys[1:]:
+        if y == runs[-1][1] + 1:
+            runs[-1][1] = y
+        else:
+            runs.append([y, y])
+    return ", ".join(str(a) if a == b else f"{a}-{b}" for a, b in runs)
+
+
+def assert_export_years_match_spec(spec: ExportSpec, grid: pd.DataFrame) -> None:
+    """The years in the file must be exactly the years the registry declares.
+
+    Without this, ``ExportSpec.years`` reads like a guard while guarding
+    nothing: it is otherwise used only by the tests, for grid coverage and
+    non-overlap, and by :func:`load_seam` to select the single-race spec. A file
+    that came back carrying an extra year would flow into the analysis grid,
+    extend the crude-rate check by a year, and pass.
+
+    That is not hypothetical. Export 2's footer carries no ``Year/Month`` line,
+    so its saved query may replay as "all dates" and return a 2025 row once
+    WONDER adds one -- silently, with no change to the link. For that file the
+    committed bytes are what pins the year range, and this is the assertion that
+    says so in code. See "What pins export 2" in docs/denominator-methods.md.
+
+    Checked in both directions. A truncated export is as wrong as a widened one:
+    losing 2024 from a 2018-2024 file would quietly shorten the baseline window
+    rather than fail.
+    """
+    declared = {int(y) for y in spec.years}
+    found = {int(y) for y in grid["year"].unique()}
+    if declared == found:
+        return
+
+    extra = sorted(found - declared)
+    missing = sorted(declared - found)
+    detail = []
+    if extra:
+        detail.append(
+            f"present in the file but not declared: {_format_year_range(extra)}"
+        )
+    if missing:
+        detail.append(
+            f"declared but absent from the file: {_format_year_range(missing)}"
+        )
+
+    raise FetchError(
+        f"{spec.filename}: the export's years do not match the registry.\n"
+        f"  WONDER_EXPORTS declares: {_format_year_range(declared)} "
+        f"({len(declared)} year(s))\n"
+        f"  the file contains:       {_format_year_range(found)} "
+        f"({len(found)} year(s))\n"
+        f"  {'; '.join(detail)}.\n"
+        f"Either the export was re-run with a different year selection, or the "
+        f"spec in src/fetch.py is stale. Resolve which before using this file: "
+        f"a year range that silently changed size changes the analysis grid and "
+        f"the baseline window with it."
+    )
+
+
 def load_export_bundle(
     spec: ExportSpec, export_dir: Path | None = None, refresh: bool = False
 ) -> LoadedExport | None:
@@ -1221,6 +1290,7 @@ def load_export_bundle(
     grid, export, _cached = load_export_cached(
         spec.series, path, refresh=refresh, require_population=spec.require_population
     )
+    assert_export_years_match_spec(spec, grid)
     value_cols = ["deaths"] + (["population"] if spec.require_population else [])
 
     if spec.require_totals:
