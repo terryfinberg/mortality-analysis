@@ -32,7 +32,7 @@ The Congress finds the following:
 
 **(3)** For much of the postwar period, improvement in age-specific mortality offset this demographic pressure, holding the crude rate approximately stable. This offsetting relationship is an equilibrium sustained by two large opposing forces, not a natural constant, and it is therefore vulnerable to any sustained stall in mortality improvement.
 
-**(4)** Mortality during the COVID-19 pandemic was concentrated among older adults: {{COVID_SHARE_65PLUS}} percent of deaths for which COVID-19 was the underlying cause occurred among people aged 65 and over, across {{COVID_YEAR_FIRST}} through {{COVID_YEAR_LAST}}. This profile differs fundamentally from the 1918 influenza pandemic, in which mortality peaked among young and middle-aged adults. Preparedness frameworks calibrated to one profile are poorly matched to the other.
+**(4)** Mortality during the COVID-19 pandemic was concentrated among older adults: 75.7 percent of deaths for which COVID-19 was the underlying cause occurred among people aged 65 and over, across 2020 through 2024. This profile differs fundamentally from the 1918 influenza pandemic, in which mortality peaked among young and middle-aged adults. Preparedness frameworks calibrated to one profile are poorly matched to the other.
 
 **(5)** Excess mortality monitoring during the pandemic was assembled as an emergency improvisation. The United States lacks standing infrastructure for near-real-time excess mortality surveillance.
 

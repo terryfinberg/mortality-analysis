@@ -146,5 +146,9 @@
       "share_pct": 0.3421122510561255
     }
   ],
-  "covid_share_65plus": 75.7
+  "covid_share_65plus": 75.7,
+  "covid_years": {
+    "first": 2020,
+    "last": 2024
+  }
 }

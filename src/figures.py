@@ -44,7 +44,11 @@ def fig_age_specific_rates(rates) -> Path:
     ax.set_xlabel("Year")
     ax.set_ylabel("Deaths per 100,000 (log scale)")
     ax.set_title("Age-specific mortality rates")
-    ax.legend(title="Age group", fontsize=8)
+    # Outside the axes: six series spanning the full width leave no interior
+    # corner free, and an inset legend sat on top of the 85+ and 75-84 lines'
+    # final points. bbox_inches="tight" in _save() keeps it in frame.
+    ax.legend(title="Age group", fontsize=8,
+              loc="upper left", bbox_to_anchor=(1.02, 1.0), borderaxespad=0)
     ax.grid(alpha=0.3, which="both")
     return _save(fig, "fig2_age_specific_rates")
 

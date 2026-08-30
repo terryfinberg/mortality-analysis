@@ -159,7 +159,7 @@ An equilibrium sustained by cancellation is not durable. It holds only while imp
 
 #### Robustness of the narrowing-margin result
 
-This claim rests on the age effect dominating the rate effect over the pre-pandemic interval, so we tested whether that dominance depends on the treatment of 2010, whose denominator is measured on a different basis from every other year (section 6). Under all three treatments — the primary series as published, 2010 excluded from the interval, and 2010 replaced by the Census Bureau's published July 1 estimate — the age-to-rate ratio falls between **3.41 and 3.87**.
+This claim rests on the age effect dominating the rate effect over the pre-pandemic interval, so we tested whether that dominance depends on the treatment of 2010, whose denominator is measured on a different basis from every other year (section 6). Under all three treatments — the primary series as published, 2010 excluded from the interval, and 2010 replaced by the Census Bureau's published July 1 estimate — the age-to-rate ratio falls between **3.41 and 3.87**. The lower bound is the primary series and is computed by this repository's pipeline; the upper bound comes from the alternative-treatment table in `docs/denominator-methods.md`, which is not yet reproduced in code (see section 6).
 
 The result is therefore not marginal under any treatment. For the age effect to stop dominating, age-specific mortality improvement over the interval would have to have been roughly **241 percent larger** than what was observed. The uncertainty introduced by the 2010 measurement basis is nowhere near that magnitude, and no plausible resolution of it changes the direction of the finding.
 

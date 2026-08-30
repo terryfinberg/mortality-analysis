@@ -159,7 +159,7 @@ or the code.
 python -m pytest
 ```
 
-One hundred and twenty-six tests. They cover rate arithmetic, exact additivity of the Kitagawa
+One hundred and forty-three tests. They cover rate arithmetic, exact additivity of the Kitagawa
 decomposition, recovery of a known trend by the excess-mortality baseline fit, the loader's
 refusal to accept incomplete data, and the fetch layer: WONDER export parsing, age-band
 collapse arithmetic, "Not Stated" handling, cache behaviour, refusal to return partial data
@@ -176,6 +176,12 @@ fires. A recorded hash nobody recomputes is a claim, not a check — and the one
 defect this repository has actually had (git rewriting line endings inside a committed data
 file, moving its bytes underneath its recorded hash) was caught by reading a warning, not by
 anything that could fail.
+
+Two further classes are covered because a defect in each got past everything else. **Figure
+geometry** is asserted against the values it encodes — a stacked bar once hid a negative
+component entirely, and every input-side check passed while it did. **Document prose** is
+checked for statistic-shaped literals that restate a value from `results.json`, because a
+hardcoded number that is right today agrees with itself forever.
 
 **Tolerance policy.** A quantity defined to be equal is asserted equal, at `1e-9` for
 floating-point representation only. A quantity merely expected to be close gets a real

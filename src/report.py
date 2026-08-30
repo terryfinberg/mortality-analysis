@@ -77,6 +77,13 @@ def compute(strict: bool = True) -> dict:
         },
         "covid_by_age": covid_share.to_dict(orient="records"),
         "covid_share_65plus": round(float(elderly["share_pct"].sum()), 1),
+        # The COVID series starts later than the mortality grid, so any claim
+        # about the share has to name its own window rather than borrow the
+        # paper's. Recorded here so the prose can cite it without a literal.
+        "covid_years": {
+            "first": int(ds.covid_by_age["year"].min()),
+            "last": int(ds.covid_by_age["year"].max()),
+        },
     }
 
     PROCESSED.mkdir(parents=True, exist_ok=True)
@@ -102,6 +109,8 @@ def _flatten(res: dict) -> dict[str, str]:
         "ADJ_FIRST": res["adjusted_rate_first"],
         "ADJ_LAST": res["adjusted_rate_last"],
         "COVID_SHARE_65PLUS": res["covid_share_65plus"],
+        "COVID_YEAR_FIRST": res["covid_years"]["first"],
+        "COVID_YEAR_LAST": res["covid_years"]["last"],
         "EXCESS_2020_2021": f"{res['excess']['total_2020_2021']:,}",
         "EXCESS_TOTAL": f"{res['excess']['total_pandemic_era']:,}",
         "BASELINE_WINDOW": res["excess"]["baseline"],
@@ -116,14 +125,33 @@ def _flatten(res: dict) -> dict[str, str]:
         flat[f"DECOMP_{alias}_RATE"] = d["rate_effect"]
         flat[f"DECOMP_{alias}_AGE"] = d["age_effect"]
         flat[f"DECOMP_{alias}_RATIO"] = d["ratio"]
+
+    # How much larger age-specific mortality improvement would have had to be
+    # for the rate effect to match the age effect: (ratio - 1) as a percentage.
+    # Derived rather than written into the prose, because it moves whenever the
+    # ratio does and a stale version of it reads as a finding.
+    pre_ratio = res["decomposition"][0]["ratio"]
+    flat["DECOMP_PRE_RATE_SHORTFALL_PCT"] = round((pre_ratio - 1) * 100)
     return {k: str(v) for k, v in flat.items()}
 
 
-def build_manuscript(res: dict | None = None) -> Path:
-    """Substitute computed values into the manuscript template."""
+# Templates that carry computed values, and where each is written.
+#
+# The policy framework is here because its Preamble makes empirical claims. A
+# model statute asserting a magnitude that nothing in the repository produced is
+# the same defect as a paper doing it, and arguably worse: a policy document is
+# read by people who will not open the code.
+TEMPLATES: dict[str, str] = {
+    "manuscript.md": "manuscript_built.md",
+    "public_health_policy.md": "public_health_policy_built.md",
+}
+
+
+def build_document(template_name: str, res: dict | None = None) -> Path:
+    """Substitute computed values into one template."""
     if res is None:
         res = json.loads((PROCESSED / "results.json").read_text())
-    template = (PAPER / "manuscript.md").read_text()
+    template = (PAPER / template_name).read_text()
     values = _flatten(res)
 
     unresolved = []
@@ -138,16 +166,28 @@ def build_manuscript(res: dict | None = None) -> Path:
     out = re.sub(r"\{\{(\w+)\}\}", sub, template)
     if unresolved:
         raise KeyError(
-            f"manuscript references undefined tokens: {sorted(set(unresolved))}. "
-            f"Add them to report._flatten() or fix the template."
+            f"{template_name} references undefined tokens: "
+            f"{sorted(set(unresolved))}. Add them to report._flatten() or fix "
+            f"the template."
         )
-    dest = PAPER / "manuscript_built.md"
+    dest = PAPER / TEMPLATES[template_name]
     dest.write_text(out)
     return dest
 
 
+def build_manuscript(res: dict | None = None) -> Path:
+    """Substitute computed values into the manuscript template."""
+    return build_document("manuscript.md", res)
+
+
+def build_all(res: dict | None = None) -> list[Path]:
+    """Build every template that cites computed values."""
+    return [build_document(name, res) for name in TEMPLATES]
+
+
 if __name__ == "__main__":
     r = compute()
-    p = build_manuscript(r)
+    built = build_all(r)
     print(json.dumps(r, indent=2))
-    print(f"\nManuscript written to {p}")
+    for p in built:
+        print(f"\nWritten to {p}")
