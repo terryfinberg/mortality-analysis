@@ -3,19 +3,37 @@
 Reproducible analysis of U.S. mortality, decomposing changes in the crude death rate into
 age-specific mortality and population age-structure components.
 
-**Repository status: the data files are intentionally empty.**
+**Repository status: the data is populated and machine-provenanced. It is not yet attested,
+so strict loading still refuses it.**
 
-## Why the data is empty
+## Where the data came from, and what is still missing
 
-The CSVs in `data/raw/` ship with citations and no values. You populate them from the primary
-sources before anything will run.
+`data/raw/*.csv` was populated by `python -m src.fetch --promote --write` from the four
+committed CDC WONDER exports in `data/raw/wonder_exports/`. Every row records which export it
+came from, by filename and content hash, in `fetched_from`. **Every row's `verified_by` is
+blank**, and `src/loader.py` raises `UnverifiedDataError` in strict mode until a human fills
+it in. `python -m src.report` will not run until you do.
 
-This is deliberate. An earlier version of this project carried mortality figures that had been
-transcribed rather than fetched, and were never checked against the source documents. Numbers
-that carry a citation comment look verified whether or not anyone verified them. Shipping the
-repository empty makes the unverified state visible instead of invisible, and the loader
-enforces it: `src/loader.py` raises `IncompleteDataError` on any missing value and
-`UnverifiedDataError` on any row without a sign-off.
+That gap is the point rather than an unfinished chore. An earlier version of this project
+carried mortality figures that had been transcribed rather than fetched and were never checked
+against the source documents. Numbers that carry a citation look verified whether or not
+anyone verified them, and an automated fetch does not fix that — it changes the costume. A run
+against the wrong export writes an impeccably precise provenance string onto a wrong number,
+more convincingly than a hand transcription would. So promotion fills `source_type` and
+`fetched_from` and never `verified_by`.
+
+The repository previously shipped with the CSVs empty, for the same reason: to make the
+unverified state visible instead of invisible. Emptiness has now done its job and been
+replaced by a stronger guarantee — the values are present, they reconcile against WONDER's own
+published figures, and the loader still refuses them. See **Provenance and attestation are
+different columns** below.
+
+What the promoted data satisfies already:
+
+- Both exact identities: `sum(bands) + not_stated == annual deaths`, and
+  `sum(bands) == annual population`, for all 15 years, with no tolerance.
+- The external check: the crude rate computed from these CSVs reproduces WONDER's own
+  published Crude Rate column for **all 15 years**, 2010 through 2024.
 
 ## Setup
 
@@ -121,7 +139,7 @@ or the code.
 python -m pytest
 ```
 
-One hundred and fifteen tests. They cover rate arithmetic, exact additivity of the Kitagawa
+One hundred and eighteen tests. They cover rate arithmetic, exact additivity of the Kitagawa
 decomposition, recovery of a known trend by the excess-mortality baseline fit, the loader's
 refusal to accept incomplete data, and the fetch layer: WONDER export parsing, age-band
 collapse arithmetic, "Not Stated" handling, cache behaviour, refusal to return partial data
@@ -147,8 +165,9 @@ to be obviously unlike real U.S. figures so nobody mistakes a fixture for data.
 
 No test touches the network. The HTTP layer is mocked entirely.
 
-`test_loader.py::test_repo_ships_with_unpopulated_data` fails once you populate the data.
-That is expected. Delete the test at that point.
+`test_loader.py::test_repo_ships_with_unpopulated_data` was removed when the data was
+populated, as this section previously instructed. `test_populated_data_is_still_unverified`
+replaces it: data being present is no longer the question, data being signed off is.
 
 ## Layout
 

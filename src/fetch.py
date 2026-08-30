@@ -740,6 +740,14 @@ class ExportSpec:
     # would reject an export the user could not have produced any other way.
     require_totals: bool = True
 
+    # True only for an export taken from WONDER's Provisional Mortality
+    # database. All four current exports come from final databases -- 2024 is
+    # final in the Single Race one -- so no provisional data enters the grid.
+    # This drives the `status` column in us_annual_deaths.csv, which the
+    # manuscript describes as flagging provisional years: that claim is only
+    # true if the flag is derived from the source rather than typed in.
+    provisional: bool = False
+
     # SHA-256 of the committed export, so the bytes this repository's results
     # were computed from are pinned rather than assumed.
     #
@@ -1997,6 +2005,7 @@ def promote(
     dry_run: bool = True,
     accessed: str | None = None,
     raw_dir: Path | None = None,
+    provenance: str | None = None,
 ) -> pd.DataFrame:
     """Copy fetched values into the raw CSV for ``series``. Dry run by default.
 
@@ -2015,10 +2024,12 @@ def promote(
             f"promote({series!r}) needs a frame of fetched values. Nothing was "
             f"passed, and promote() will not go and fetch on its own."
         )
-    if not dataset_id:
+    if not dataset_id and not provenance:
         raise FetchError(
             "promote() needs the dataset_id the values came from, so that "
-            "fetched_from records real provenance rather than a placeholder."
+            "fetched_from records real provenance rather than a placeholder. "
+            "For a WONDER export pass provenance=export.provenance() instead, "
+            "which carries the file's name and content hash."
         )
 
     spec = RAW_TARGETS[series]
@@ -2028,6 +2039,19 @@ def promote(
     keys: list[str] = spec["keys"]
     value_cols: list[str] = spec["values"]
 
+    # A frame carrying none of the target columns promotes nothing and reports
+    # "0 cells would change", which reads like agreement rather than like a
+    # mismatch. The covid grid arrives with a `deaths` column against a
+    # `covid_deaths` target, so this is a live hazard, not a defensive one.
+    usable = [c for c in value_cols if c in values.columns]
+    if not usable:
+        raise FetchError(
+            f"promote({series!r}): the supplied frame has none of the target "
+            f"columns {value_cols}. It has {sorted(values.columns)}. Rename "
+            f"before promoting -- a frame with no matching column would write "
+            f"nothing and report success."
+        )
+
     # These ship empty, so pandas reads them as all-NaN float columns and then
     # refuses a string assignment. Widen them to object before writing.
     for col in (*PROVENANCE_COLS, "verified_by", "verified_date"):
@@ -2036,7 +2060,7 @@ def promote(
         current[col] = current[col].astype("object")
 
     indexed = values.set_index(keys)
-    provenance = provenance_string(dataset_id, accessed)
+    provenance = provenance or provenance_string(dataset_id, accessed)
     changes: list[dict[str, Any]] = []
 
     for i, row in current.iterrows():
@@ -2078,10 +2102,137 @@ def promote(
             f"a human signs off. Re-run with dry_run=False to write."
         )
     else:
+        # The CSVs ship empty, so pandas typed these columns float64 and every
+        # promoted count landed as `2468435.0`. Deaths and populations are
+        # counts; writing them with a decimal point invites a reader to wonder
+        # what was rounded. Cast back to a nullable integer dtype, which keeps
+        # any still-unpopulated row blank rather than turning it into 0.
+        for col in value_cols:
+            if col not in current.columns:
+                continue
+            nonnull = current[col].dropna()
+            if len(nonnull) and (nonnull == nonnull.round()).all():
+                current[col] = current[col].astype("Int64")
         current.to_csv(path, index=False)
         print(
             f"promote({series!r}): wrote {len(diff)} cell(s) to {path}. "
             f"verified_by left blank by design."
+        )
+    return diff
+
+
+def promote_from_exports(
+    dry_run: bool = True,
+    export_dir: Path | None = None,
+    raw_dir: Path | None = None,
+) -> dict[str, pd.DataFrame]:
+    """Promote every series the committed WONDER exports can populate.
+
+    Promotion runs **once per export**, not once per series, so each row records
+    the provenance of the file it actually came from:
+    ``wonder-export:<filename>@sha256:<hash>``. deaths_by_age is assembled from
+    two exports at the 2017/2018 database boundary, and a single blended
+    provenance string would make it impossible to tell which export any given
+    row came out of -- which is the question a reviewer checking a number will
+    have.
+
+    ``verified_by`` is left blank throughout, by design. See the note above
+    :func:`promote`: promotion is provenance, not attestation, and
+    ``loader.UnverifiedDataError`` keeps firing until a human signs each row off.
+    """
+    export_dir = export_dir or WONDER_EXPORT_DIR
+    raw_dir = raw_dir or RAW_DIR
+    diffs: dict[str, pd.DataFrame] = {}
+    status_by_year: dict[int, str] = {}
+
+    def record(key: str, frame: pd.DataFrame) -> None:
+        if frame is not None and not frame.empty:
+            diffs[key] = frame
+
+    for spec in GRID_EXPORTS:
+        bundle = load_export_bundle(spec, export_dir)
+        if bundle is None:
+            continue
+        prov = bundle.export.provenance()
+        collapsed = bundle.collapsed
+        tag = spec.filename
+
+        if spec.series == "deaths_by_age":
+            for year in sorted(collapsed.frame["year"].unique()):
+                status_by_year[int(year)] = (
+                    "provisional" if spec.provisional else "final"
+                )
+            record(f"deaths_by_age <- {tag}", promote(
+                "deaths_by_age", collapsed.frame, provenance=prov,
+                dry_run=dry_run, raw_dir=raw_dir,
+            ))
+            record(f"annual_deaths <- {tag}", promote(
+                "annual_deaths", derive_annual_deaths([collapsed]),
+                provenance=prov, dry_run=dry_run, raw_dir=raw_dir,
+            ))
+            record(f"population <- {tag}", promote(
+                "population", derive_population([collapsed]),
+                provenance=prov, dry_run=dry_run, raw_dir=raw_dir,
+            ))
+        elif spec.series == "covid_deaths_by_age":
+            # The grid names this column `deaths`; the target CSV calls it
+            # `covid_deaths`. Renamed here rather than in the parser, because
+            # the parser's job is to report what the export says.
+            covid = collapsed.frame.rename(columns={"deaths": "covid_deaths"})
+            record(f"covid_deaths_by_age <- {tag}", promote(
+                "covid_deaths_by_age", covid, provenance=prov,
+                dry_run=dry_run, raw_dir=raw_dir,
+            ))
+
+    status_changes = _apply_annual_status(status_by_year, dry_run, raw_dir)
+    record("status <- source database", status_changes)
+    return diffs
+
+
+def _apply_annual_status(
+    status_by_year: dict[int, str], dry_run: bool, raw_dir: Path
+) -> pd.DataFrame:
+    """Set us_annual_deaths.status from the database each year came out of.
+
+    The manuscript says provisional counts are "flagged as such in the data
+    file". That is only a true statement if the flag follows the source. The
+    column shipped with 2023 and 2024 marked provisional, from an earlier plan
+    that would have taken recent years from Vital Statistics Rapid Release;
+    the grid takes them from the final Single Race database instead, so the
+    label contradicted the export named beside it in ``fetched_from``.
+
+    Kept out of :func:`promote` and out of ``RAW_TARGETS`` deliberately: status
+    is a string, and ``reconcile_series`` differences its value columns
+    numerically.
+    """
+    if not status_by_year:
+        return pd.DataFrame()
+
+    path = raw_dir / RAW_TARGETS["annual_deaths"]["csv"]
+    current = pd.read_csv(path)
+    if "status" not in current.columns:
+        return pd.DataFrame()
+
+    changes = []
+    for i, row in current.iterrows():
+        year = int(row["year"])
+        new = status_by_year.get(year)
+        if new is None or str(row.get("status") or "").strip() == new:
+            continue
+        changes.append({"year": year, "column": "status",
+                        "old": row.get("status"), "new": new})
+        if not dry_run:
+            current.at[i, "status"] = new
+
+    diff = pd.DataFrame(changes)
+    if changes and not dry_run:
+        current.to_csv(path, index=False)
+    if changes:
+        verb = "would change" if dry_run else "wrote"
+        print(
+            f"{'DRY RUN ' if dry_run else ''}status: {verb} {len(changes)} "
+            f"cell(s) in {path.name} "
+            + ", ".join(f"{c['year']} {c['old']}->{c['new']}" for c in changes)
         )
     return diff
 
@@ -2105,8 +2256,29 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--refresh", action="store_true",
                         help="bypass today's cache and re-fetch")
     parser.add_argument("--promote-info", action="store_true",
-                        help="print the open question blocking promote()")
+                        help="print how promote() treats provenance vs attestation")
+    parser.add_argument("--promote", action="store_true",
+                        help="populate data/raw/*.csv from the committed exports")
+    parser.add_argument("--write", action="store_true",
+                        help="with --promote, actually write (default is a dry run)")
     args = parser.parse_args(argv)
+
+    if args.promote:
+        diffs = promote_from_exports(dry_run=not args.write)
+        total = sum(len(d) for d in diffs.values())
+        print()
+        for key, diff in diffs.items():
+            print(f"  {key}: {len(diff)} cell(s)")
+        verb = "written" if args.write else "would change"
+        print(f"\n{total} cell(s) {verb} across {len(diffs)} promotion(s).")
+        if args.write:
+            print(
+                "verified_by left blank by design. Strict loading still raises "
+                "UnverifiedDataError until a human signs each row off."
+            )
+        else:
+            print("Dry run. Re-run with --promote --write to apply.")
+        return 0
 
     if args.promote_info:
         print(promote.__doc__ or "")

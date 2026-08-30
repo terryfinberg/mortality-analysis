@@ -9,13 +9,16 @@ resolve it before continuing; later sections assume earlier ones passed.
 
 - [ ] `.\bootstrap.ps1` (Windows) or `./bootstrap.sh` completes without error
 - [ ] `.venv` directory exists
-- [ ] `python -m pytest` reports **115 passed**
+- [ ] `python -m pytest` reports **118 passed**
 - [ ] Jupyter kernel "Python (fragile-equilibrium)" appears in `jupyter kernelspec list`
 
-**Pass condition:** 115 tests pass on empty data.
+**Pass condition:** 118 tests pass.
 
-If `test_repo_ships_with_unpopulated_data` **fails** at this stage, someone has put values in
-`data/raw/`. Find out where they came from before proceeding.
+`data/raw/` is now populated from the committed WONDER exports, so the old
+"repo ships empty" guard is gone. The check that replaced it is
+`test_populated_data_is_still_unverified`: if that **fails**, someone has written into
+`verified_by` without doing the verification, which is the failure this project exists to
+prevent. Find out who and on what basis before proceeding.
 
 ---
 
@@ -165,13 +168,16 @@ means a stale kernel; restart and rerun.
 
 - [ ] Re-verify five annual death totals against the NVSR PDFs, chosen at random. Any
       mismatch means re-checking all of them.
-- [ ] Confirm provisional years are still labeled provisional and the values match the
-      current VSRR release, not an older one
+- [ ] Confirm the `status` column still matches its source. All 15 years are currently
+      `final`: the grid takes 2018–2024 from the final Single Race database, not from VSRR,
+      so no year is provisional. `promote_from_exports()` derives this from
+      `ExportSpec.provisional` rather than it being typed in — if a provisional export is
+      ever added, the flag follows the source automatically
 - [ ] Run the excess-mortality analysis with at least two alternative baseline windows and
       record how much the headline figure moves
 - [ ] Read the manuscript limitations section against what you actually did and add anything
       missing
-- [ ] Add a LICENSE file
+- [ ] Fill `verified_by` and `verified_date` for every row, against the cited source
 - [ ] Push to GitHub, tag a release, connect Zenodo, mint the DOI
 - [ ] Put the DOI into `paper/medrxiv_submission.md`
 
