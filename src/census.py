@@ -109,6 +109,17 @@ class CensusVintage:
 # `years` tuples are what the header actually contained, not what the vintage
 # name implies -- a vintage carries every year from 2020 up to its own.
 CENSUS_VINTAGES: dict[int, CensusVintage] = {
+    # Carries CENSUS2010POP (the April 1 decennial count WONDER uses for 2010)
+    # alongside POPESTIMATE2010 (the July 1 estimate). Both are needed to
+    # measure the 2010 measurement-basis effect. Note the 2010-2019 vintage
+    # directory has no agesex-res file at all -- only alldata-* -- so this is
+    # where the July 1 2010 age detail actually lives. Found by listing.
+    2020: CensusVintage(
+        vintage=2020,
+        filename="nc-est2020-agesex-res.csv",
+        directory="2010-2020/national/asrh",
+        years=tuple(range(2010, 2021)),
+    ),
     2024: CensusVintage(
         vintage=2024,
         filename="nc-est2024-agesex-res.csv",
@@ -235,8 +246,12 @@ def national_total(vintage: int, year: int, census_dir: Path | None = None) -> i
     return national_total_for(vintage, get_vintage(vintage).column(year), census_dir)
 
 
+DECENNIAL_2010_COLUMN = "CENSUS2010POP"
+
+
 def collapse_to_bands(
-    vintage: int, year: int, census_dir: Path | None = None
+    vintage: int, year: int, census_dir: Path | None = None,
+    column: str | None = None,
 ) -> pd.Series:
     """Single-year Census ages summed onto the six analysis bands.
 
@@ -251,16 +266,19 @@ def collapse_to_bands(
     invisible in the six numbers and obvious against the total.
     """
     spec = get_vintage(vintage)
-    column = spec.column(year)
+    # `column` overrides the POPESTIMATE lookup, for the columns that are not a
+    # year's estimate -- CENSUS2010POP above all, which is what WONDER carries
+    # for 2010 and therefore what any check against WONDER must use.
+    column = column or spec.column(year)
     detail = load_vintage(vintage, census_dir)
 
     if column not in detail.columns:
         raise CensusError(
             f"{spec.filename}: no column {column!r}. Present: "
-            f"{sorted(c for c in detail.columns if c.startswith('POPESTIMATE'))}."
+            f"{sorted(c for c in detail.columns if c not in ('SEX', 'AGE'))}."
         )
 
-    published = national_total(vintage, year, census_dir)
+    published = national_total_for(vintage, column, census_dir)
     summed = int(detail[column].sum())
     if summed != published:
         raise CensusError(

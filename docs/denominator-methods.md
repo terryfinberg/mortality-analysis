@@ -277,9 +277,27 @@ Three treatments, all reported:
 
 | treatment | interval | slope | excess 2020-21 | age-to-rate ratio |
 |---|---|---|---|---|
-| A as published | 2010–2019 | −1.779 | 1,117,059 | 3.405 |
-| B 2010 excluded | 2011–2019 | −1.415 | 1,105,148 | 3.599 |
-| C′ published July 1 | 2010–2019 | −1.585 | 1,110,739 | 3.872 |
+| A as published | 2010-2019 | −1.779 | 1,117,059 | 3.405 |
+| B 2010 excluded | 2011-2019 | −1.415 | 1,105,148 | 3.599 |
+| C' published July 1 | 2010-2019 | −1.585 | 1,110,739 | 3.872 |
+
+> **Computed, not quoted.** `src/treatments.py` produces this table; regenerate
+> it with `python -m src.treatments`, and `tests/test_treatments.py` fails if
+> the doc drifts from it. It was previously a table of asserted numbers — rows
+> B and C′ appeared nowhere in `src/` or `tests/`, so the robustness range the
+> manuscript rests on was half computed and half typed.
+>
+> **When first computed, on 2026-08-30, all three reproduced the asserted
+> values exactly** — slope, excess and ratio, to every published digit. That is
+> recorded because it was the outcome, not because it was expected: had they
+> differed, the difference would have been the finding rather than a footnote.
+>
+> Treatment C′ takes its denominator from `CENSUS2010POP`'s companion column
+> `POPESTIMATE2010` in `data/raw/census/nc-est2020-agesex-res.csv`, and
+> `assert_wonder_2010_is_the_decennial_count()` verifies band by band that
+> WONDER's 2010 really is the April 1 count before C′ is computed. If it were
+> not, replacing 2010 would be an unexplained substitution rather than a
+> basis correction.
 
 A stays primary, because it preserves the crude-rate match. The improvement rate
 is reported as a **range**, −1.41 to −1.78, not a point estimate.

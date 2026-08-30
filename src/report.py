@@ -13,7 +13,7 @@ import json
 import re
 from pathlib import Path
 
-from . import decomposition, excess, figures, loader, rates
+from . import decomposition, excess, figures, loader, rates, treatments
 
 ROOT = Path(__file__).resolve().parent.parent
 PAPER = ROOT / "paper"
@@ -86,6 +86,27 @@ def compute(strict: bool = True) -> dict:
         },
     }
 
+    # The 2010 measurement-basis robustness range. Computed rather than quoted:
+    # the manuscript's "not marginal under any treatment" claim rests on it.
+    treats = treatments.compute_treatments(
+        ds.by_age, ds.annual_deaths, ds.population, ds.standard_pop
+    )
+    lo, hi = treatments.ratio_range(treats)
+    res["treatments"] = [
+        {
+            "key": t.key,
+            "label": t.label,
+            "interval": t.interval_label,
+            "baseline_slope": round(t.baseline_slope, 3),
+            "excess_2020_2021": round(t.excess_2020_2021),
+            "rate_effect": round(t.rate_effect, 1),
+            "age_effect": round(t.age_effect, 1),
+            "age_to_rate_ratio": round(t.age_to_rate_ratio, 3),
+        }
+        for t in treats
+    ]
+    res["treatment_ratio_range"] = {"low": round(lo, 2), "high": round(hi, 2)}
+
     PROCESSED.mkdir(parents=True, exist_ok=True)
     (PROCESSED / "results.json").write_text(json.dumps(res, indent=2))
 
@@ -111,6 +132,8 @@ def _flatten(res: dict) -> dict[str, str]:
         "COVID_SHARE_65PLUS": res["covid_share_65plus"],
         "COVID_YEAR_FIRST": res["covid_years"]["first"],
         "COVID_YEAR_LAST": res["covid_years"]["last"],
+        "RATIO_RANGE_LOW": res["treatment_ratio_range"]["low"],
+        "RATIO_RANGE_HIGH": res["treatment_ratio_range"]["high"],
         "EXCESS_2020_2021": f"{res['excess']['total_2020_2021']:,}",
         "EXCESS_TOTAL": f"{res['excess']['total_pandemic_era']:,}",
         "BASELINE_WINDOW": res["excess"]["baseline"],

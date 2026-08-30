@@ -9,10 +9,10 @@ resolve it before continuing; later sections assume earlier ones passed.
 
 - [ ] `.\bootstrap.ps1` (Windows) or `./bootstrap.sh` completes without error
 - [ ] `.venv` directory exists
-- [ ] `python -m pytest` reports **143 passed**
+- [ ] `python -m pytest` reports **153 passed**
 - [ ] Jupyter kernel "Python (fragile-equilibrium)" appears in `jupyter kernelspec list`
 
-**Pass condition:** 143 tests pass.
+**Pass condition:** 153 tests pass.
 
 `data/raw/` is now populated from the committed WONDER exports, so the old
 "repo ships empty" guard is gone. The check that replaced it is

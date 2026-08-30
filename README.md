@@ -159,7 +159,7 @@ or the code.
 python -m pytest
 ```
 
-One hundred and forty-three tests. They cover rate arithmetic, exact additivity of the Kitagawa
+One hundred and fifty-three tests. They cover rate arithmetic, exact additivity of the Kitagawa
 decomposition, recovery of a known trend by the excess-mortality baseline fit, the loader's
 refusal to accept incomplete data, and the fetch layer: WONDER export parsing, age-band
 collapse arithmetic, "Not Stated" handling, cache behaviour, refusal to return partial data
@@ -218,6 +218,7 @@ paper/             Manuscript template, built manuscript, policy framework.
 | `fetch.py` | Retrieve inputs from CDC APIs, cache, reconcile against the raw CSVs. |
 | `census.py` | Census population vintages. Enforces the age top-code and total identities. |
 | `vintage.py` | Vintage sensitivity: restatement uniformity, two-treatment Kitagawa. |
+| `treatments.py` | The three treatments of the 2010 measurement basis, and the reported range. |
 | `rates.py` | Crude rates, age-specific rates, direct age standardization. |
 | `decomposition.py` | Kitagawa decomposition. |
 | `excess.py` | Baseline fitting and excess mortality. |

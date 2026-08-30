@@ -51,6 +51,14 @@ def _computed_values(res) -> dict[float, str]:
     for row in res["covid_by_age"]:
         put(row["covid_deaths"], f"covid_by_age[{row['age_group']}].deaths")
         put(round(row["share_pct"], 1), f"covid_by_age[{row['age_group']}].share")
+    for t in res.get("treatments", []):
+        for k in ("baseline_slope", "excess_2020_2021", "rate_effect",
+                  "age_effect", "age_to_rate_ratio"):
+            put(t[k], f"treatments[{t['key']}].{k}")
+    rng = res.get("treatment_ratio_range")
+    if rng:
+        put(rng["low"], "treatment_ratio_range.low")
+        put(rng["high"], "treatment_ratio_range.high")
     return out
 
 
@@ -67,11 +75,11 @@ def _computed_values(res) -> dict[float, str]:
 LITERAL = re.compile(r"(?<![\w.])(\d{1,3}(?:,\d{3})+|\d+\.\d+)(?!\d)")
 
 # Literals that are legitimately not from results.json. Each needs a reason.
-ALLOWED: dict[str, str] = {
-    "3.87": "upper bound of the 2010-treatment range; from the alternative "
-            "treatments table in docs/denominator-methods.md, which the "
-            "pipeline does not yet reproduce. Flagged in the prose as such.",
-}
+#
+# Empty, and worth keeping that way. `3.87` lived here while the 2010-treatment
+# range was half computed and half asserted; src/treatments.py now produces both
+# bounds, so the exemption was deleted rather than left to rot into a licence.
+ALLOWED: dict[str, str] = {}
 
 
 def _templates():

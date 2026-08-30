@@ -150,5 +150,41 @@
   "covid_years": {
     "first": 2020,
     "last": 2024
+  },
+  "treatments": [
+    {
+      "key": "A",
+      "label": "as published",
+      "interval": "2010-2019",
+      "baseline_slope": -1.779,
+      "excess_2020_2021": 1117059,
+      "rate_effect": -29.2,
+      "age_effect": 99.4,
+      "age_to_rate_ratio": 3.405
+    },
+    {
+      "key": "B",
+      "label": "2010 excluded",
+      "interval": "2011-2019",
+      "baseline_slope": -1.415,
+      "excess_2020_2021": 1105148,
+      "rate_effect": -24.0,
+      "age_effect": 86.5,
+      "age_to_rate_ratio": 3.599
+    },
+    {
+      "key": "C'",
+      "label": "published July 1",
+      "interval": "2010-2019",
+      "baseline_slope": -1.585,
+      "excess_2020_2021": 1110739,
+      "rate_effect": -25.0,
+      "age_effect": 96.7,
+      "age_to_rate_ratio": 3.872
+    }
+  ],
+  "treatment_ratio_range": {
+    "low": 3.41,
+    "high": 3.87
   }
 }

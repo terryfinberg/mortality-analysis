@@ -102,11 +102,11 @@ def test_an_export_with_no_recorded_hash_is_rejected(tmp_path, monkeypatch):
 
 
 def test_committed_census_files_match_provenance():
+    """Derived from the registry, so adding a vintage does not break this."""
     verified = census.verify_census_files()
-    assert sorted(verified) == [
-        "nc-est2024-agesex-res.csv",
-        "nc-est2025-agesex-res.csv",
-    ]
+    registered = sorted(s.filename for s in census.CENSUS_VINTAGES.values())
+    assert sorted(verified) == registered
+    assert len(verified) >= 2
 
 
 def test_provenance_records_a_hash_for_every_registered_vintage():
@@ -119,11 +119,13 @@ def test_provenance_records_a_hash_for_every_registered_vintage():
 
 
 def _census_copy(tmp_path):
+    """A copy of the whole census input directory, whatever it holds."""
     census_dir = tmp_path / "census"
     census_dir.mkdir()
-    for name in ("nc-est2024-agesex-res.csv", "nc-est2025-agesex-res.csv",
-                 census.PROVENANCE_FILE):
-        shutil.copyfile(census.CENSUS_DIR / name, census_dir / name)
+    for src in list(census.CENSUS_DIR.glob("*.csv")) + [
+        census.CENSUS_DIR / census.PROVENANCE_FILE
+    ]:
+        shutil.copyfile(src, census_dir / src.name)
     return census_dir
 
 
@@ -135,7 +137,9 @@ def test_a_single_mutated_byte_fails_the_census_check(tmp_path):
     the hash catches it.
     """
     census_dir = _census_copy(tmp_path)
-    assert len(census.verify_census_files(census_dir)) == 2
+    assert len(census.verify_census_files(census_dir)) == len(
+        list(census.CENSUS_DIR.glob("*.csv"))
+    )
 
     target = census_dir / "nc-est2024-agesex-res.csv"
     original = target.read_text(encoding="utf-8")
