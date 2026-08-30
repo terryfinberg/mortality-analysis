@@ -1,5 +1,19 @@
 # medRxiv submission checklist
 
+> ## ⚠ The preprint license is effectively irreversible once posted
+>
+> This manuscript is licensed **CC BY 4.0** (`paper/LICENSE`). Preprint servers
+> do not, as a rule, permit relicensing a posted version, and posting a later
+> version under different terms does not retract the terms the first one went
+> out under. There is no undo.
+>
+> **Re-confirm the target journal's preprint policy against CC BY 4.0 before
+> posting, not after.** A small number of journals still place conditions on
+> preprints depending on the license they carry. CC BY 4.0 is the broadly
+> compatible choice and medRxiv's own recommendation, but broadly compatible is
+> not universally compatible, and this check costs minutes now against a
+> problem that cannot be fixed later.
+
 **Preprint server:** medRxiv (health sciences)
 **Suggested category:** Epidemiology
 **DOI:** *[to be minted from a tagged GitHub release via Zenodo]*
@@ -15,7 +29,12 @@
 - [ ] Repository pushed to GitHub, public
 - [ ] Release tagged (`v0.1.0` or later)
 - [ ] Zenodo connected, DOI minted, DOI inserted above and in the manuscript
-- [ ] `LICENSE` present
+- [ ] `LICENSE` (BSD-3-Clause, code), `paper/LICENSE` (CC BY 4.0, manuscript) and
+      `DATA.md` (public-domain status of the federal data) all present
+- [ ] **Target journal's preprint policy re-confirmed against CC BY 4.0** — see the
+      warning at the top of this file. Irreversible once posted.
+- [ ] `python -m pytest tests/test_provenance.py` passes, so the committed data
+      matches its recorded hashes at the version being cited
 
 ### Manuscript
 

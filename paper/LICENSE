@@ -1,0 +1,52 @@
+Creative Commons Attribution 4.0 International (CC BY 4.0)
+
+Copyright (c) 2026, Terry Finberg
+
+This license covers the manuscript and the outputs derived from it:
+
+    paper/manuscript.md
+    paper/manuscript_built.md
+    paper/public_health_policy.md
+    figures/
+    data/processed/results.json
+
+You are free to share and adapt this material for any purpose, including
+commercially, provided you give appropriate credit, link to the license, and
+indicate if changes were made.
+
+Full legal text: https://creativecommons.org/licenses/by/4.0/legalcode
+Human-readable summary: https://creativecommons.org/licenses/by/4.0/
+
+---
+
+SCOPE
+
+This file does NOT cover:
+
+- the software under `src/`, `tests/`, `bootstrap.*` and `notebooks/`, which is
+  BSD-3-Clause. See the LICENSE file at the repository root.
+- the data under `data/raw/`, which consists of United States federal
+  government works in the public domain and is not the author's to license.
+  See DATA.md.
+
+The figures and results.json are covered here rather than by the software
+license because they are outputs of the analysis, not the machinery that
+produces them. The machinery is BSD-3-Clause; what it computed is CC BY 4.0.
+
+---
+
+BEFORE POSTING A PREPRINT
+
+The license attached to a preprint is effectively irreversible once posted.
+Preprint servers do not, as a rule, permit relicensing a posted version, and a
+later version carrying different terms does not retract the terms the first one
+went out under.
+
+Confirm the target journal's preprint policy BEFORE posting, not after. A small
+number of journals still place conditions on preprints depending on the license
+they carry. CC BY 4.0 is the broadly compatible choice and the medRxiv default
+recommendation, but "broadly compatible" is not "universally", and the check
+costs minutes now against an unfixable problem later.
+
+This caution is repeated at the top of paper/medrxiv_submission.md and appears
+as a checklist item there.

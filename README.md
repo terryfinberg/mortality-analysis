@@ -192,5 +192,23 @@ not an error on either side. See manuscript section 3.3.
 
 ## License and citation
 
-Add a license before publishing. If this work is cited, cite the manuscript and the Zenodo DOI
-minted from a tagged release, not this README.
+Three different things live here and they are licensed separately, because one file covering
+all three would have to be wrong about at least one of them.
+
+| what | terms | file |
+|---|---|---|
+| Software — `src/`, `tests/`, `bootstrap.*`, `notebooks/` | BSD-3-Clause | [`LICENSE`](LICENSE) |
+| Data — `data/raw/wonder_exports/`, `data/raw/census/` | **Not licensed.** U.S. federal government works, public domain under 17 U.S.C. § 105 | [`DATA.md`](DATA.md) |
+| Manuscript and outputs — `paper/`, `figures/`, `results.json` | CC BY 4.0 | [`paper/LICENSE`](paper/LICENSE) |
+
+**The data is not licensed because it is not ours to license.** Applying any license to it —
+BSD, CC BY, even CC0 — would assert rights that do not exist. `DATA.md` states the status,
+records the CC0 release of the thin compilation right over the *selection and arrangement*
+only, and explains why that scope is kept narrow rather than simplified into a blanket CC0.
+
+BSD-3-Clause rather than MIT for the code because of clause 3, the non-endorsement term: this
+repository ships a model policy framework next to the analysis, so a fork reaching different
+conclusions while carrying the author's name is foreseeable rather than hypothetical.
+
+If this work is cited, cite the manuscript and the Zenodo DOI minted from a tagged release,
+not this README.

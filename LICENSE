@@ -1,0 +1,46 @@
+BSD 3-Clause License
+
+Copyright (c) 2026, Terry Finberg
+
+Redistribution and use in source and binary forms, with or without
+modification, are permitted provided that the following conditions are met:
+
+1. Redistributions of source code must retain the above copyright notice, this
+   list of conditions and the following disclaimer.
+
+2. Redistributions in binary form must reproduce the above copyright notice,
+   this list of conditions and the following disclaimer in the documentation
+   and/or other materials provided with the distribution.
+
+3. Neither the name of the copyright holder nor the names of its contributors
+   may be used to endorse or promote products derived from this software
+   without specific prior written permission.
+
+THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
+ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE
+FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
+DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
+SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
+CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
+OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
+OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+
+---
+
+THIS FILE COVERS THE SOFTWARE ONLY.
+
+It applies to `src/`, `tests/`, `bootstrap.ps1`, `bootstrap.sh` and
+`notebooks/`. It does NOT apply to:
+
+- the data files under `data/raw/`, which are United States federal government
+  works in the public domain and are not the copyright holder's to license.
+  See DATA.md.
+- the manuscript and derived outputs under `paper/` and `figures/`, which are
+  licensed CC BY 4.0. See paper/LICENSE.
+
+Clause 3 is the reason this is BSD-3-Clause rather than MIT. This repository
+ships a model policy framework alongside the analysis, so a fork reaching
+different conclusions while carrying the author's name is a foreseeable
+scenario rather than a hypothetical one.
