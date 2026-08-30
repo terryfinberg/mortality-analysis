@@ -166,12 +166,7 @@ means a stale kernel; restart and rerun.
 
 ## Section 6: Pre-submission
 
-- [ ] Corroborate as many annual totals against NVSR "Deaths: Final Data" Table B as have a
-      published report, recording volume and table in `corroborated_against`. Any mismatch is
-      a finding, not a typo: record both figures and footnote it. Leave the rest blank —
-      blank means not corroborated, and the paper should state the count it actually achieved
-      rather than implying fifteen. See the availability note under Query 2 in
-      `data/queries/cdc_wonder_queries.md`.
+- [ ] Work the corroboration plan below and record what you actually achieved
 - [ ] Confirm the `status` column still matches its source. All 15 years are currently
       `final`: the grid takes 2018–2024 from the final Single Race database, not from VSRR,
       so no year is provisional. `promote_from_exports()` derives this from
@@ -184,6 +179,64 @@ means a stale kernel; restart and rerun.
 - [ ] Fill `verified_by` and `verified_date` for every row, against the cited source
 - [ ] Push to GitHub, tag a release, connect Zenodo, mint the DOI
 - [ ] Put the DOI into `paper/medrxiv_submission.md`
+
+---
+
+## Section 7: Corroboration plan
+
+Corroboration is a **separate claim from attestation**. Attestation says a value faithfully
+reproduces the committed export it came from, and is achievable for all 150 rows today.
+Corroboration says an *independent* NCHS publication reports the same figure. It is not
+uniformly available, and this plan is built around what exists rather than around one source
+assumed to cover every year. See **Provenance, attestation and corroboration** in `README.md`.
+
+Blank `corroborated_against` means **not corroborated**. It does not mean corroboration
+failed. Leave it blank rather than reaching for a weaker source to fill the column.
+
+### What is available, by year
+
+| years | source | status |
+|---|---|---|
+| 2010–2022 | "Deaths: Final Data for [year]", Table B | Published. 2021 is NVSR 73-8, 2022 is NVSR 74-4; look each earlier year up in the index |
+| 2023 | NVSR 74-11 *Trends in Births and Deaths: United States, 2010–2023*, or NVSR 74-10 *Deaths: Leading Causes for 2023* | Published, but **neither is Table B** — see the comparability check below |
+| 2024 | **none** | No independent published source exists |
+
+Index: <https://www.cdc.gov/nchs/products/nvsr.htm>. "Deaths: Final Data for 2023" is due —
+the lag runs about three years — but not out as of 2026-08-30.
+
+- [ ] **2010–2022 (13 years).** Compare `us_annual_deaths.deaths` against Table B of each
+      year's report. Record e.g. `NVSR 74-4, Table B` in `corroborated_against`.
+- [ ] **Confirm the Table B basis on the first year you check.** Table B should be the total
+      including deaths with age not stated, which is what `deaths` holds — our `deaths` is
+      `sum(six bands) + not_stated`, and `not_stated` runs 57–163 a year. If Table B turns out
+      to exclude them, every subsequent comparison inherits the error. Settle it once, on one
+      year, against the actual table.
+- [ ] **2023 — try NVSR 74-11 first.** One document covering 2010–2023 from the same agency is
+      a better corroboration instrument than thirteen separate reports: a single consistent
+      editorial basis, and it would corroborate the *shape* of the series, not just its
+      endpoints.
+- [ ] **Before relying on 74-11, check comparability. This is the one that can quietly go
+      wrong.** It is keyworded to crude death rate, so it corroborates a *rate*, not a count,
+      and a rate is only comparable if the denominator is. Our crude rates use WONDER's own
+      per-year population, each year at the vintage current when it was first estimated (see
+      `docs/denominator-methods.md`, discontinuity 1). A trends report spanning 2010–2023 and
+      published in 2025 may well have rebased every year onto **one** consistent vintage,
+      which is a deliberate and defensible choice — and would make its rates not directly
+      comparable to ours. Establish which before recording anything:
+    - [ ] Read 74-11's methods for its population source and vintage
+    - [ ] If it rebases, do **not** record it as corroboration of our rates. Either compare
+          counts instead if it publishes them, or note it as a related-but-different series
+    - [ ] If it uses the same per-year vintage chain, it corroborates 2010–2023 in one
+          instrument, and that is worth more than the individual Table B checks
+- [ ] **2023 fallback.** If 74-11 is not comparable, try NVSR 74-10 (*Deaths: Leading Causes
+      for 2023*) for a total, and record whichever you actually used.
+- [ ] **2024 — leave blank, and say so in the paper.** There is no independent published
+      source. Do not fill this column from WONDER, a VSRR provisional release, or a press
+      figure: each would either restate the value's own source or corroborate it against
+      something weaker than itself. 2024 rests on the committed export alone, and the
+      manuscript should state that in those words.
+- [ ] Record the achieved count in the manuscript — "N of 15 annual totals corroborated
+      against an independent NCHS publication" — rather than a phrasing that implies fifteen
 
 **Pass condition:** you would be comfortable with a reviewer pulling any single number in the
 paper and tracing it to a source document.
