@@ -121,13 +121,15 @@ or the code.
 python -m pytest
 ```
 
-Ninety tests. They cover rate arithmetic, exact additivity of the Kitagawa
+One hundred and five tests. They cover rate arithmetic, exact additivity of the Kitagawa
 decomposition, recovery of a known trend by the excess-mortality baseline fit, the loader's
 refusal to accept incomplete data, and the fetch layer: WONDER export parsing, age-band
 collapse arithmetic, "Not Stated" handling, cache behaviour, refusal to return partial data
 from a malformed response, the two exact identities, agreement with WONDER's published crude
-rate, rejection of an export whose years do not match the range the registry declares, and
-measurement of the bridged/single-race vintage seam.
+rate, rejection of an export whose years do not match the range the registry declares,
+measurement of the bridged/single-race vintage seam, and the vintage-sensitivity findings —
+including a test that fails if `docs/denominator-methods.md` drifts from the code that
+computes its numbers.
 
 **Tolerance policy.** A quantity defined to be equal is asserted equal, at `1e-9` for
 floating-point representation only. A quantity merely expected to be close gets a real
@@ -144,6 +146,7 @@ That is expected. Delete the test at that point.
 
 ```
 data/raw/          Input CSVs with per-row citations. You fill these.
+data/raw/census/   Census population vintages, committed, with PROVENANCE.md.
 data/queries/      CDC WONDER query parameters for reproducing each extract.
 data/processed/    results.json, generated.
 docs/              Method notes: denominator sourcing, vintages, discontinuities.
@@ -160,6 +163,8 @@ paper/             Manuscript template, built manuscript, policy framework.
 |---|---|
 | `loader.py` | Read and validate inputs. Fails loudly on incomplete or unverified data. |
 | `fetch.py` | Retrieve inputs from CDC APIs, cache, reconcile against the raw CSVs. |
+| `census.py` | Census population vintages. Enforces the age top-code and total identities. |
+| `vintage.py` | Vintage sensitivity: restatement uniformity, two-treatment Kitagawa. |
 | `rates.py` | Crude rates, age-specific rates, direct age standardization. |
 | `decomposition.py` | Kitagawa decomposition. |
 | `excess.py` | Baseline fitting and excess mortality. |

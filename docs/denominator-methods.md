@@ -146,25 +146,127 @@ percent, occasionally a methodology change.
 
 ### 2. Vintage 2024 methodology restatement
 
-Vintage 2024 restated 2023 upward by **+1,891,336** (334,914,895 → 336,806,231).
+Vintage 2024 restated 2023 upward by **+1,891,336** (334,914,895 → 336,806,231),
+**+0.565%**. Measured at band level on 2026-08-30 against Census
+`nc-est2024-agesex-res.csv`, `POPESTIMATE2023`, `SEX=0`.
 
-| basis | 2023→2024 growth | crude change |
-|---|---|---|
-| WONDER as published | +1.551% | −19.5 |
-| consistent V2024 | +0.981% | −14.3 |
+> **Every number in this section is computed, not quoted.** Regenerate the three
+> tables below with `python -m src.vintage`. The Census inputs are committed
+> under `data/raw/census/` with their SHA-256s and source URLs in
+> `PROVENANCE.md` — a Census CSV carries no query footer the way a WONDER export
+> does, so that file is the only provenance it has. `tests/test_vintage.py`
+> asserts these tables still match what `src/vintage.py` computes, so a change
+> to a band mapping either moves these numbers or fails the suite. That is
+> deliberate: this section makes claims about the most recent year in the paper,
+> and a claim nobody can regenerate is the failure this repository was rebuilt to
+> remove.
 
-So **≈5.2 points, about 27%**, of the 2023→2024 crude decline is restatement
-rather than mortality change.
+| band | V2023 (WONDER) | V2024 | change | |
+|---|---|---|---|---|
+| 0-24 | 103,385,133 | 104,131,631 | +746,498 | +0.722% |
+| 25-44 | 89,933,209 | 90,761,574 | +828,365 | +0.921% |
+| 45-64 | 82,348,192 | 82,586,319 | +238,127 | +0.289% |
+| 65-74 | 34,685,284 | 34,716,756 | +31,472 | +0.091% |
+| 75-84 | 18,368,097 | 18,355,398 | **−12,699** | **−0.069%** |
+| 85+ | 6,194,980 | 6,254,553 | +59,573 | +0.962% |
 
-Vintage 2025 already exists and restates again (2024 → 340,003,797). WONDER will
-carry these eventually. The access date in each export footer is what pins which
-vintage a given run used.
+**Verdict: NON-UNIFORM.** Spread 1.031 percentage points against a +0.565%
+total, scoring **1.83** on the threshold of 1.0. The fold ratio is undefined
+rather than large: 75-84 moves *down* while the national total moves up, so
+there is no max/min ratio across the sign change. A revision that pushes one
+band opposite to the total is about as far from proportional as this measure
+reaches.
 
-**Still to do:** run `assess_vintage_uniformity` on the V2023→V2024 restatement
-of 2023, **at band level**. The question is not how large the revision is but
-whether it is uniform. Then re-run the pre-pandemic Kitagawa and the excess
-figures on a consistent-V2024 denominator as a **sensitivity, not a
-replacement**.
+The band collapse was validated before anything was computed from it: WONDER's
+2024 equals Census V2024's 2024 **exactly in all six bands**, which is what
+WONDER's footer claims and an independent check that single-year Census ages
+fold onto our bands correctly.
+
+#### Finding 1: a quarter of the recent decline is not mortality
+
+**26.6% of the published 2023→2024 crude decline is denominator restatement,
+and 70% of that reads as mortality improvement that did not happen.**
+
+| | crude 2023 | crude 2024 | change | rate effect | age effect | age/rate |
+|---|---|---|---|---|---|---|
+| A as published | 922.9 | 903.4 | −19.47 | −32.81 | +13.34 | 0.406 |
+| B 2023 at V2024 | 917.7 | 903.4 | −14.29 | −29.18 | +14.89 | 0.510 |
+
+Deaths are identical in both — the certificates do not change. Additivity holds
+exactly in both (rate + age = total to six decimals).
+
+The restatement moves the total by **+5.18 points**, and splits **70.1% into the
+rate effect (+3.63)** and **29.9% into the age effect (+1.55)**. So **11.1% of
+the published −32.81 rate effect is denominator restatement rather than
+mortality**, and 11.6% of the published age effect likewise.
+
+Non-uniformity is what put any of it in the age effect at all. Had the
+restatement been uniform, the whole 5.18 points would have booked as a rate
+effect and read as a mortality improvement that never occurred. It is not
+uniform, so some is absorbed elsewhere — but **the majority still lands in the
+rate effect**, in the most recent year the paper reports. The non-uniform
+finding is not reassurance.
+
+**Report the range, not a point estimate:** crude change **−14.3 to −19.5**,
+rate effect **−29.2 to −32.8**, age effect **+13.3 to +14.9**.
+
+#### Finding 2: the headline ratio is basis-dependent
+
+**The age-to-rate ratio moves 0.406 → 0.510 on a denominator choice — +25.5%.**
+
+This is the same class of result as the 2010 slope leverage below: a headline
+quantity that shifts by a magnitude no reader would guess from the size of the
+input change. A +0.565% population revision moves the reported ratio by a
+quarter, and it moves the **first decimal digit**: 0.4 becomes 0.5. Quoting this
+ratio to three digits without naming a vintage claims about two digits of
+precision the number does not have.
+
+#### Finding 3: there is no consistent vintage to be consistent with
+
+**Vintage 2025 restates 2024 to 340,003,797 against WONDER's 340,110,988, and
+restates 2023 again — after V2024 had already restated it.** Verified against
+Census `nc-est2025-agesex-res.csv` on 2026-08-30. V2025 moved **every year** in
+the V2024 series, including the estimates base:
+
+| reference year | V2024 | V2025 | change |
+|---|---|---|---|
+| base 2020 | 331,515,736 | 331,516,113 | +377 |
+| 2020 | 331,577,720 | 331,578,104 | +384 |
+| 2021 | 332,099,760 | 332,100,166 | +406 |
+| 2022 | 334,017,321 | 333,996,304 | −21,017 |
+| 2023 | 336,806,231 | 336,755,052 | −51,179 |
+| 2024 | 340,110,988 | 340,003,797 | −107,191 |
+
+Note the shape: the revisions grow with recency. The years a paper most wants to
+report are the years least settled.
+
+**This is why a full consistent-vintage reanalysis is not attempted here, and it
+is a decision rather than an omission.** "Consistent V2024" was already obsolete
+when treatment B above was computed — 2023 had been restated a second time.
+Rebasing the whole series onto V2024 would produce numbers that are internally
+consistent, externally stale, and wrong again by next June, while destroying the
+crude-rate match against WONDER that is this pipeline's only external
+validation. There is no terminal state to converge on. A basis that moves
+annually is not a foundation, and treating the newest vintage as truth simply
+relocates the arbitrariness rather than removing it.
+
+The access date in each export footer is what pins which vintage a given run
+used. That, not a rebasing exercise, is the reproducibility mechanism.
+
+#### Scope of the vintage sensitivity claim
+
+This analysis reports vintage sensitivity **as a range at the two points where
+it was measured** — the 2010 baseline basis and the 2023→2024 restatement — and
+**does not attempt a full consistent-vintage reanalysis of the whole series,
+because the vintage chain has no terminal state.** V2025 moves 2024 after V2024
+moved 2023.
+
+Stated as a decision rather than left as an open to-do, because it is not a task
+that can ever be completed: any consistent-basis run is obsolete at the next
+vintage release. The pre-pandemic Kitagawa is deliberately **not** re-run on a
+V2024 basis; that result already survives a stated range (age-to-rate 3.41–3.87
+across the three 2010 treatments), and a range that holds is the robustness
+claim the paper makes.
 
 ### 3. The 2010 measurement basis
 
@@ -317,6 +419,16 @@ WONDER's published Crude Rate, 2010 through 2024.
 `999` is the total row). Vintage directories are named by range, e.g.
 `2020-2024/`. **Discover the paths by listing; do not guess them.** Two guesses
 failed before listing worked.
+
+Re-confirmed 2026-08-30 while pulling V2024 and V2025: `2020-2025/national/asrh/`
+serves, `2020-2025/national/totals/` still returns 404. Two further details worth
+having — `AGE` tops out at `100`, which is the 100-and-over code rather than
+exactly 100, so the six-band collapse takes `85 <= AGE <= 100`; and the
+single-year rows sum exactly to the `AGE == 999` row, which is free arithmetic
+validation of any collapse before you compute anything from it. Also note
+`www2.census.gov` is reachable from this repository's tooling even though
+`wonder.cdc.gov` returns 403, so Census figures can be checked directly rather
+than quoted.
 
 **Do not soften export 4's framing.** The 2017→2018 aggregate population change
 (+0.445%) looks unremarkable against its neighbours. That is *not* evidence the
