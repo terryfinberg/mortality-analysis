@@ -35,7 +35,7 @@ TESTS = ROOT / "tests"
 # method. denominator-methods.md is excluded: it argues about data, and its
 # numeric claims are covered by the doc-sync tests in test_vintage and
 # test_treatments.
-STATE_DOCS = [ROOT / "README.md", ROOT / "UAT_CHECKLIST.md"]
+STATE_DOCS = [ROOT / "README.md", ROOT / "UAT_CHECKLIST.md", ROOT / "STATUS.md"]
 
 WORD_NUMBERS = {
     "eighty": 80, "ninety": 90, "one hundred": 100, "two hundred": 200,

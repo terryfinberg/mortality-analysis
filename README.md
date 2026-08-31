@@ -6,6 +6,9 @@ age-specific mortality and population age-structure components.
 **Repository status: populated, attested, and running. Corroboration against NCHS's published
 reports is partial and deliberately labelled as such — 14 of 15 annual totals.**
 
+See [`STATUS.md`](STATUS.md) for where the project stands, what is still open and in what
+order, and the known limits stated plainly.
+
 ## Where the data came from, and what is still missing
 
 `data/raw/*.csv` was populated by `python -m src.fetch --promote --write` from the four
