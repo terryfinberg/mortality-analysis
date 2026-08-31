@@ -99,8 +99,8 @@ def test_attest_never_touches_corroboration(raw):
 
 def test_corroborate_writes_one_year_only(raw):
     attest.corroborate(source="NVSR Vol. 61 No. 4, Table B", year=2010,
-                       files=["us_annual_deaths.csv"], date="2026-08-30",
-                       raw_dir=raw, dry_run=False)
+                       files=["us_annual_deaths.csv"], measures="count,rate",
+                       date="2026-08-30", raw_dir=raw, dry_run=False)
     frame = _read(raw).set_index("year")
     assert frame.loc[2010, "corroborated_against"] == "NVSR Vol. 61 No. 4, Table B"
     assert frame.loc[2010, "corroborated_date"] == "2026-08-30"
@@ -110,18 +110,18 @@ def test_corroborate_writes_one_year_only(raw):
 
 def test_corroborate_refuses_a_vague_source(raw):
     with pytest.raises(attest.AttestationError) as e:
-        attest.corroborate(source="  ", year=2010,
+        attest.corroborate(source="  ", year=2010, measures="count",
                            files=["us_annual_deaths.csv"], raw_dir=raw)
     assert "specific enough" in str(e.value)
 
 
 def test_corroborate_refuses_to_overwrite_a_different_source(raw):
-    attest.corroborate(source="NVSR 61-4, Table B", year=2010,
+    attest.corroborate(source="NVSR 61-4, Table B", year=2010, measures="count",
                        files=["us_annual_deaths.csv"], raw_dir=raw, dry_run=False)
     with pytest.raises(attest.AttestationError) as e:
         attest.corroborate(source="NVSR Vol. 70 No. 8, Table B", year=2010,
-                           files=["us_annual_deaths.csv"], raw_dir=raw,
-                           dry_run=False)
+                           files=["us_annual_deaths.csv"], measures="count",
+                           raw_dir=raw, dry_run=False)
     assert "already corroborated" in str(e.value)
 
 
@@ -133,21 +133,21 @@ def test_corroborate_refuses_a_source_with_no_number(raw):
     and useless. Every other check passed it.
     """
     with pytest.raises(attest.AttestationError) as e:
-        attest.corroborate(source="NVSR Vol. , Table B", year=2010,
+        attest.corroborate(source="NVSR Vol. , Table B", year=2010, measures="count",
                            files=["us_annual_deaths.csv"], raw_dir=raw)
     assert "contains no number" in str(e.value)
 
 
 def test_corroborate_rejects_a_year_that_is_not_there(raw):
     with pytest.raises(attest.AttestationError) as e:
-        attest.corroborate(source="NVSR 74-4, Table B", year=1999,
+        attest.corroborate(source="NVSR 74-4, Table B", year=1999, measures="count",
                            files=["us_annual_deaths.csv"], raw_dir=raw)
     assert "no rows for year 1999" in str(e.value)
 
 
 def test_corroborate_does_not_imply_attestation(raw):
     """An external source agreeing is not a person having checked our copy."""
-    attest.corroborate(source="NVSR 61-4, Table B", year=2010,
+    attest.corroborate(source="NVSR 61-4, Table B", year=2010, measures="count",
                        files=["us_annual_deaths.csv"], raw_dir=raw, dry_run=False)
     frame = _read(raw)
     assert frame["verified_by"].isna().all()
@@ -156,6 +156,35 @@ def test_corroborate_does_not_imply_attestation(raw):
 def test_dry_run_writes_nothing(raw):
     before = (raw / "us_annual_deaths.csv").read_text(encoding="utf-8")
     attest.attest(name="A Person", files=["us_annual_deaths.csv"], raw_dir=raw)
-    attest.corroborate(source="NVSR 61-4, Table B", year=2010,
+    attest.corroborate(source="NVSR 61-4, Table B", year=2010, measures="count",
                        files=["us_annual_deaths.csv"], raw_dir=raw)
     assert (raw / "us_annual_deaths.csv").read_text(encoding="utf-8") == before
+
+
+def test_corroborate_requires_measures(raw):
+    """"Corroborated" without saying of what is not comparable to anything."""
+    with pytest.raises(attest.AttestationError) as e:
+        attest.corroborate(source="NVSR 74-11, Table", year=2010, measures="",
+                           files=["us_annual_deaths.csv"], raw_dir=raw)
+    assert "needs `measures`" in str(e.value)
+
+
+def test_corroborate_rejects_an_unknown_measure(raw):
+    with pytest.raises(attest.AttestationError) as e:
+        attest.corroborate(source="NVSR 74-11, Table", year=2010,
+                           measures="vibes", files=["us_annual_deaths.csv"],
+                           raw_dir=raw)
+    assert "unknown measure" in str(e.value)
+
+
+def test_count_only_corroboration_is_distinguishable_from_count_and_rate(raw):
+    """The 2023 case: a weaker claim must not read as a stronger one."""
+    attest.corroborate(source="NVSR Vol. 74 No. 11, Table", year=2010,
+                       measures="count", files=["us_annual_deaths.csv"],
+                       raw_dir=raw, dry_run=False)
+    attest.corroborate(source="NVSR Vol. 63 No. 3, Table B", year=2011,
+                       measures="count,rate", files=["us_annual_deaths.csv"],
+                       raw_dir=raw, dry_run=False)
+    frame = _read(raw).set_index("year")
+    assert frame.loc[2010, "corroborated_measures"] == "count"
+    assert frame.loc[2011, "corroborated_measures"] == "count,rate"

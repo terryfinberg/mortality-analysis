@@ -9,10 +9,10 @@ resolve it before continuing; later sections assume earlier ones passed.
 
 - [ ] `.\bootstrap.ps1` (Windows) or `./bootstrap.sh` completes without error
 - [ ] `.venv` directory exists
-- [ ] `python -m pytest` reports **181 passed**
+- [ ] `python -m pytest` reports **186 passed**
 - [ ] Jupyter kernel "Python (fragile-equilibrium)" appears in `jupyter kernelspec list`
 
-**Pass condition:** 181 tests pass.
+**Pass condition:** 186 tests pass.
 
 `data/raw/` is now populated from the committed WONDER exports and attested, so the old
 "repo ships empty" guard is gone. Two checks replaced it:
@@ -268,25 +268,47 @@ rounding of the rate. That is inference about the denominator, which is why
       and that column holds only the latter. The inference itself is recorded as a finding in
       `docs/denominator-methods.md` and asserted by
       `test_rate_agreement_implies_the_denominators_agree`.
-- [ ] **2023 — try NVSR 74-11 first.** One document covering 2010–2023 from the same agency is
-      a better corroboration instrument than thirteen separate reports: a single consistent
-      editorial basis, and it would corroborate the *shape* of the series, not just its
-      endpoints.
-- [ ] **Before relying on 74-11, check comparability. This is the one that can quietly go
-      wrong.** It is keyworded to crude death rate, so it corroborates a *rate*, not a count,
-      and a rate is only comparable if the denominator is. Our crude rates use WONDER's own
-      per-year population, each year at the vintage current when it was first estimated (see
-      `docs/denominator-methods.md`, discontinuity 1). A trends report spanning 2010–2023 and
-      published in 2025 may well have rebased every year onto **one** consistent vintage,
-      which is a deliberate and defensible choice — and would make its rates not directly
-      comparable to ours. Establish which before recording anything:
-    - [ ] Read 74-11's methods for its population source and vintage
-    - [ ] If it rebases, do **not** record it as corroboration of our rates. Either compare
-          counts instead if it publishes them, or note it as a related-but-different series
-    - [ ] If it uses the same per-year vintage chain, it corroborates 2010–2023 in one
-          instrument, and that is worth more than the individual Table B checks
-- [ ] **2023 fallback.** If 74-11 is not comparable, try NVSR 74-10 (*Deaths: Leading Causes
-      for 2023*) for a total, and record whichever you actually used.
+- [x] **2023 — NVSR 74-11 checked and used, for the COUNT ONLY. Done 2026-08-30.**
+
+      Page 10 gives 3,090,964 for 2023, matching our export. It also reproduces 2022's
+      3,279,857 (agreeing with NVSR 74-4) and 2010's 2,468,435 (agreeing with NVSR 61-4),
+      which is a useful internal consistency check on the report itself.
+
+      Recorded with `corroborated_measures = count`, not `count,rate`. The column now
+      distinguishes the two, because 2023 is a weaker claim than 2010–2022 and should not
+      read as though it were the same.
+      **Its rates are NOT comparable to ours, for four separate reasons.** The comparability
+      check was the thing flagged as most likely to go quietly wrong, and it did not survive
+      it. From 74-11's methods, verbatim:
+
+      > "Population data for 2010 are based on April 1 census counts and for 2011-2019, July 1
+      > postcensal estimates are based on the 2010 census. Population data for 2020 are based
+      > on April 1 population estimates and for 2021, 2022, and 2023, July 1 postcensal
+      > estimates are derived from a blended base that incorporates the 2020 census, Vintage
+      > 2020 estimates, and 2020 Demographic Analysis estimates."
+
+      and its table note: *"Rates are based on populations enumerated as of April 1 for 2010,
+      estimated April 1 for 2020, and July 1 for all other years."*
+
+      1. **2020 is on an April 1 basis** in 74-11; ours is July 1 from Vintage 2020. A
+         different measurement basis at the pivotal year of the series.
+      2. **2021–2023 sit on a blended base**, not the per-year vintage chain WONDER carries
+         and this analysis inherits.
+      3. **Its rates are per 1,000 to one decimal**, so one printed digit is worth 100 per
+         100,000. It could not discriminate our 922.9 from anything between roughly 915 and
+         925 even if the denominators did match.
+      4. **Its own methods say the 2020 rates were revised** and may differ from those in
+         *Deaths: Final Data for 2020* — see the separate finding below.
+
+      Reason 3 alone would make the comparison uninformative; reasons 1 and 2 would make it
+      wrong. Recording it as rate corroboration would have manufactured agreement out of a
+      measure too coarse to disagree.
+
+> **A finding, not a limitation.** Reason 4 is the valuable part. NCHS has published two
+> different crude death rates for 2020 in two of its own reports and named denominator
+> rebasing as the cause. That is an agency-published instance of this project's denominator
+> argument, which until now rested on our own measurement. It is written up as finding 4 in
+> `docs/denominator-methods.md` and cited in manuscript section 6.2.
 - [ ] **2024 — leave blank, and say so in the paper.** There is no independent published
       source. Do not fill this column from WONDER, a VSRR provisional release, or a press
       figure: each would either restate the value's own source or corroborate it against

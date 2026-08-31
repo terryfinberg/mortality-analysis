@@ -2151,7 +2151,18 @@ PROVENANCE_COLS = ("source_type", "fetched_from")
 # does not mean the value is suspect. The loader must never require these
 # columns -- a partial corroboration honestly labelled is worth more than a
 # complete one asserted to a standard met on a sample.
-CORROBORATION_COLS = ("corroborated_against", "corroborated_date")
+CORROBORATION_COLS = (
+    "corroborated_against", "corroborated_date", "corroborated_measures",
+)
+
+# What a corroborating source actually confirmed. Not every source confirms
+# every measure, and a column that recorded only "corroborated: yes" would hide
+# that: NVSR 74-11 corroborates the 2023 death COUNT but its rates are computed
+# on a different population basis and published per 1,000 to one decimal, so it
+# cannot speak to our crude rate at all. Recording the measures keeps a weaker
+# claim visibly weaker instead of letting it inherit the strength of the rows
+# above it.
+CORROBORATED_MEASURES = ("count", "rate", "age-distribution")
 
 
 def provenance_string(dataset_id: str, accessed: str | None = None) -> str:

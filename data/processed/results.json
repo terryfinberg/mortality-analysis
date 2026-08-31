@@ -186,5 +186,15 @@
   "treatment_ratio_range": {
     "low": 3.41,
     "high": 3.87
+  },
+  "vintage_restatement": {
+    "year": 2023,
+    "from_vintage": 2023,
+    "to_vintage": 2024,
+    "population_pct_change": 0.565,
+    "uniform": false,
+    "share_of_decline_pct": 26.6,
+    "rate_share_of_restatement_pct": 70.1,
+    "age_share_of_restatement_pct": 29.9
   }
 }

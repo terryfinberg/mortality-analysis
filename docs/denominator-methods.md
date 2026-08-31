@@ -253,6 +253,38 @@ relocates the arbitrariness rather than removing it.
 The access date in each export footer is what pins which vintage a given run
 used. That, not a rebasing exercise, is the reproducibility mechanism.
 
+#### Finding 4: NCHS has published two crude rates for 2020, and said why
+
+Findings 1 to 3 rest on our own measurement. This one does not.
+
+**NVSR Vol. 74 No. 11, *Trends in Births and Deaths: United States, 2010–2023*,
+states in its methods:**
+
+> "Rates for 2020 have been revised, using blended base population estimates,
+> and may differ from those published in 'Births: Final Data for 2020' and
+> 'Deaths: Final Data for 2020,' which were based on postcensal population
+> estimates based on the 2010 census."
+
+That is the agency publishing two different crude death rates for the same year,
+in two of its own reports, and naming the denominator rebasing as the cause.
+
+It converts the argument of this document into an instance. The claim that a
+crude rate is a statement about a denominator as much as about mortality does
+not depend on accepting our sensitivity analysis: NCHS has demonstrated it in
+its own catalogue. Cite this rather than only the internal measurements when the
+point needs to carry weight with a reader who has not read the code.
+
+Two practical consequences:
+
+- **A crude rate carries a vintage, whether or not the publication says so.**
+  Comparing rates across two publications, or across years spanning a rebasing,
+  requires establishing a shared denominator basis first. 2020 in particular now
+  has at least two published rates depending on which report you open.
+- **It reinforces finding 3.** Rebasing is not a one-off correction that
+  eventually settles; it is what the estimate series does. V2025 moved every
+  year of V2024, and NCHS republished 2020 on a new base. There is no version of
+  "the" 2020 crude rate to converge on.
+
 #### Scope of the vintage sensitivity claim
 
 This analysis reports vintage sensitivity **as a range at the two points where

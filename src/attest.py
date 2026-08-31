@@ -38,6 +38,8 @@ from pathlib import Path
 
 import pandas as pd
 
+from . import fetch
+
 ROOT = Path(__file__).resolve().parent.parent
 RAW_DIR = ROOT / "data" / "raw"
 
@@ -144,6 +146,7 @@ def corroborate(
     source: str,
     year: int,
     files: list[str],
+    measures: str | list[str],
     date: str | None = None,
     raw_dir: Path | None = None,
     dry_run: bool = True,
@@ -164,6 +167,14 @@ def corroborate(
     ``source`` must name the publication precisely enough to be looked up: a
     volume and a table, not "NVSR". Blank stays blank and means **not
     corroborated**, never that corroboration was attempted and failed.
+
+    ``measures`` is required and says what the source actually confirmed --
+    ``count``, ``rate``, ``age-distribution``, or several. It exists because
+    corroborations are not interchangeable: NVSR 74-11 confirms the 2023 death
+    count, but computes its rates on a different population basis and prints
+    them per 1,000 to one decimal, so it cannot speak to our crude rate at all.
+    A column recording only "corroborated" would let that row read as though it
+    were as strong as the twelve above it.
     """
     if not source or not source.strip():
         raise AttestationError(
@@ -181,6 +192,25 @@ def corroborate(
             f"identifies no volume, issue or table. A citation that cannot be "
             f"looked up is not corroboration."
         )
+    if isinstance(measures, str):
+        measures = [m.strip() for m in measures.split(",") if m.strip()]
+    if not measures:
+        raise AttestationError(
+            "corroborate() needs `measures`: what the source actually "
+            f"confirmed, from {list(fetch.CORROBORATED_MEASURES)}. A "
+            f"corroboration that does not say what it corroborated cannot be "
+            f"compared with any other."
+        )
+    unknown = [m for m in measures if m not in fetch.CORROBORATED_MEASURES]
+    if unknown:
+        raise AttestationError(
+            f"corroborate(): unknown measure(s) {unknown}. Known: "
+            f"{list(fetch.CORROBORATED_MEASURES)}. Add to "
+            f"fetch.CORROBORATED_MEASURES deliberately rather than inventing a "
+            f"value here, so the vocabulary stays comparable across rows."
+        )
+    measure_text = ",".join(measures)
+
     date = date or dt.date.today().isoformat()
     raw_dir = raw_dir or RAW_DIR
 
@@ -193,7 +223,7 @@ def corroborate(
             )
         path = raw_dir / filename
         frame = pd.read_csv(path)
-        for col in ("corroborated_against", "corroborated_date"):
+        for col in fetch.CORROBORATION_COLS:
             if col not in frame.columns:
                 frame[col] = ""
             frame[col] = frame[col].astype("object")
@@ -216,13 +246,20 @@ def corroborate(
                     f"recording, but not by overwriting the first: "
                     f"decide which to keep, or widen the string deliberately."
                 )
-            if existing == source:
+            unchanged = (
+                existing == source
+                and _text(row.get("corroborated_measures")) == measure_text
+                and _text(row.get("corroborated_date")) == date
+            )
+            if unchanged:
                 continue
             written.append({"file": filename, "year": year,
-                            "age_group": row.get("age_group", "")})
+                            "age_group": row.get("age_group", ""),
+                            "measures": measure_text})
             if not dry_run:
                 frame.at[i, "corroborated_against"] = source
                 frame.at[i, "corroborated_date"] = date
+                frame.at[i, "corroborated_measures"] = measure_text
             n += 1
 
         if n and not dry_run:
@@ -250,17 +287,22 @@ def main(argv: list[str] | None = None) -> int:
                         help="actually write (default is a dry run)")
     parser.add_argument("--corroborate", metavar="SOURCE", default=None,
                         help="record a corroborating source instead of signing; "
-                             "needs --year and at least one --file")
+                             "needs --year, --measures and at least one --file")
     parser.add_argument("--year", type=int, default=None,
                         help="with --corroborate, the reference year")
+    parser.add_argument("--measures", default=None,
+                        help="comma-separated: what the source confirmed "
+                             "(count, rate, age-distribution)")
     args = parser.parse_args(argv)
 
     if args.corroborate:
-        if args.year is None or not args.files:
-            parser.error("--corroborate needs --year and at least one --file")
+        if args.year is None or not args.files or not args.measures:
+            parser.error(
+                "--corroborate needs --year, --measures and at least one --file"
+            )
         diff = corroborate(
             source=args.corroborate, year=args.year, files=args.files,
-            date=args.date, dry_run=not args.write,
+            measures=args.measures, date=args.date, dry_run=not args.write,
         )
         print()
         if args.write:

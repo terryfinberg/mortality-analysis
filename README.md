@@ -4,7 +4,7 @@ Reproducible analysis of U.S. mortality, decomposing changes in the crude death 
 age-specific mortality and population age-structure components.
 
 **Repository status: populated, attested, and running. Corroboration against NCHS's published
-reports is partial and deliberately labelled as such — 13 of 15 annual totals.**
+reports is partial and deliberately labelled as such — 14 of 15 annual totals.**
 
 ## Where the data came from, and what is still missing
 
@@ -16,9 +16,12 @@ against those exports by a person, on 2026-08-30, so `python -m src.report` runs
 **What is still open is corroboration**, which is a different claim: whether a separate
 publication reports the same figure. Thirteen of the fifteen annual totals, 2010–2022, match
 Table B of the corresponding NVSR *Deaths: Final Data* report exactly, and our computed crude
-rate matches NVSR's published rate to one decimal in all thirteen. 2023 and 2024 are blank
-because no such report has been published yet, and blank means not corroborated rather than
-failed.
+rate matches NVSR's published rate to one decimal in all thirteen. 2023's **count** is
+corroborated against NVSR 74-11, but not its rate — that report computes rates on a different
+population basis, at a precision too coarse to discriminate ours. `corroborated_measures`
+records which measures each row's source actually confirmed, so the weaker claim stays
+visibly weaker. 2024 has no published source at all, and blank means not corroborated rather
+than failed.
 
 **That is not independent confirmation.** NVSR and WONDER are both NCHS products over the same
 mortality file and the same Census-derived denominators; the agreement shows our query
@@ -178,7 +181,7 @@ or the code.
 python -m pytest
 ```
 
-One hundred and eighty-one tests. They cover rate arithmetic, exact additivity of the Kitagawa
+One hundred and eighty-six tests. They cover rate arithmetic, exact additivity of the Kitagawa
 decomposition, recovery of a known trend by the excess-mortality baseline fit, the loader's
 refusal to accept incomplete data, and the fetch layer: WONDER export parsing, age-band
 collapse arithmetic, "Not Stated" handling, cache behaviour, refusal to return partial data

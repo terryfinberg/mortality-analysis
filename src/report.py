@@ -13,7 +13,7 @@ import json
 import re
 from pathlib import Path
 
-from . import decomposition, excess, figures, loader, rates, treatments
+from . import decomposition, excess, figures, loader, rates, treatments, vintage
 
 ROOT = Path(__file__).resolve().parent.parent
 PAPER = ROOT / "paper"
@@ -107,6 +107,21 @@ def compute(strict: bool = True) -> dict:
     ]
     res["treatment_ratio_range"] = {"low": round(lo, 2), "high": round(hi, 2)}
 
+    # The Vintage 2024 restatement of 2023, cited in the manuscript's
+    # limitations. Derived here so the prose cannot hold a stale copy.
+    uniformity = vintage.restatement_uniformity()
+    shift = vintage.kitagawa_treatments()
+    res["vintage_restatement"] = {
+        "year": vintage.RESTATED_YEAR,
+        "from_vintage": vintage.WONDER_VINTAGE,
+        "to_vintage": vintage.RESTATING_VINTAGE,
+        "population_pct_change": round(uniformity.total_pct_change, 3),
+        "uniform": bool(uniformity.uniform),
+        "share_of_decline_pct": round(shift.restatement_share_of_decline, 1),
+        "rate_share_of_restatement_pct": round(shift.rate_share_of_restatement, 1),
+        "age_share_of_restatement_pct": round(shift.age_share_of_restatement, 1),
+    }
+
     PROCESSED.mkdir(parents=True, exist_ok=True)
     (PROCESSED / "results.json").write_text(json.dumps(res, indent=2))
 
@@ -134,6 +149,9 @@ def _flatten(res: dict) -> dict[str, str]:
         "COVID_YEAR_LAST": res["covid_years"]["last"],
         "RATIO_RANGE_LOW": res["treatment_ratio_range"]["low"],
         "RATIO_RANGE_HIGH": res["treatment_ratio_range"]["high"],
+        "VINTAGE_POP_PCT": res["vintage_restatement"]["population_pct_change"],
+        "VINTAGE_SHARE_OF_DECLINE": res["vintage_restatement"]["share_of_decline_pct"],
+        "VINTAGE_RATE_SHARE": res["vintage_restatement"]["rate_share_of_restatement_pct"],
         "EXCESS_2020_2021": f"{res['excess']['total_2020_2021']:,}",
         "EXCESS_TOTAL": f"{res['excess']['total_pandemic_era']:,}",
         "BASELINE_WINDOW": res["excess"]["baseline"],

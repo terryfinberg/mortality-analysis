@@ -118,13 +118,18 @@ def test_corroboration_is_partial_and_that_is_the_point():
 
     annual = pd.read_csv(loader.DATA_DIR / "us_annual_deaths.csv")
     done = annual[annual["corroborated_against"].notna()]
-    assert list(done["year"]) == list(range(2010, 2023))
+    assert list(done["year"]) == list(range(2010, 2024))
     assert (done["corroborated_date"] == "2026-08-30").all()
 
-    # 2023 and 2024 blank -- no published report exists for either -- and
-    # strict loading is indifferent to that.
+    # And the strength of the claim varies by row: 2023 is the count only.
+    by_year = annual.set_index("year")
+    assert by_year.loc[2022, "corroborated_measures"] == "count,rate"
+    assert by_year.loc[2023, "corroborated_measures"] == "count"
+
+    # 2024 blank -- no published source of any kind -- and strict loading is
+    # indifferent to that.
     blank = annual[annual["corroborated_against"].isna()]
-    assert list(blank["year"]) == [2023, 2024]
+    assert list(blank["year"]) == [2024]
     loader.load_annual_deaths(strict=True)
 
 

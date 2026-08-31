@@ -64,7 +64,7 @@ Population denominators are taken from the Population column of the same CDC WON
 
 WONDER's population figures are themselves NCHS-processed Census Bureau estimates, so this is a choice of vintage rather than a different underlying source. Taking numerator and denominator from one extract has two consequences we rely on. The sum of the six age-band populations equals the annual population by construction, so that relationship is asserted as an exact identity rather than checked against a tolerance. More importantly, WONDER publishes its own Crude Rate for each year, computed independently of this analysis from the same counts; because our denominator is WONDER's denominator, our computed crude rate must reproduce WONDER's published rate to the precision WONDER reports. It does so for every year in the series. This is an external check on the entire rate pipeline — death counts, population, and the rate arithmetic — against the issuing agency rather than against our own intermediate values. A Census denominator would have made agreement impossible and would have required explaining a discrepancy that bought nothing.
 
-This does not remove the vintage discontinuity at 2017/2018, which is internal to WONDER: population estimates are bridged-race through 2017 and single-race from 2018. That seam is measured directly and reported in section 6.1.
+This does not remove the vintage discontinuity at 2017/2018, which is internal to WONDER: population estimates are bridged-race through 2017 and single-race from 2018. That seam is measured directly and reported in section 6.2.
 
 #### Numerator difference between the two series
 
@@ -183,19 +183,35 @@ The practical recommendation that follows is narrow and implementable: agencies 
 
 ### 6.1 Data provenance
 
-Values in `data/raw/` are transcribed from published reports rather than pulled from an API. Each carries a citation and a verification attestation, and the pipeline refuses to run without both. This is a reasonable standard, but transcription remains a possible error source, and independent replication should re-extract from source rather than trusting the CSVs in this repository.
+Values in `data/raw/` are parsed from CDC WONDER export files committed to the repository, each identified by filename and SHA-256 and carrying WONDER's own query-parameter footer. Every row records the export it came from, and every row carries a human attestation that the value matches that export; the pipeline refuses to run without both. No year is provisional: 2018–2024 come from the final Single Race database.
 
-Recent years are provisional and will be revised.
+Thirteen of the fifteen annual totals, 2010–2022, additionally match Table B of the corresponding NVSR *Deaths: Final Data* report exactly, and our computed crude rate matches NVSR's published rate to one decimal across all thirteen. 2023's death count is corroborated against NVSR 74-11; its rate is not, for the reasons in 6.2. 2024 has no published NVSR report and rests on the committed export alone.
 
-### 6.2 Baseline sensitivity
+**This is corroboration, not independent confirmation.** NVSR and WONDER are both NCHS products drawing on the same mortality file and the same Census-derived denominators. The agreement rules out a query that returned the wrong slice — such a query would not reproduce the published national total for thirteen consecutive years — and says nothing about whether the underlying NCHS data is correct. Replication that wants independence must go to a different data producer, not a different NCHS publication.
+
+### 6.2 Denominator vintage
+
+The population denominator is not a fixed quantity, and this is the limitation most likely to be underestimated by a reader.
+
+Three discontinuities are documented and quantified in `docs/denominator-methods.md`: the per-year vintage chain WONDER carries, the Vintage 2024 restatement of 2023, and the 2010 April 1 measurement basis. The bridged-race to single-race seam at 2017/2018 was measured directly against a purpose-run export and is **exactly zero** in every band, deaths and population alike, so that boundary introduces no step.
+
+The other two are not zero. The Vintage 2024 restatement moved 2023's population by 0.565 percent, non-uniformly across age bands, which accounts for 26.6 percent of the published 2023→2024 crude-rate decline — 70.1 percent of that booking as a spurious improvement in age-specific mortality. The 2010 basis moves the reported age-to-rate ratio between 3.41 and 3.87, which is why that quantity is reported as a range.
+
+**NCHS has itself published two different crude death rates for 2020, and named denominator rebasing as the reason.** NVSR Vol. 74 No. 11 states in its methods:
+
+> "Rates for 2020 have been revised, using blended base population estimates, and may differ from those published in 'Births: Final Data for 2020' and 'Deaths: Final Data for 2020,' which were based on postcensal population estimates based on the 2010 census."
+
+This is worth stating plainly because it converts an argument into an instance. The claim that a crude rate is a statement about a denominator as much as about mortality does not rest on our own sensitivity analysis alone: the agency that publishes the rates has published two values for the same year, in two of its own reports, and attributed the difference to the population base. Any comparison of crude rates across publications, or across years spanning a rebasing, has to establish that the denominators share a basis before the difference can be read as mortality.
+
+### 6.3 Baseline sensitivity
 
 Excess mortality estimates depend on the baseline window and on the decision to project the adjusted rate rather than the count. A shorter window weights recent years more heavily; a longer one imports older trend behavior that may no longer apply. Results under alternative windows should be reported before any excess figure is cited outside this paper.
 
-### 6.3 Age group coarseness
+### 6.4 Age group coarseness
 
 Six groups is a compromise. The 0-24 band in particular spans an enormous range of mortality risk and masks the divergent trends in infant mortality and in young-adult deaths from overdose and injury, which move in opposite directions and are substantively important in their own right.
 
-### 6.4 No cause-of-death modeling
+### 6.5 No cause-of-death modeling
 
 Beyond the COVID-19 stratification, this analysis does not decompose by cause. The offsetting-trends argument in Section 5.1 would be considerably stronger with a cause-specific decomposition showing which causes drove improvement and which reversed it, and that is the natural next extension.
 

@@ -44,9 +44,15 @@ NVSR: dict[int, tuple[int, float, str]] = {
     2022: (3_279_857, 984.1, "74-4"),
 }
 
-# No "Deaths: Final Data" report exists for these yet; the lag runs about three
-# years. Blank corroboration for them is correct, not an omission.
-UNCORROBORATED_YEARS = (2023, 2024)
+# 2023 has no "Deaths: Final Data" report, but NVSR 74-11 (Trends in Births and
+# Deaths, 2010-2023) publishes the count. Its RATES are not comparable -- 2020
+# on an April 1 basis, 2021-2023 on a blended base, printed per 1,000 to one
+# decimal, and its own methods say the 2020 rates were revised -- so it
+# corroborates the count only, and the corroborated_measures column says so.
+COUNT_ONLY = {2023: (3_090_964, "74-11")}
+
+# No source of any kind. The lag on Deaths: Final Data runs about three years.
+UNCORROBORATED_YEARS = (2024,)
 
 # NVSR prints the crude rate to one decimal, so that is the precision at which
 # agreement can be judged.
@@ -115,12 +121,33 @@ def test_the_recorded_citations_name_the_right_volume(annual):
 
 def test_exactly_the_expected_years_are_corroborated(annual):
     recorded = set(annual.index[annual["corroborated_against"].notna()])
-    assert recorded == set(NVSR)
+    assert recorded == set(NVSR) | set(COUNT_ONLY)
     for year in UNCORROBORATED_YEARS:
         assert pd.isna(annual.loc[year, "corroborated_against"]), (
-            f"{year} has no published Deaths: Final Data report; blank is "
-            f"correct and must not be filled from a weaker source"
+            f"{year} has no published source of any kind; blank is correct and "
+            f"must not be filled from a weaker one"
         )
+
+
+def test_count_only_years_are_marked_as_count_only(annual):
+    """A weaker corroboration must not read as strong as the full ones.
+
+    NVSR 74-11 gives the 2023 death count, and its rates are computed on a
+    different population basis at per-1,000 precision. One printed digit there
+    is worth 100 per 100,000, so it could not discriminate our crude rate from
+    anything within about five points even if the denominators matched.
+    """
+    for year, (deaths, vol) in COUNT_ONLY.items():
+        assert int(annual.loc[year, "deaths"]) == deaths, f"{year} (NVSR {vol})"
+        assert annual.loc[year, "corroborated_measures"] == "count", (
+            f"{year} is corroborated on the count only and must say so"
+        )
+        assert "not comparable" in str(annual.loc[year, "corroborated_against"])
+
+
+def test_the_full_corroborations_claim_count_and_rate(annual):
+    for year in NVSR:
+        assert annual.loc[year, "corroborated_measures"] == "count,rate", year
 
 
 def test_corroboration_did_not_reach_the_other_files():
