@@ -2129,11 +2129,18 @@ PROVENANCE_COLS = ("source_type", "fetched_from")
 #   verified_by           ATTESTATION. "A person confirmed this value matches
 #                         the cited export." Human-only. Checkable for every
 #                         row, because the export is committed.
-#   corroborated_against  CORROBORATION. "An INDEPENDENT publication reports
-#                         the same figure." Human-only, and not available for
-#                         every row: NVSR publishes annual totals, not the
-#                         six-band grid, and a published report may not exist
-#                         yet for the most recent years.
+#   corroborated_against  CORROBORATION. "A separate publication reports the
+#                         same figure." Human-only, and not available for every
+#                         row: NVSR publishes annual totals, not the six-band
+#                         grid, and a published report may not exist yet for the
+#                         most recent years.
+#
+#                         NOT "independent". NVSR and WONDER are both NCHS
+#                         products over the same mortality file and the same
+#                         Census-derived denominators. Agreement shows our query
+#                         returned what NCHS published, not that NCHS is right.
+#                         See docs/denominator-methods.md, "What the NVSR
+#                         corroboration does and does not establish".
 #
 # Keeping the last two apart is the point. Attestation says our number faithfully
 # reproduces the source we took it from; corroboration says the source agrees

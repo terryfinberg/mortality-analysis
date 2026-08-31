@@ -9,10 +9,10 @@ resolve it before continuing; later sections assume earlier ones passed.
 
 - [ ] `.\bootstrap.ps1` (Windows) or `./bootstrap.sh` completes without error
 - [ ] `.venv` directory exists
-- [ ] `python -m pytest` reports **166 passed**
+- [ ] `python -m pytest` reports **181 passed**
 - [ ] Jupyter kernel "Python (fragile-equilibrium)" appears in `jupyter kernelspec list`
 
-**Pass condition:** 166 tests pass.
+**Pass condition:** 181 tests pass.
 
 `data/raw/` is now populated from the committed WONDER exports and attested, so the old
 "repo ships empty" guard is gone. Two checks replaced it:
@@ -39,7 +39,7 @@ and `promote()` copies them across. Either way, **you** fill `verified_by` and
 | `source_type` | `api` if fetched, `manual` if typed in | either |
 | `fetched_from` | `wonder-export:<filename>@sha256:<hash>` | `src.fetch.promote()` |
 | `verified_by` | a person checked this value against the cited export | **a human, only** |
-| `corroborated_against` | an independent publication reports the same figure | **a human, only** |
+| `corroborated_against` | a separate publication reports the same figure (not independent — see Section 7) | **a human, only** |
 
 Provenance is not attestation. `fetched_from` records where bytes came from; it cannot tell
 you the fetch pulled the right series with the right filter. Only `verified_by` says a person
@@ -193,9 +193,20 @@ means a stale kernel; restart and rerun.
 
 Corroboration is a **separate claim from attestation**. Attestation says a value faithfully
 reproduces the committed export it came from, and is achievable for all 150 rows today.
-Corroboration says an *independent* NCHS publication reports the same figure. It is not
-uniformly available, and this plan is built around what exists rather than around one source
-assumed to cover every year. See **Provenance, attestation and corroboration** in `README.md`.
+Corroboration says a separate NCHS publication reports the same figure. It is not uniformly
+available, and this plan is built around what exists rather than around one source assumed to
+cover every year. See **Provenance, attestation and corroboration** in `README.md`.
+
+> **Not independent confirmation.** NVSR and WONDER are both NCHS products over the same
+> mortality file and the same Census-derived denominators. This establishes that the query
+> returned what NCHS published in its report of record. It is not evidence that NCHS is
+> correct. The full statement is in `docs/denominator-methods.md`, "What the NVSR
+> corroboration does and does not establish" — read it before describing this work to anyone,
+> because "independent" is the word that comes out by reflex and it is wrong.
+
+**Status: 13 of 15 done.** 2010–2022 recorded; 2023 and 2024 have no published report.
+`tests/test_nvsr_corroboration.py` pins all thirteen figures and recompares them, so the
+column is a check rather than a claim.
 
 Blank `corroborated_against` means **not corroborated**. It does not mean corroboration
 failed. Leave it blank rather than reaching for a weaker source to fill the column.
@@ -229,9 +240,11 @@ point.
 | Table B, crude death rate | 799.5 | our computed rate, and WONDER's published column |
 | Table 10, by age | 24,586 / 4,316 / 5,279 / 29,551 / 42,259 / 70,033 / 183,207 / 310,802 / 407,151 / 625,651 / 765,474, plus 126 not stated | the WONDER export, cell for cell across all eleven bands |
 
-The crude-rate line is worth its own note: NVSR is a separate publication from the WONDER
-database, so agreement there is a **third** independent source for the rate, not a restatement
-of the second.
+The crude-rate agreement holds for all thirteen corroborated years, not just 2010, and it is a
+finding in its own right: neither publication prints the other's population, so deaths matching
+exactly plus rates matching to one decimal means the **denominators agree** to within the
+rounding of the rate. That is inference about the denominator, which is why
+`us_population.csv` stays unmarked — see the note under 2011–2022 below.
 
 > ### ⚠ Do NOT compare the age-adjusted rate
 >
@@ -245,8 +258,16 @@ of the second.
 > finding and would not be one. Corroborate counts and crude rates; leave the adjusted rate
 > alone.
 
-- [ ] **2011–2022 (12 years).** Compare `us_annual_deaths.deaths` against Table B of each
-      year's report, using the reference list below. Record volume, number and table.
+- [x] **2011–2022 (12 years). Done 2026-08-30.** All twelve match Table B exactly on total
+      deaths, and our computed crude rate matches NVSR's published rate to one decimal in
+      every one. Each figure appears twice per report — narrative sentence and Table B — and
+      the two agree. Recorded per year with its own volume and issue.
+
+      `us_population.csv` is deliberately **not** marked. Recovering the denominator by
+      dividing deaths by the published rate is an inference, not a document stating a figure,
+      and that column holds only the latter. The inference itself is recorded as a finding in
+      `docs/denominator-methods.md` and asserted by
+      `test_rate_agreement_implies_the_denominators_agree`.
 - [ ] **2023 — try NVSR 74-11 first.** One document covering 2010–2023 from the same agency is
       a better corroboration instrument than thirteen separate reports: a single consistent
       editorial basis, and it would corroborate the *shape* of the series, not just its

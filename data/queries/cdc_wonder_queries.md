@@ -92,9 +92,13 @@ reference year to final-data report is about three years, so **2023 is due but n
 2024 is not expected for roughly another year. This is a publication delay, not a change of
 policy — do not record it as the series having been discontinued.
 
-**2024 has no independent published source at all.** Not a delayed one, none. Its values are
-corroborated by the committed export alone, and the paper should say so in those words rather
-than leaving the reader to infer that every year got the same treatment.
+**2024 has no published NVSR report at all.** Not a delayed one, none. Its values rest on the
+committed export alone, and the paper should say so in those words rather than leaving the
+reader to infer that every year got the same treatment.
+
+Note that even where a report does exist, the corroboration it provides is **not independent**:
+NVSR and WONDER are both NCHS products over the same mortality file. See "What the NVSR
+corroboration does and does not establish" in `docs/denominator-methods.md`.
 
 Consistent with the above: NVSR 75-5 is *United States Life Tables, 2024*, and 74-6 is the
 2023 edition. Life tables are computed from the final mortality file, so NCHS holds final 2024

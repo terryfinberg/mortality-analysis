@@ -3,8 +3,8 @@
 Reproducible analysis of U.S. mortality, decomposing changes in the crude death rate into
 age-specific mortality and population age-structure components.
 
-**Repository status: populated, attested, and running. Corroboration against independent
-publications is partial and deliberately labelled as such — 1 of 15 annual totals so far.**
+**Repository status: populated, attested, and running. Corroboration against NCHS's published
+reports is partial and deliberately labelled as such — 13 of 15 annual totals.**
 
 ## Where the data came from, and what is still missing
 
@@ -13,10 +13,18 @@ committed CDC WONDER exports in `data/raw/wonder_exports/`. Every row records wh
 came from, by filename and content hash, in `fetched_from`. All 150 rows were then attested
 against those exports by a person, on 2026-08-30, so `python -m src.report` runs.
 
-**What is still open is corroboration**, which is a different claim: whether an *independent*
-publication reports the same figure. 2010 is corroborated three ways against NVSR Vol. 61
-No. 4. The rest are blank, and blank means not corroborated rather than failed — for 2024 no
-independent published source exists at all. See `UAT_CHECKLIST.md` Section 7.
+**What is still open is corroboration**, which is a different claim: whether a separate
+publication reports the same figure. Thirteen of the fifteen annual totals, 2010–2022, match
+Table B of the corresponding NVSR *Deaths: Final Data* report exactly, and our computed crude
+rate matches NVSR's published rate to one decimal in all thirteen. 2023 and 2024 are blank
+because no such report has been published yet, and blank means not corroborated rather than
+failed.
+
+**That is not independent confirmation.** NVSR and WONDER are both NCHS products over the same
+mortality file and the same Census-derived denominators; the agreement shows our query
+returned what NCHS published, not that NCHS is correct. See
+`docs/denominator-methods.md`, "What the NVSR corroboration does and does not establish", and
+`UAT_CHECKLIST.md` Section 7.
 
 That gap is the point rather than an unfinished chore. An earlier version of this project
 carried mortality figures that had been transcribed rather than fetched and were never checked
@@ -27,10 +35,11 @@ more convincingly than a hand transcription would. So promotion fills `source_ty
 `fetched_from` and never `verified_by`.
 
 The repository previously shipped with the CSVs empty, for the same reason: to make the
-unverified state visible instead of invisible. Emptiness has now done its job and been
-replaced by a stronger guarantee — the values are present, they reconcile against WONDER's own
-published figures, and the loader still refuses them. See **Provenance and attestation are
-different columns** below.
+unverified state visible instead of invisible. Emptiness has done its job and been retired.
+What replaced it is a guarantee that does not expire with the data's state: no machine path
+in this repository can write `verified_by`, and a test asserts it against a temporary
+directory rather than against the current CSVs. See **Provenance, attestation and
+corroboration are three different columns** below.
 
 What the promoted data satisfies already:
 
@@ -75,7 +84,7 @@ ends up claiming more than it checked:
 | `source_citation` | *What this value is a copy of.* The export's footer `Dataset`, its query parameters, access date and sha256 | derived from the footer by `export_citation()` |
 | `fetched_from` | *Provenance.* `wonder-export:<filename>@sha256:<hash>` | `src.fetch.promote()` |
 | `verified_by` | *Attestation.* A person confirmed this value matches the cited export | **a human, only** |
-| `corroborated_against` | *Corroboration.* An **independent** publication reports the same figure — e.g. an NVSR volume and table | **a human, only** |
+| `corroborated_against` | *Corroboration.* A separate publication reports the same figure — e.g. an NVSR volume and table. **Not independent:** see the note below | **a human, only** |
 
 This split is the point, not bookkeeping. A number carrying a citation looks verified whether
 or not anyone verified it. An automated fetch does not solve that; it changes the costume. A
@@ -90,12 +99,18 @@ bytes in this repository.
 
 **Corroboration is deliberately separate, and deliberately incomplete.** Attestation says our
 number faithfully reproduces the source we took it from; corroboration says that source agrees
-with someone else. Only the second is an external check, and it is not available for every
-row — NVSR publishes annual totals, not the six-band grid, and a published report may not
-exist yet for the most recent years. **A blank `corroborated_against` means not corroborated.
-It does not mean corroboration failed, and the loader never requires it.** Partial
-corroboration stated as partial is worth more than complete attestation to a standard met on a
-sample.
+with a different publication. It is not available for every row — NVSR publishes annual
+totals, not the six-band grid, and a published report may not exist yet for the most recent
+years. **A blank `corroborated_against` means not corroborated. It does not mean corroboration
+failed, and the loader never requires it.** Partial corroboration stated as partial is worth
+more than complete attestation to a standard met on a sample.
+
+**It is corroboration, not independent confirmation.** NVSR and WONDER are both NCHS products
+drawing on the same mortality file and the same Census-derived denominators. Agreement rules
+out a real class of error — a query returning the wrong slice would not reproduce the
+published national total for thirteen consecutive years — and says nothing about whether the
+underlying NCHS data is right. The precise statement is in
+`docs/denominator-methods.md`.
 
 So `verified_by` is never machine-written. `src.fetch.promote()` fills `source_type`,
 `fetched_from` and `source_citation`, and leaves `verified_by` blank, which means
@@ -163,7 +178,7 @@ or the code.
 python -m pytest
 ```
 
-One hundred and sixty-six tests. They cover rate arithmetic, exact additivity of the Kitagawa
+One hundred and eighty-one tests. They cover rate arithmetic, exact additivity of the Kitagawa
 decomposition, recovery of a known trend by the excess-mortality baseline fit, the loader's
 refusal to accept incomplete data, and the fetch layer: WONDER export parsing, age-band
 collapse arithmetic, "Not Stated" handling, cache behaviour, refusal to return partial data
@@ -223,6 +238,7 @@ paper/             Manuscript template, built manuscript, policy framework.
 | `census.py` | Census population vintages. Enforces the age top-code and total identities. |
 | `vintage.py` | Vintage sensitivity: restatement uniformity, two-treatment Kitagawa. |
 | `treatments.py` | The three treatments of the 2010 measurement basis, and the reported range. |
+| `attest.py` | Records human claims: attestation and corroboration. Never called automatically. |
 | `rates.py` | Crude rates, age-specific rates, direct age standardization. |
 | `decomposition.py` | Kitagawa decomposition. |
 | `excess.py` | Baseline fitting and excess mortality. |

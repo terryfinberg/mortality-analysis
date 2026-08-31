@@ -119,10 +119,23 @@ def test_corroborate_refuses_to_overwrite_a_different_source(raw):
     attest.corroborate(source="NVSR 61-4, Table B", year=2010,
                        files=["us_annual_deaths.csv"], raw_dir=raw, dry_run=False)
     with pytest.raises(attest.AttestationError) as e:
-        attest.corroborate(source="Some other report", year=2010,
+        attest.corroborate(source="NVSR Vol. 70 No. 8, Table B", year=2010,
                            files=["us_annual_deaths.csv"], raw_dir=raw,
                            dry_run=False)
     assert "already corroborated" in str(e.value)
+
+
+def test_corroborate_refuses_a_source_with_no_number(raw):
+    """A citation naming no volume, issue or table cannot be looked up.
+
+    This exists because a shell loop interpolated an empty variable and wrote
+    "NVSR Vol. , Table B" onto twelve rows: non-blank, plausible at a glance,
+    and useless. Every other check passed it.
+    """
+    with pytest.raises(attest.AttestationError) as e:
+        attest.corroborate(source="NVSR Vol. , Table B", year=2010,
+                           files=["us_annual_deaths.csv"], raw_dir=raw)
+    assert "contains no number" in str(e.value)
 
 
 def test_corroborate_rejects_a_year_that_is_not_there(raw):

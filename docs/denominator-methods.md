@@ -282,10 +282,16 @@ Table B header note** — *"Rates are based on populations enumerated as of Apri
 estimates."* Read directly on 2026-08-30.
 
 That matters because the whole treatment-C′ apparatus rests on the premise that
-2010 is measured on a different basis. The premise now has three independent
-supports: WONDER's footer, an exact band-by-band match against Census
-`CENSUS2010POP`, and NCHS's own statement in the report a reviewer will reach
-for.
+2010 is measured on a different basis. The premise now has three supports:
+WONDER's footer, an exact band-by-band match against Census `CENSUS2010POP`, and
+NCHS's own statement in the report a reviewer will reach for.
+
+**Three supports, not three independent ones.** WONDER's footer and the NVSR
+note are both NCHS saying the same thing in two places. Only the Census match
+comes from outside NCHS, and even that is the agency whose estimates NCHS
+processes. What the three together establish is that the April 1 basis is
+documented and consistently stated wherever it appears — not that it has been
+confirmed by three unrelated parties.
 
 Three treatments, all reported:
 
@@ -440,6 +446,62 @@ justified building export 4; it is closed.
 Reproduce with `python -m src.fetch --reconcile`, under the **Vintage seam**
 heading. The same run reports the crude-rate check: **15 of 15 years match**
 WONDER's published Crude Rate, 2010 through 2024.
+
+---
+
+## What the NVSR corroboration does and does not establish
+
+Thirteen of the fifteen annual totals, 2010 through 2022, agree exactly with
+Table B of the corresponding *Deaths: Final Data* report, and our computed crude
+rate agrees with NVSR's published rate to one decimal in every one of those
+years. Recorded per row in `corroborated_against`, and recomputed on every test
+run by `tests/test_nvsr_corroboration.py`.
+
+**NVSR and WONDER are not independent of each other.** Both are NCHS products
+drawing on the same underlying mortality file and the same Census-derived
+denominators.
+
+So state the finding precisely:
+
+> This corroboration establishes that our query returned what NCHS published in
+> its report of record. **It is not independent confirmation, and it is not
+> evidence that NCHS is correct.**
+
+What it rules out is a specific and real class of error: a query that returned
+the wrong slice — wrong cause selection, wrong location, a filter left set, an
+export truncated — would not reproduce the published national total for thirteen
+consecutive years. That is worth having, and it is all it is.
+
+What it cannot rule out is anything shared by both products: an error in the
+underlying mortality file, in the Census denominators, or in NCHS's processing
+of either. No amount of agreement between two NCHS publications speaks to that.
+
+This wording exists because the sloppy version was used out loud during the work
+— NVSR was described as an "independent" source in a recap, which is exactly the
+overstatement being guarded against here. Two documents from one agency built on
+one data file corroborate a *query*, not a *fact*.
+
+### The rate agreement is a finding, and it is about the denominators
+
+Worth stating separately, because it is easy to lose inside the totals.
+
+Neither publication prints the other's population beside its rate. But a crude
+rate is deaths over population: with deaths matching **exactly** and the rate
+matching to NVSR's printed precision across all thirteen years, the denominators
+must agree to within the rounding of the rate. `test_rate_agreement_implies_the_denominators_agree`
+asserts that formally, by checking our population falls inside the interval
+NVSR's printed rate implies.
+
+**This is inference about the denominator, not a document stating it**, and the
+distinction is why `us_population.csv` carries no corroboration. That column
+holds what a source states. Recovering a denominator by division is a different
+kind of claim and belongs in prose like this, where its reasoning is visible.
+
+Subject, of course, to the limit above: it establishes that our denominator is
+NCHS's denominator, which was never seriously in doubt, and says nothing about
+whether NCHS's denominator is right. The Vintage 2024 restatement in
+discontinuity 2 is a standing reminder that "NCHS's denominator" is not one
+fixed quantity.
 
 ---
 

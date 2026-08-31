@@ -79,7 +79,7 @@ def test_corroboration_columns_are_never_required():
 
     Corroboration is a separate claim from attestation: attestation says the
     value faithfully reproduces the export it was taken from, corroboration says
-    an independent publication reports the same figure. The second is not
+    a separate publication reports the same figure. The second is not
     available for every row -- NVSR publishes annual totals, not the six-band
     grid -- so requiring it would force a choice between claiming more than was
     checked and checking less than was possible.
@@ -118,12 +118,13 @@ def test_corroboration_is_partial_and_that_is_the_point():
 
     annual = pd.read_csv(loader.DATA_DIR / "us_annual_deaths.csv")
     done = annual[annual["corroborated_against"].notna()]
-    assert list(done["year"]) == [2010]
-    assert "NVSR Vol. 61 No. 4" in done.iloc[0]["corroborated_against"]
-    assert done.iloc[0]["corroborated_date"] == "2026-08-30"
+    assert list(done["year"]) == list(range(2010, 2023))
+    assert (done["corroborated_date"] == "2026-08-30").all()
 
-    # Fourteen years still blank, and strict loading is indifferent to that.
-    assert annual["corroborated_against"].isna().sum() == 14
+    # 2023 and 2024 blank -- no published report exists for either -- and
+    # strict loading is indifferent to that.
+    blank = annual[annual["corroborated_against"].isna()]
+    assert list(blank["year"]) == [2023, 2024]
     loader.load_annual_deaths(strict=True)
 
 

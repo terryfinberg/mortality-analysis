@@ -19,10 +19,10 @@ What signing means here
 -----------------------
 ``verified_by`` asserts: *a person confirmed this value matches the source named
 in ``source_citation``* -- which, since promotion, is the committed WONDER
-export, identified by filename and content hash. It does not assert that an
-independent publication agrees; that is ``corroborated_against``, a separate
-claim recorded separately, and blank there means not corroborated rather than
-failed.
+export, identified by filename and content hash. It does not assert that another
+publication agrees; that is ``corroborated_against``, a distinct claim recorded
+separately, and blank there means not corroborated rather than failed. Neither
+column claims independence: see the note on :func:`corroborate`.
 
 Usage
 -----
@@ -148,13 +148,18 @@ def corroborate(
     raw_dir: Path | None = None,
     dry_run: bool = True,
 ) -> pd.DataFrame:
-    """Record that an independent publication reports the same figure.
+    """Record that a separate publication reports the same figure.
 
     A different claim from :func:`attest`, and deliberately a separate call.
     Attestation says a value faithfully reproduces the export it came from;
-    corroboration says a source outside this repository agrees with it. Only
-    the second is external evidence, and it is available for some rows and not
-    others -- so it is recorded per year, never in bulk across the file.
+    corroboration says a source outside this repository agrees with it. It is
+    available for some rows and not others -- so it is recorded per year, never
+    in bulk across the file.
+
+    **Not "independent".** The corroborating source here is NVSR, which is an
+    NCHS product over the same mortality file and the same Census-derived
+    denominators as WONDER. Agreement establishes that the query returned what
+    NCHS published, not that NCHS is right. See docs/denominator-methods.md.
 
     ``source`` must name the publication precisely enough to be looked up: a
     volume and a table, not "NVSR". Blank stays blank and means **not
@@ -166,6 +171,16 @@ def corroborate(
             "find: a volume and table, not a series name."
         )
     source = source.strip()
+    # A citation with no number in it cannot identify a volume, issue or table.
+    # This exists because a shell loop once interpolated an empty variable and
+    # wrote "NVSR Vol. , Table B" onto twelve rows: non-blank, well-formed
+    # enough to pass every other check, and useless to a reader.
+    if not any(ch.isdigit() for ch in source):
+        raise AttestationError(
+            f"corroborate(): source {source!r} contains no number, so it "
+            f"identifies no volume, issue or table. A citation that cannot be "
+            f"looked up is not corroboration."
+        )
     date = date or dt.date.today().isoformat()
     raw_dir = raw_dir or RAW_DIR
 
@@ -197,8 +212,8 @@ def corroborate(
             if existing and existing != source:
                 raise AttestationError(
                     f"{filename} row {i} ({year}) is already corroborated "
-                    f"against {existing!r}. Two independent sources agreeing "
-                    f"is worth recording, but not by overwriting the first: "
+                    f"against {existing!r}. Two sources agreeing is worth "
+                    f"recording, but not by overwriting the first: "
                     f"decide which to keep, or widen the string deliberately."
                 )
             if existing == source:
@@ -234,7 +249,7 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--write", action="store_true",
                         help="actually write (default is a dry run)")
     parser.add_argument("--corroborate", metavar="SOURCE", default=None,
-                        help="record an independent source instead of signing; "
+                        help="record a corroborating source instead of signing; "
                              "needs --year and at least one --file")
     parser.add_argument("--year", type=int, default=None,
                         help="with --corroborate, the reference year")
@@ -270,7 +285,7 @@ def main(argv: list[str] | None = None) -> int:
         print(
             f"Signed {len(diff)} row(s) as {args.name!r}. Strict loading will "
             f"now succeed. corroborated_against is untouched and still blank: "
-            f"that is a separate claim about an independent publication."
+            f"that is a separate claim about a separate publication."
         )
     else:
         print(f"Dry run: {len(diff)} row(s) would be signed. Re-run with --write.")
