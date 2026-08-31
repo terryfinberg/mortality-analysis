@@ -178,6 +178,37 @@ template at `paper/manuscript.md`.
 **Never edit numbers in `manuscript_built.md`.** It is regenerated on every run. Edit the data
 or the code.
 
+### Regenerated figures: when to commit them
+
+`figures/` is tracked, not ignored. The manuscript cites each figure by filename, and a Zenodo
+archive of a release should contain the images a reader sees in the preprint rather than a
+promise that they could be rebuilt.
+
+**The convention: commit a regenerated figure only when the numbers behind it changed.** If a
+run was a no-op — a test run, a rebuild to check reproducibility, a docs edit — discard any
+figure churn rather than committing it:
+
+```bash
+git checkout -- figures/
+```
+
+The figures in a commit should correspond to the data and code in that same commit. Churn
+committed on its own breaks nothing, but it buries the commits where a figure moved because a
+*result* moved, which are the ones worth finding later.
+
+In practice there is usually nothing to discard. Re-running `python -m src.report` with
+unchanged inputs currently reproduces all five PNGs **byte for byte** — verified by hashing
+them across consecutive runs — because this matplotlib writes no timestamp into its output.
+The only metadata it embeds is a `Software` string naming its own version.
+
+That last detail is the thing to recognise later. **A matplotlib upgrade rewrites the bytes of
+every figure while every number stays identical**, because the version string is part of each
+file. So if `git status` ever shows all five figures modified at once, check
+`data/processed/results.json` first: it is byte-stable across runs, and if it has not moved,
+what you are looking at is a toolchain bump rather than a change in any result. Commit it as
+that, in a commit of its own, and say so in the message — or discard it. Do not fold it into
+a substantive change, where it would masquerade as one.
+
 ## Running the tests
 
 ```bash
@@ -230,7 +261,7 @@ data/processed/    results.json, generated.
 docs/              Method notes: denominator sourcing, vintages, discontinuities.
 src/               Analysis modules.
 tests/             pytest suite.
-figures/           Generated PNGs.
+figures/           Generated PNGs. Tracked, so a release archives what the paper shows.
 notebooks/         Guided walkthrough.
 paper/             Manuscript template, built manuscript, policy framework.
 ```

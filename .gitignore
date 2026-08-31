@@ -11,6 +11,7 @@ data/processed/*.md
 # Fetch cache regenerates; the discovery snapshot is provenance, so it stays.
 data/raw/fetched/*
 !data/raw/fetched/_discovery_*.json
-figures/*.png
-figures/*.pdf
+# figures/ is tracked deliberately: the manuscript cites figures by filename and a
+# Zenodo archive should contain the images the preprint shows. See README, "Regenerated
+# figures and phantom diffs", for when to commit a regenerated figure and when not to.
 .DS_Store
