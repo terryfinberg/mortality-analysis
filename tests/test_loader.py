@@ -183,3 +183,64 @@ def test_unverified_error_names_the_file_and_counts_rows():
     message = str(excinfo.value)
     assert "us_annual_deaths.csv" in message
     assert "2 row(s)" in message, "blank and NaN both count as unattested"
+
+
+# The age grid: every year needs all six bands, exactly once each.
+#
+# This guard exists because a missing band is not a missing *value*. The rows
+# that remain are fully populated, so _require_complete sees nothing wrong, and
+# no consumer downstream raises either -- rates.age_adjusted_rate and
+# decomposition.kitagawa both quietly return a partial sum. The completeness
+# guarantee did exist before this, but only in fetch.assert_population_identity
+# and fetch.assert_annual_identity, which run on promotion rather than on load.
+# Any path that reached the CSVs without going through promote() was unguarded.
+
+
+def _grid(bands_by_year: dict[int, list[str]]) -> pd.DataFrame:
+    rows = [
+        {"year": y, "age_group": b, "deaths": 1, "population": 10}
+        for y, bands in bands_by_year.items()
+        for b in bands
+    ]
+    return pd.DataFrame(rows)
+
+
+def test_a_year_missing_an_age_band_is_refused():
+    """Five bands where six are required, with every value present."""
+    frame = _grid({
+        2010: loader.AGE_GROUPS,
+        2011: [b for b in loader.AGE_GROUPS if b != "85+"],
+    })
+
+    with pytest.raises(loader.IncompleteDataError) as excinfo:
+        loader._require_complete_bands(frame, "deaths_by_age.csv")
+
+    message = str(excinfo.value)
+    assert "deaths_by_age.csv" in message
+    assert "2011" in message and "85+" in message
+    assert "2010" not in message, "only the offending year should be named"
+
+
+def test_a_duplicated_age_band_is_refused():
+    """A repeated (year, band) pair double-counts into every share."""
+    frame = _grid({2010: loader.AGE_GROUPS + ["45-64"]})
+
+    with pytest.raises(loader.IncompleteDataError) as excinfo:
+        loader._require_complete_bands(frame, "deaths_by_age.csv")
+
+    assert "45-64" in str(excinfo.value)
+
+
+def test_an_unexpected_age_band_is_still_refused():
+    """Preserved from the check this replaced: a band outside the vocabulary."""
+    frame = _grid({2010: loader.AGE_GROUPS + ["90-99"]})
+
+    with pytest.raises(ValueError) as excinfo:
+        loader._require_complete_bands(frame, "deaths_by_age.csv")
+
+    assert "90-99" in str(excinfo.value)
+
+
+def test_a_complete_grid_passes():
+    frame = _grid({y: loader.AGE_GROUPS for y in (2010, 2011, 2012)})
+    loader._require_complete_bands(frame, "deaths_by_age.csv")

@@ -58,6 +58,16 @@ def kitagawa(by_age: pd.DataFrame, year_start: int, year_end: int) -> KitagawaRe
     age_effect  = sum_a [ (w_a1 - w_a0) * (m_a0 + m_a1)/2 ]
 
     These sum exactly to the change in the crude rate.
+
+    Raises if the two years do not carry the same age groups. Shares come
+    from ``population_shares``, which normalizes against each year's *full*
+    population, so restricting to an intersection would leave the dropped
+    band's people in the denominator while its deaths left the numerator:
+    ``crude_start`` and ``crude_end`` would understate the real crude rates
+    and could even invert the sign of the change. The additivity identity
+    below would still hold exactly, because both effects would be computed
+    from the same biased shares -- which is precisely why this has to be a
+    guard and cannot be a test on the output.
     """
     for y in (year_start, year_end):
         if y not in set(by_age["year"]):
@@ -69,7 +79,15 @@ def kitagawa(by_age: pd.DataFrame, year_start: int, year_end: int) -> KitagawaRe
 
     a = df[df["year"] == year_start].set_index("age_group")
     b = df[df["year"] == year_end].set_index("age_group")
-    idx = a.index.intersection(b.index)
+    if set(a.index) != set(b.index):
+        raise ValueError(
+            f"years {year_start} and {year_end} carry different age groups.\n"
+            f"  only in {year_start}: {sorted(set(a.index) - set(b.index)) or 'none'}\n"
+            f"  only in {year_end}: {sorted(set(b.index) - set(a.index)) or 'none'}\n"
+            "Decomposing across a changed age-group vocabulary compares two "
+            "different partitions of the population."
+        )
+    idx = a.index
     a, b = a.loc[idx], b.loc[idx]
 
     rate_effect = ((b["rate"] - a["rate"]) * (a["share"] + b["share"]) / 2).sum()

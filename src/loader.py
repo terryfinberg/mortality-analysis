@@ -72,6 +72,70 @@ def _require_complete(df: pd.DataFrame, cols: list[str], name: str) -> None:
         )
 
 
+def _require_complete_bands(df: pd.DataFrame, name: str) -> None:
+    """Every year must carry all six age bands, exactly once each.
+
+    A missing band is not a missing value, so ``_require_complete`` does not
+    see it: the rows that are present are fully populated, and the year simply
+    has five bands instead of six. Nothing downstream raises either. Both
+    consumers instead produce a plausible, wrong number:
+
+    ``rates.age_adjusted_rate`` normalizes the standard-population weights
+    before an inner join, so a band absent here drops out of the sum while its
+    weight stays in the denominator that produced the other weights -- the
+    "directly standardized" rate comes back biased downward.
+    ``decomposition.kitagawa`` intersects the two years' bands, and
+    ``population_shares`` has already normalized against each year's full
+    population, so the dropped band's deaths leave the numerator while its
+    people stay in the denominator.
+
+    Neither symptom trips an assertion, because the Kitagawa additivity
+    identity holds just as exactly over biased inputs as over correct ones.
+    The completeness guarantee did exist, but only in ``fetch.assert_*_identity``,
+    which runs on promotion and not on load -- so any path that reached these
+    CSVs without going through ``promote()`` was unguarded. This is the
+    boundary; refuse it here.
+
+    Duplicates are rejected for the same reason: a repeated (year, band) pair
+    double-counts into every share and every sum.
+    """
+    bad = set(df["age_group"]) - set(AGE_GROUPS)
+    if bad:
+        raise ValueError(f"{name} has unexpected age groups: {sorted(bad)}")
+
+    incomplete = {}
+    duplicated = {}
+    for year, grp in df.groupby("year"):
+        present = list(grp["age_group"])
+        absent = set(AGE_GROUPS) - set(present)
+        if absent:
+            incomplete[int(year)] = sorted(absent)
+        repeats = sorted({b for b in present if present.count(b) > 1})
+        if repeats:
+            duplicated[int(year)] = repeats
+
+    if incomplete or duplicated:
+        detail = []
+        if incomplete:
+            detail.append(
+                "years missing age bands:\n"
+                + "\n".join(f"  {y}: missing {b}" for y, b in sorted(incomplete.items()))
+            )
+        if duplicated:
+            detail.append(
+                "years with duplicate age bands:\n"
+                + "\n".join(f"  {y}: repeated {b}" for y, b in sorted(duplicated.items()))
+            )
+        raise IncompleteDataError(
+            f"{name}: every year requires all {len(AGE_GROUPS)} age bands "
+            f"({', '.join(AGE_GROUPS)}), exactly once.\n"
+            + "\n".join(detail)
+            + "\nAn incomplete grid does not raise downstream. It produces an "
+            "age-adjusted rate and a Kitagawa decomposition that are internally "
+            "consistent and quietly wrong."
+        )
+
+
 def _require_verified(df: pd.DataFrame, name: str) -> None:
     if "verified_by" not in df.columns:
         return
@@ -115,9 +179,7 @@ def load_deaths_by_age(strict: bool = True) -> pd.DataFrame:
     _require_complete(df, ["deaths", "population"], "deaths_by_age.csv")
     if strict:
         _require_verified(df, "deaths_by_age.csv")
-    bad = set(df["age_group"]) - set(AGE_GROUPS)
-    if bad:
-        raise ValueError(f"deaths_by_age.csv has unexpected age groups: {sorted(bad)}")
+    _require_complete_bands(df, "deaths_by_age.csv")
     df["deaths"] = df["deaths"].astype(int)
     df["population"] = df["population"].astype(int)
     return df[["year", "age_group", "deaths", "population"]]
@@ -128,6 +190,9 @@ def load_covid_deaths_by_age(strict: bool = True) -> pd.DataFrame:
     _require_complete(df, ["covid_deaths"], "covid_deaths_by_age.csv")
     if strict:
         _require_verified(df, "covid_deaths_by_age.csv")
+    # Same guard: covid_share_by_age divides each band by the sum over bands,
+    # so a missing band inflates every share that survives rather than failing.
+    _require_complete_bands(df, "covid_deaths_by_age.csv")
     df["covid_deaths"] = df["covid_deaths"].astype(int)
     return df[["year", "age_group", "covid_deaths"]]
 

@@ -12,6 +12,8 @@ against nothing (the fixture's deaths are already integral, so its
 `int(round(...))` never rounds) while hiding regressions up to half a death per
 100,000.
 """
+import pytest
+
 from src import decomposition
 
 
@@ -45,6 +47,29 @@ def test_reversing_years_flips_signs(by_age_aging_only):
 
 
 def test_missing_year_raises(by_age_stationary):
-    import pytest
     with pytest.raises(ValueError, match="not present"):
         decomposition.kitagawa(by_age_stationary, 2000, 1999)
+
+
+def test_kitagawa_refuses_years_with_different_age_groups(by_age_stationary):
+    """A changed age-group vocabulary compares two different partitions.
+
+    This has to be a guard rather than a check on the output. Shares are
+    normalized against each year's full population, so restricting to the
+    intersection leaves the dropped band's people in the denominator while its
+    deaths leave the numerator -- and the additivity identity still holds
+    exactly, because both effects are computed from the same biased shares.
+    The one invariant this suite leans on hardest is the one that cannot see
+    this defect.
+    """
+    frame = by_age_stationary[
+        ~((by_age_stationary["year"] == 2001)
+          & (by_age_stationary["age_group"] == "85+"))
+    ]
+
+    with pytest.raises(ValueError) as excinfo:
+        decomposition.kitagawa(frame, 2000, 2001)
+
+    message = str(excinfo.value)
+    assert "85+" in message
+    assert "2000" in message and "2001" in message

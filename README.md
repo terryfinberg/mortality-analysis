@@ -215,7 +215,7 @@ a substantive change, where it would masquerade as one.
 python -m pytest
 ```
 
-One hundred and eighty-six tests. They cover rate arithmetic, exact additivity of the Kitagawa
+One hundred and ninety-three tests. They cover rate arithmetic, exact additivity of the Kitagawa
 decomposition, recovery of a known trend by the excess-mortality baseline fit, the loader's
 refusal to accept incomplete data, and the fetch layer: WONDER export parsing, age-band
 collapse arithmetic, "Not Stated" handling, cache behaviour, refusal to return partial data
@@ -238,6 +238,15 @@ geometry** is asserted against the values it encodes — a stacked bar once hid 
 component entirely, and every input-side check passed while it did. **Document prose** is
 checked for statistic-shaped literals that restate a value from `results.json`, because a
 hardcoded number that is right today agrees with itself forever.
+
+A third class was added after a scoped code review of the arithmetic modules: **an incomplete
+age grid**. Every year must carry all six bands, exactly once. A missing band is not a missing
+*value* — the surviving rows are fully populated — so it passes the completeness check, and
+neither the age-adjusted rate nor the Kitagawa decomposition raises on it. Both quietly return
+a partial sum instead. The Kitagawa additivity identity holds just as exactly over biased
+shares as over correct ones, so the suite's strongest invariant is blind to this by
+construction. It is refused at the loader, and refused again in `rates.py` and
+`decomposition.py` for callers that build a frame themselves.
 
 **Tolerance policy.** A quantity defined to be equal is asserted equal, at `1e-9` for
 floating-point representation only. A quantity merely expected to be close gets a real

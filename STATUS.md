@@ -16,7 +16,7 @@ against a pre-pandemic trend, and characterising the age distribution of COVID-1
 and hash-verified, all 150 data rows are populated from those exports and personally
 attested, 14 of the 15 annual totals are corroborated against NCHS's published NVSR reports,
 and `python -m src.report` produces `results.json`, five figures and a built manuscript with
-every value substituted from code. 186 tests pass. What remains is not analysis: it is
+every value substituted from code. 193 tests pass. What remains is not analysis: it is
 publication mechanics — a scoped review of the arithmetic, then GitHub, Zenodo, a DOI, and a
 preprint. The artifact question is settled: `figures/` is tracked, so a release archives the
 images the paper shows.
@@ -42,7 +42,9 @@ images the paper shows.
   age-to-rate ratio 3.41–3.87.
 - **Licensing done** three ways: BSD-3-Clause (`LICENSE`), a public-domain status statement
   for the federal data (`DATA.md`), CC BY 4.0 for the manuscript (`paper/LICENSE`).
-- **186 tests, 23 commits on `main`.**
+- **193 tests.** (The commit count that used to sit here was removed: nothing checks it and
+  it goes stale on every commit, which is the exact defect `test_docs_are_current` exists to
+  catch. `git rev-list --count main` answers it on demand.)
 
 ## Open, in the order to tackle it
 
