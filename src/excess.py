@@ -2,7 +2,16 @@
 
 Method: fit a linear trend in the age-adjusted rate over the baseline
 window, project it forward, convert the projected rate back to a count
-using observed population, and take observed minus expected.
+by scaling the observed count by the ratio of expected to observed
+age-adjusted rate, and take observed minus expected.
+
+That conversion is deliberately not `expected_rate * population / PER`,
+which is what "convert back to a count using observed population" -- the
+wording this docstring carried until it was corrected -- would describe.
+Multiplying an age-adjusted rate by the observed population treats a rate
+standardized against the 2000 standard population as though it were a
+crude rate, and the two differ by exactly the factor this method exists
+to remove. Ratio scaling cancels that factor instead.
 
 Projecting the age-adjusted rate rather than the raw count matters. A
 count-based baseline attributes the mechanical effect of population
