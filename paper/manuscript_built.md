@@ -1,4 +1,4 @@
-# A Fragile Equilibrium: Population Aging, Age-Specific Mortality, and the Interpretation of U.S. Crude Death Rates, 2010-2024
+# Decomposing U.S. Crude Death Rates, 2010-2024: Population Aging Dominates, and the Denominator Is Not Stable
 
 **Author:** Terry Finberg
 
@@ -10,11 +10,13 @@
 
 The crude death rate is the most widely cited summary of a population's mortality experience and one of the most frequently misread. Because it is a simple ratio of deaths to population, it responds both to changes in the risk of dying at a given age and to changes in how many people are at each age. In an aging population these two forces pull in opposite directions, and the crude rate reports only their sum.
 
-This paper decomposes the change in the U.S. crude death rate between 2010 and 2024 into an age-specific mortality component and a population age-structure component using the Kitagawa method. Over the pre-pandemic interval 2010-2019, age-specific mortality contributed -29.2 deaths per 100,000 to the crude rate while the shift in age structure contributed 99.4, a ratio of 3.41 to one.
+This paper makes two contributions. The first is a decomposition of the change in the U.S. crude death rate between 2010 and 2024 into an age-specific mortality component and a population age-structure component, using the Kitagawa method. Over the full interval the crude rate rose by 103.9 deaths per 100,000: the age-specific mortality component moved it down by 24.4 while the age-structure component moved it up by 128.4. Over the pre-pandemic interval 2010-2019, uncontaminated by the shock, the age effect exceeds the rate effect by 3.41 to one. Aging does not merely dominate the change; it exceeds it, and mortality risk at a given age fell over a period in which the death rate rose.
 
-We further estimate excess mortality during the pandemic era against a baseline projected from the 2010-2019 trend in the age-adjusted rate, and characterize the age distribution of COVID-19 deaths, of which 75.7 percent occurred among people aged 65 and over.
+The second contribution is a measurement of the denominator those rates are divided by. Four vintage boundaries fall inside this single fifteen-year series, and all four were measured against source data rather than assumed: the per-year vintage chain CDC WONDER carries, the Vintage 2024 restatement of 2023, the 2010 April 1 measurement basis, and the bridged-race to single-race seam at 2017/2018. One of them is **exactly zero**. The seam agrees to the person in every age band, in deaths and in population alike, against a purpose-run export rather than by assumption, and a boundary measured at zero is not the same object as a boundary nobody measured.
 
-The equilibrium of the title is the arrangement by which falling age-specific mortality has historically offset the arithmetic pressure of an aging population, holding the crude rate roughly flat. That arrangement is fragile. It depends on continued improvement at every age, and the decomposition shows the margin had already narrowed before 2020.
+The others are not zero. The Vintage 2024 restatement moved 2023's population by 0.565 percent, non-uniformly across bands, and accounts for 26.6 percent of the published 2023-to-2024 crude-rate decline, 70.1 percent of which books as a spurious improvement in age-specific mortality. The 2010 measurement basis moves the pre-pandemic age-to-rate ratio across a range of 3.41 to 3.87, which is why that quantity is reported as a range and not as a point estimate. And the strongest evidence here is not ours: NCHS has itself published two different crude death rates for the same year, 2020, in two of its own reports, and named denominator rebasing as the cause.
+
+The two findings are linked, and neither is complete without the other. The arrangement by which falling age-specific mortality has historically offset the arithmetic pressure of an aging population, holding the crude rate roughly flat, is an equilibrium sustained by cancellation and is therefore fragile; the decomposition shows the margin had already narrowed before 2020. But whether that margin is narrowing, and by how much, is a claim about a denominator as much as about mortality. A crude rate cannot be read as a statement about health until the population it is divided by is known to be stable, and across this series it demonstrably is not.
 
 ---
 
@@ -26,7 +28,7 @@ The distinction matters because the United States is in the middle of a demograp
 
 This creates an interpretive trap. A crude rate that holds steady during a period of aging is evidence of substantial improvement in age-specific mortality, because improvement was required simply to offset the age shift. A crude rate that rises modestly may still be consistent with improving health. And a crude rate that falls during aging represents improvement large enough to overwhelm demographic pressure, which is a considerable achievement rather than an unremarkable one.
 
-The method used here is not new. Kitagawa published the decomposition in 1955, and demographers have applied it routinely since. What this paper contributes is a reproducible pipeline that applies it to the recent U.S. series, an explicit treatment of the pandemic period as a shock superimposed on a pre-existing trend, and a documentation practice in which no number appears in the text unless the repository's code produced it.
+The method used here is not new. Kitagawa published the decomposition in 1955, and demographers have applied it routinely since. The decomposition in section 4.2 is therefore a careful application of an established method to a recent series, and we claim nothing more for it. What is new is section 4.4: a measurement of the denominator these rates are divided by, in which four vintage boundaries within a single series are quantified, one of them at exactly zero. That section is the reason the decomposition can be interpreted at all, and the decomposition is what makes the denominator result matter to anyone who is not a methodologist. Supporting both is an explicit treatment of the pandemic period as a shock superimposed on a pre-existing trend, and a documentation practice in which no number appears in the text unless the repository's code produced it.
 
 ### 1.1 What this paper does not claim
 
@@ -42,7 +44,7 @@ All inputs are documented in `data/raw/` with a per-row citation to the primary 
 
 **Deaths and population by age group** come from CDC WONDER, using the query parameters documented in `data/queries/cdc_wonder_queries.md`. WONDER does not expose stable result URLs, so the parameter set required to reproduce each extract is documented rather than a link.
 
-**Population denominators** are July 1 resident population estimates as carried by CDC WONDER, except 2010, which is the April 1 decennial count as carried by WONDER. We verified this band by band against the Census Bureau's `CENSUS2010POP` figures, which our 2010 denominators reproduce exactly. The consequences of that one-year difference in measurement basis are quantified in section 6.
+**Population denominators** are July 1 resident population estimates as carried by CDC WONDER, except 2010, which is the April 1 decennial count as carried by WONDER. We verified this band by band against the Census Bureau's `CENSUS2010POP` figures, which our 2010 denominators reproduce exactly. The consequences of that one-year difference in measurement basis are quantified in section 4.4.
 
 **Standard population weights** for age adjustment are the 2000 U.S. Standard Population from NCHS Statistical Notes No. 20, collapsed from eleven groups to the six used here. The collapse is a summation and introduces no approximation. The loader asserts that the weights sum to 1,000,000, since a transcription error in this table would bias every adjusted rate in the analysis without producing any visible symptom.
 
@@ -64,7 +66,7 @@ Population denominators are taken from the Population column of the same CDC WON
 
 WONDER's population figures are themselves NCHS-processed Census Bureau estimates, so this is a choice of vintage rather than a different underlying source. Taking numerator and denominator from one extract has two consequences we rely on. The sum of the six age-band populations equals the annual population by construction, so that relationship is asserted as an exact identity rather than checked against a tolerance. More importantly, WONDER publishes its own Crude Rate for each year, computed independently of this analysis from the same counts; because our denominator is WONDER's denominator, our computed crude rate must reproduce WONDER's published rate to the precision WONDER reports. It does so for every year in the series. This is an external check on the entire rate pipeline — death counts, population, and the rate arithmetic — against the issuing agency rather than against our own intermediate values. A Census denominator would have made agreement impossible and would have required explaining a discrepancy that bought nothing.
 
-This does not remove the vintage discontinuity at 2017/2018, which is internal to WONDER: population estimates are bridged-race through 2017 and single-race from 2018. That seam is measured directly and reported in section 6.2.
+This does not remove the vintage discontinuity at 2017/2018, which is internal to WONDER: population estimates are bridged-race through 2017 and single-race from 2018. That seam is measured directly and reported in section 4.4.
 
 #### Numerator difference between the two series
 
@@ -147,6 +149,37 @@ COVID-19 deaths were heavily concentrated among older adults: 75.7 percent occur
 
 *Figures 3 and 4: `figures/fig3_excess_mortality.png`, `figures/fig4_covid_by_age.png`*
 
+
+### 4.4 The population denominator is not stable
+
+Sections 4.1 to 4.3 concern the numerators of these rates. This section concerns the denominator, which is not a fixed quantity and is the part of a published crude rate least likely to be interrogated. Four vintage boundaries fall inside this series. All four were measured against source data rather than assumed, and the full working is in `docs/denominator-methods.md`.
+
+**One is exactly zero.** CDC WONDER's population estimates are bridged-race through 2017 and single-race from 2018, so the analysis grid changes database at that seam, and the seam sits inside the pre-pandemic baseline window where an unnoticed step would contaminate the trend fit. A purpose-run bridged-race export covering the overlap was differenced against the single-race extract: all eighteen cells, three years by six age bands, agree **to the person**, in deaths and in population alike. The worst difference in either measure is zero percent.
+
+That null is a measurement, not an assumption, and it was worth making: the mechanism explains it only in retrospect. Bridged-race and single-race are two race-detail treatments of the same Census vintage estimate, and these queries carry no race stratification, so the age-by-all-races totals are the same figures reached by two routes. The result does not generalise past that condition. Stratify by race and the two databases are not interchangeable, which is the entire reason race bridging exists.
+
+**The Vintage 2024 restatement is not zero.** It moved 2023's population by 0.565 percent, non-uniformly across age bands, which is what makes it consequential rather than a level shift that would cancel in a comparison. That single restatement accounts for 26.6 percent of the published 2023-to-2024 decline in the crude rate. Decomposed, 70.1 percent of that contribution books as an apparent improvement in age-specific mortality: a change in the estimate of how many people were alive, presented by the arithmetic as a change in how likely they were to die.
+
+**The 2010 measurement basis moves a headline number.** 2010 is an April 1 decennial count where every other year is a July 1 estimate. Three treatments of that year were computed rather than argued about — the series as published, 2010 dropped from the interval, and 2010 replaced by the Census Bureau's published July 1 estimate:
+
+| Treatment | Interval | Rate effect | Age effect | Age : rate | Excess 2020-2021 |
+|---|---|---|---|---|---|
+| A, as published | 2010-2019 | -29.2 | 99.4 | 3.405 | 1,117,059 |
+| B, 2010 excluded | 2011-2019 | -24.0 | 86.5 | 3.599 | 1,105,148 |
+| C, published July 1 | 2010-2019 | -25.0 | 96.7 | 3.872 | 1,110,739 |
+
+*Rate and age effects are deaths per 100,000. Computed by `src/treatments.py`.*
+
+The age-to-rate ratio ranges from 3.41 to 3.87 across the three, which is why section 5.1 reports that quantity as a range and not as a point estimate. The excess-death estimates barely move, for the reason given in 3.3: they depend on a projected level, which a rotation about the fit's centroid displaces far less than it displaces a slope.
+
+**The per-year vintage chain is the boundary with no remedy.** WONDER carries each year at the vintage current when that year was first estimated and never revises it backward, which is what allows our crude rates to reproduce WONDER's published ones exactly. The cost is that a trend fitted across those years absorbs vintage-revision noise. This is stated by WONDER in every export's footer, so it is documented by the source rather than inferred here, and it is a feature of the series rather than a defect in it.
+
+**The strongest evidence for this section is not ours.** NCHS has itself published two different crude death rates for 2020, and has named denominator rebasing as the reason. NVSR Vol. 74 No. 11 states in its methods:
+
+> "Rates for 2020 have been revised, using blended base population estimates, and may differ from those published in 'Births: Final Data for 2020' and 'Deaths: Final Data for 2020,' which were based on postcensal population estimates based on the 2010 census."
+
+This is worth stating plainly because it converts an argument into an instance. The claim that a crude rate is a statement about a denominator as much as about mortality does not rest on our own sensitivity analysis alone: the agency that publishes the rates has published two values for the same year, in two of its own reports, and attributed the difference to the population base. Any comparison of crude rates across publications, or across years spanning a rebasing, has to establish that the denominators share a basis before the difference can be read as mortality.
+
 ---
 
 ## 5. Discussion
@@ -159,7 +192,7 @@ An equilibrium sustained by cancellation is not durable. It holds only while imp
 
 #### Robustness of the narrowing-margin result
 
-This claim rests on the age effect dominating the rate effect over the pre-pandemic interval, so we tested whether that dominance depends on the treatment of 2010, whose denominator is measured on a different basis from every other year (section 6). Under all three treatments — the primary series as published, 2010 excluded from the interval, and 2010 replaced by the Census Bureau's published July 1 estimate — the age-to-rate ratio falls between **3.41 and 3.87**. All three treatments are computed by `src/treatments.py`; the alternative denominators come from the Census Bureau's published July 1 2010 estimate, and the table appears in section 6.
+This claim rests on the age effect dominating the rate effect over the pre-pandemic interval, so we tested whether that dominance depends on the treatment of 2010, whose denominator is measured on a different basis from every other year (section 4.4). Under all three treatments — the primary series as published, 2010 excluded from the interval, and 2010 replaced by the Census Bureau's published July 1 estimate — the age-to-rate ratio falls between **3.41 and 3.87**. All three treatments are computed by `src/treatments.py`; the alternative denominators come from the Census Bureau's published July 1 2010 estimate, and the table appears in section 4.4.
 
 The result is therefore not marginal under any treatment. For the age effect to stop dominating, age-specific mortality improvement over the interval would have to have been roughly **241 percent larger** than what was observed. The uncertainty introduced by the 2010 measurement basis is nowhere near that magnitude, and no plausible resolution of it changes the direction of the finding.
 
@@ -183,37 +216,31 @@ The practical recommendation that follows is narrow and implementable: agencies 
 
 ### 6.1 Data provenance
 
-Values in `data/raw/` are parsed from CDC WONDER export files committed to the repository, each identified by filename and SHA-256 and carrying WONDER's own query-parameter footer. Every row records the export it came from, and every row carries a human attestation that the value matches that export; the pipeline refuses to run without both. No year is provisional: 2018–2024 come from the final Single Race database.
+Values in `data/raw/` are parsed from CDC WONDER export files committed to the repository, each identified by filename and SHA-256 and carrying WONDER's own query-parameter footer. Every row records the export it came from, and every row carries a human attestation that the value matches that export; the pipeline refuses to run without both. No year is provisional: 2018-2024 come from the final Single Race database.
 
-Thirteen of the fifteen annual totals, 2010–2022, additionally match Table B of the corresponding NVSR *Deaths: Final Data* report exactly, and our computed crude rate matches NVSR's published rate to one decimal across all thirteen. 2023's death count is corroborated against NVSR 74-11; its rate is not, for the reasons in 6.2. 2024 has no published NVSR report and rests on the committed export alone.
+Thirteen of the fifteen annual totals, 2010-2022, additionally match Table B of the corresponding NVSR *Deaths: Final Data* report exactly, and our computed crude rate matches NVSR's published rate to one decimal across all thirteen. 2023's death count is corroborated against NVSR 74-11; its rate is not, for the reasons in section 4.4. 2024 has no published NVSR report and rests on the committed export alone.
 
 **This is corroboration, not independent confirmation.** NVSR and WONDER are both NCHS products drawing on the same mortality file and the same Census-derived denominators. The agreement rules out a query that returned the wrong slice — such a query would not reproduce the published national total for thirteen consecutive years — and says nothing about whether the underlying NCHS data is correct. Replication that wants independence must go to a different data producer, not a different NCHS publication.
 
-### 6.2 Denominator vintage
-
-The population denominator is not a fixed quantity, and this is the limitation most likely to be underestimated by a reader.
-
-Three discontinuities are documented and quantified in `docs/denominator-methods.md`: the per-year vintage chain WONDER carries, the Vintage 2024 restatement of 2023, and the 2010 April 1 measurement basis. The bridged-race to single-race seam at 2017/2018 was measured directly against a purpose-run export and is **exactly zero** in every band, deaths and population alike, so that boundary introduces no step.
-
-The other two are not zero. The Vintage 2024 restatement moved 2023's population by 0.565 percent, non-uniformly across age bands, which accounts for 26.6 percent of the published 2023→2024 crude-rate decline — 70.1 percent of that booking as a spurious improvement in age-specific mortality. The 2010 basis moves the reported age-to-rate ratio between 3.41 and 3.87, which is why that quantity is reported as a range.
-
-**NCHS has itself published two different crude death rates for 2020, and named denominator rebasing as the reason.** NVSR Vol. 74 No. 11 states in its methods:
-
-> "Rates for 2020 have been revised, using blended base population estimates, and may differ from those published in 'Births: Final Data for 2020' and 'Deaths: Final Data for 2020,' which were based on postcensal population estimates based on the 2010 census."
-
-This is worth stating plainly because it converts an argument into an instance. The claim that a crude rate is a statement about a denominator as much as about mortality does not rest on our own sensitivity analysis alone: the agency that publishes the rates has published two values for the same year, in two of its own reports, and attributed the difference to the population base. Any comparison of crude rates across publications, or across years spanning a rebasing, has to establish that the denominators share a basis before the difference can be read as mortality.
-
-### 6.3 Baseline sensitivity
+### 6.2 Baseline sensitivity
 
 Excess mortality estimates depend on the baseline window and on the decision to project the adjusted rate rather than the count. A shorter window weights recent years more heavily; a longer one imports older trend behavior that may no longer apply. Results under alternative windows should be reported before any excess figure is cited outside this paper.
 
-### 6.4 Age group coarseness
+### 6.3 Age group coarseness
 
 Six groups is a compromise. The 0-24 band in particular spans an enormous range of mortality risk and masks the divergent trends in infant mortality and in young-adult deaths from overdose and injury, which move in opposite directions and are substantively important in their own right.
 
-### 6.5 No cause-of-death modeling
+### 6.4 No cause-of-death modeling
 
 Beyond the COVID-19 stratification, this analysis does not decompose by cause. The offsetting-trends argument in Section 5.1 would be considerably stronger with a cause-specific decomposition showing which causes drove improvement and which reversed it, and that is the natural next extension.
+
+### 6.5 No consistent-vintage reanalysis
+
+Section 4.4 measures the vintage boundaries in the series; it does not remove them. We do not rebase the whole series onto a single vintage, and that is a decision rather than an omission.
+
+The chain has no terminal state to rebase onto. Vintage 2025 moved every year of Vintage 2024, including the estimates base, so a series made internally consistent today is externally stale within a year. Rebasing would also destroy the external check the analysis leans on hardest: our crude rate reproduces WONDER's published Crude Rate for every year precisely because our denominator is WONDER's denominator, and a rebased denominator would make that agreement impossible while buying no accuracy that could be demonstrated. Vintage sensitivity is therefore reported as a range at the two points where it was measured, rather than resolved.
+
+A reader who needs a single-vintage series should build one and should expect the crude rates in it to disagree with every published NCHS figure, for the reason section 4.4 documents rather than because either is wrong.
 
 ---
 

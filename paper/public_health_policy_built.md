@@ -3,7 +3,7 @@
 ## The Mortality Surveillance and Demographic Resilience Act
 
 **A model federal framework**
-**Companion to:** *A Fragile Equilibrium* (see `paper/manuscript.md`)
+**Companion to:** *Decomposing U.S. Crude Death Rates, 2010-2024* (see `paper/manuscript.md`)
 **Drafting status:** Reference draft for discussion. Not introduced legislation.
 
 ---

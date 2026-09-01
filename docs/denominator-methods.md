@@ -1,4 +1,4 @@
-# Denominator methods and known discontinuities
+# Denominator methods and measured discontinuities
 
 Working notes on the population denominator: where it comes from, the
 discontinuities in it, and the method for telling a real mortality change from
@@ -96,11 +96,18 @@ the arithmetic but not that the threshold catches the case it was calibrated on.
 
 ---
 
-## The three known discontinuities
+## The four measured boundaries, one of which is exactly zero
 
 Different causes, different magnitudes, different remedies. They share a
-denominator and nothing else. Section 6 of the manuscript gives each its own
-subsection rather than bundling them.
+denominator and nothing else. Section 4.4 of the manuscript reports them as
+results, because that is what they are: each was measured against source data
+rather than conceded as a caveat.
+
+**Four, not three.** Earlier versions of this document counted three
+discontinuities and then discussed the bridged/single-race seam separately,
+which made the seam invisible in the count precisely because its measurement
+came back zero. Four boundaries were measured. One of them is zero, and that
+null is a finding rather than an absence.
 
 ### 1. Per-year vintage chain
 
@@ -129,7 +136,7 @@ published series rather than taken from the caveat.
 The real asymmetry between the exports is one of **substance, not completeness**:
 file 1's population basis genuinely differs from files 2 and 3, bridged-race
 against single-race, with 2010 an April 1 count rather than a July 1 estimate.
-That difference is the subject of discontinuities 2 and 3 below. It is not a
+That difference is the subject of boundaries 3 and 4 below. It is not a
 documentation gap.
 
 > **Correction, 2026-08-30.** An earlier version of this section claimed file 2
@@ -353,6 +360,23 @@ Three treatments, all reported:
 
 A stays primary, because it preserves the crude-rate match. The improvement rate
 is reported as a **range**, −1.41 to −1.78, not a point estimate.
+
+---
+
+### 4. The bridged/single-race seam at 2017/2018
+
+The analysis grid takes 2017 from the bridged-race database and 2018 from the
+single-race one. **Measured, and exactly zero** -- all 18 cells agree to the
+person, in deaths and population alike, against a purpose-run export. The full
+measurement, the mechanism that explains it, and the check that rules out
+comparing a file against itself are in **The bridged/single-race seam,
+measured** below.
+
+It is listed here as a boundary rather than filed away as a non-event because
+the distinction this document is about is measured versus assumed, not zero
+versus non-zero. A boundary nobody measured is not the same object as a boundary
+measured at zero, and only one of the two licenses the baseline trend fit that
+spans it.
 
 ---
 

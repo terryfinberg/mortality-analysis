@@ -308,7 +308,7 @@ rounding of the rate. That is inference about the denominator, which is why
 > different crude death rates for 2020 in two of its own reports and named denominator
 > rebasing as the cause. That is an agency-published instance of this project's denominator
 > argument, which until now rested on our own measurement. It is written up as finding 4 in
-> `docs/denominator-methods.md` and cited in manuscript section 6.2.
+> `docs/denominator-methods.md` and reported in manuscript section 4.4.
 - [ ] **2024 — leave blank, and say so in the paper.** There is no independent published
       source. Do not fill this column from WONDER, a VSRR provisional release, or a press
       figure: each would either restate the value's own source or corroborate it against

@@ -1,7 +1,12 @@
-# A Fragile Equilibrium
+# Decomposing U.S. Crude Death Rates, 2010-2024
 
-Reproducible analysis of U.S. mortality, decomposing changes in the crude death rate into
-age-specific mortality and population age-structure components.
+Reproducible analysis of U.S. mortality with two contributions: a Kitagawa decomposition
+of the change in the crude death rate into age-specific mortality and population
+age-structure components, and a measurement of the population denominator those rates
+are divided by — four vintage boundaries inside a single fifteen-year series, quantified
+rather than assumed, one of them at exactly zero.
+
+The full title is *Decomposing U.S. Crude Death Rates, 2010-2024: Population Aging Dominates, and the Denominator Is Not Stable*.
 
 **Repository status: populated, attested, and running. Corroboration against NCHS's published
 reports is partial and deliberately labelled as such — 14 of 15 annual totals.**

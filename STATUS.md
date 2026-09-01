@@ -1,25 +1,30 @@
 # Status
 
-**Last updated:** 2026-08-31 · **HEAD:** `0dd274b` · **Branch:** `main` ·
+**Last updated:** 2026-09-01 · **HEAD:** `7f63e62` (this state is uncommitted) · **Branch:** `main` ·
 **Remote:** `origin` → `github.com/terryfinberg/mortality-analysis` · **pushed, not tagged**
 
-> ## 🛑 DO NOT TAG. DO NOT CREATE A RELEASE.
+> ## ✅ The restructure is done. The tag is no longer blocked on it.
 >
-> **Decided 2026-08-31, deliberately, and not a task that was left unfinished.** The manuscript
-> is being restructured before publication. Tagging `v0.1.0` or creating a GitHub Release now
-> would mint a DOI against the wrong framing of the paper, and **a DOI is permanent.** The
-> restructure is described in **"The restructure, and why the tag is deferred"** below. Read it
-> before touching a tag, a release, or `paper/`.
+> **Executed 2026-09-01.** The denominator findings are now Results §4.4 rather than a
+> limitation, §6 keeps only limitations of this work, the abstract states both contributions,
+> and the title has changed in all six files that carried it. `data/processed/results.json`
+> and all five figures are **byte-identical** before and after — that was the restructure's
+> own regression test, and it passes. 193 tests pass.
 >
-> Everything else about the repository is finished and correct: the analysis runs, 193 tests
-> pass, the code review is done and its findings are fixed, and `main` is pushed. The only
-> thing standing between here and a DOI is a decision about how the paper is framed, and that
-> decision has been made and not yet executed.
+> **Two things still stand between here and a DOI. Neither is analysis.**
 >
-> The Zenodo integration toggle may already be switched on. **That is harmless on its own** —
-> Zenodo archives Releases, and the toggle merely arms it for the next one. An armed toggle
-> with no Release produces no DOI and no record. The irreversible step is creating the
-> Release, which is exactly the step being deferred.
+> 1. **Switch the Zenodo integration toggle on** (step 4), if it is not already. Zenodo
+>    archives only Releases created *after* the toggle is on, and **a pushed tag is not a
+>    Release.** An armed toggle with no Release produces no DOI and no record, so this is
+>    safe to do at any time and cannot be done too early.
+> 2. **Fix `CITATION.cff`'s `version:` and `date-released:` in the same commit as the tag.**
+>    It still carries `0.1.0` and `"2026-08-31"` — a release date that has now passed without
+>    a release. Fixing it at tag time rather than earlier keeps the file from ever describing
+>    a release that does not exist.
+>
+> Order: toggle, *then* tag, *then* create the Release in the GitHub UI. Getting that order
+> wrong means the DOI never appears, and the fix is cutting a throwaway v0.1.1 purely to
+> trigger it.
 
 > The branch was renamed `master` → `main` on 2026-08-31, before any push, so it matches the
 > default GitHub gives a new repository. Renaming after pushing means fixing the default
@@ -27,10 +32,15 @@
 
 ## Where this stands
 
-*A Fragile Equilibrium* is a reproducible analysis of U.S. mortality, 2010–2024, decomposing
-the change in the crude death rate into an age-specific mortality component and a
-population age-structure component (Kitagawa), estimating pandemic-era excess mortality
-against a pre-pandemic trend, and characterising the age distribution of COVID-19 deaths.
+*Decomposing U.S. Crude Death Rates, 2010-2024: Population Aging Dominates, and the
+Denominator Is Not Stable* is a reproducible analysis of U.S. mortality making two
+stated contributions. **The decomposition:** the change in the crude death rate splits into an
+age-specific mortality component and a population age-structure component (Kitagawa), with
+pandemic-era excess mortality estimated against a pre-pandemic trend and the age distribution
+of COVID-19 deaths characterised. **The denominator:** four vintage boundaries inside a single
+fifteen-year series, each measured against source data rather than assumed, one of them at
+exactly zero.
+
 **The analysis is complete and runs end to end.** All four CDC WONDER exports are committed
 and hash-verified, all 150 data rows are populated from those exports and personally
 attested, 14 of the 15 annual totals are corroborated against NCHS's published NVSR reports,
@@ -39,11 +49,9 @@ every value substituted from code. 193 tests pass. The arithmetic has been revie
 findings fixed, `figures/` is tracked so a release archives the images the paper shows, and
 `main` is pushed to GitHub.
 
-**What remains is not analysis and no longer publication mechanics either. It is one editorial
-decision, already made and not yet executed:** the paper's strongest contribution — the
-denominator work — is currently presented as a limitation in §6.2 and is absent from the
-abstract. The manuscript is being restructured before anything is tagged, because a DOI would
-make the wrong framing permanent. See **"The restructure, and why the tag is deferred"** below.
+**The restructure is executed and nothing analytical remains.** What is left is release
+mechanics in a fixed order: the Zenodo toggle, then the tag, then the Release. See the banner
+above and steps 4 and 5 below.
 
 ## Done
 
@@ -70,85 +78,99 @@ make the wrong framing permanent. See **"The restructure, and why the tag is def
   it goes stale on every commit, which is the exact defect `test_docs_are_current` exists to
   catch. `git rev-list --count main` answers it on demand.)
 
-## The restructure, and why the tag is deferred
+## The restructure, executed
 
-**Decided 2026-08-31. Work starts 2026-09-01.**
+**Decided 2026-08-31. Executed 2026-09-01.**
 
-### The problem
+### What was wrong
 
-The paper's strongest contribution is currently filed as a limitation, in §6.2 "Denominator
-vintage."
+The paper's strongest contribution was filed as a limitation, in §6.2 "Denominator vintage",
+and the abstract did not mention it at all. The introduction conceded, correctly, that the
+Kitagawa decomposition is not novel — "demographers have applied it routinely since" — which
+left the demographic half of the paper contributing a careful application of a 1955 method to
+a recent series. Useful; not new. The denominator work was the new part, and it sat in the
+section reserved for the analysis's own shortcomings. If the strongest contribution is absent
+from the abstract and present only in the limitations, the paper is framed wrongly — not
+incompletely, wrongly.
 
-The introduction concedes, correctly, that the Kitagawa decomposition is not novel —
-"demographers have applied it routinely since." That is honest and it should stay. But it means
-the demographic half of the paper contributes a careful application of a 1955 method to a
-recent series. Useful; not new.
+### What changed
 
-What is new is the denominator work:
+One paper, two stated contributions. Not two papers: the findings are causally linked — the
+denominator work is what licenses the decomposition's interpretation, and the decomposition is
+what makes the denominator work matter to anyone who is not a methodologist.
 
-- **Four discontinuities documented and quantified in a single series** — the per-year vintage
-  chain WONDER carries, the Vintage 2024 restatement of 2023, the 2010 April 1 measurement
-  basis, and the bridged-race to single-race seam at 2017/2018.
-- **One of them measured at exactly zero.** The seam is zero in every band, deaths and
-  population alike, measured against a purpose-run export rather than assumed. A null result
-  someone actually went and measured.
-- **The V2024 restatement accounts for 26.6% of the published 2023→2024 crude-rate decline**,
-  70.1% of that booking as a spurious improvement in age-specific mortality.
-- **NCHS has published two different crude death rates for the same year (2020), in two of its
-  own reports, and named denominator rebasing as the cause.** This converts the paper's
-  argument into an instance: the claim that a crude rate is a statement about a denominator as
-  much as about mortality does not rest on our own sensitivity analysis, because the agency
-  that publishes the rates has already demonstrated it.
+1. **Denominator findings moved into Results as §4.4, "The population denominator is not
+   stable."** They are results; they were measured, not conceded. The section states the four
+   boundaries, carries the three-treatment table, and closes on the NCHS instance.
+2. **§6 keeps only limitations of this work** — data provenance, baseline sensitivity, age
+   group coarseness, no cause-of-death modelling. Renumbered 6.2–6.4 after the move.
+3. **A genuine limitation was added as §6.5, "No consistent-vintage reanalysis."** The
+   distinction that resolves the old muddle: *measuring* the vintage boundaries is a result;
+   *declining to rebase the series onto one vintage* is a limitation. The first moved to §4.4,
+   the second was written fresh.
+4. **The abstract states both contributions**, and its closing paragraph no longer opens
+   "The equilibrium of the title" — that phrase was anchored to a title that no longer exists.
+   The equilibrium argument survives in §5.1, introduced by the text rather than by the title.
+5. **The introduction names what is new**, pointing at §4.4 explicitly instead of claiming
+   novelty for the pipeline.
+6. **The title changed in all six files that carried it** (see below).
+7. **The boundary count is now stated one way: four, one of which is exactly zero.**
+   `docs/denominator-methods.md` said "three known discontinuities" and then discussed the
+   bridged/single-race seam separately, which made the seam invisible in the count precisely
+   because its measurement came back zero. Its heading is now "The four measured boundaries,
+   one of which is exactly zero", the seam has its own numbered entry, and the doc records why
+   the count changed.
 
-### The tell
+### Three defects found while doing it, all predating the restructure
 
-**The abstract does not mention the denominator findings at all.** It describes the
-decomposition, the excess mortality, and the COVID-19 age distribution. If the strongest
-contribution is absent from the abstract and present only in the limitations section, the paper
-is framed wrongly — not incompletely, wrongly. Reviewers and readers take the abstract as the
-claim being made.
+Recorded because none was caused by this work and all three would have survived it:
 
-### The decision: one paper, two stated contributions
+| defect | fix |
+|---|---|
+| The manuscript cross-referenced "Section 6.2" for baseline-window sensitivity; §6.2 was Denominator vintage and baseline sensitivity was §6.3 | the renumbering makes the existing reference correct; verified rather than assumed |
+| The manuscript twice cited "the table appears in section 6" for the three 2010 treatments. **No such table existed anywhere in the paper** — the built manuscript contained exactly one table, the decomposition — though `results.json` had carried every value for one all along | the table now exists, in §4.4, bound to new `TREAT_*` tokens in `report._flatten()` |
+| This document listed three files as carrying the title. **Six did**: also `README.md`, `src/__init__.py`, `notebooks/01_walkthrough.ipynb` and `paper/public_health_policy.md`, where it served as the project's short name | all six updated; see below |
 
-Not two papers. The findings are causally linked — the denominator work is what licenses the
-decomposition's interpretation, and the decomposition is what makes the denominator work matter
-to anyone who is not a methodologist. A methods-only paper would be thin without a result to
-demonstrate on, and splitting reads as salami-slicing to reviewers.
+### What the title change dragged with it
 
-Concretely, tomorrow:
+**Decided 2026-09-01: retire "A Fragile Equilibrium" everywhere**, rather than keeping it as a
+project codename. The objection that retired it from the paper — it names the demographic half
+only — applies to the project as much as to the manuscript, and a README whose title disagrees
+with `CITATION.cff` is the same two-places-disagree failure this document warns about for the
+DOI in step 6.
 
-1. **Denominator findings move out of §6 Limitations into their own Results section.** They are
-   results. They were measured, not conceded.
-2. **§6 keeps only limitations of this work** — baseline sensitivity, age-group coarseness, no
-   cause-of-death modelling, and the genuine caveats on data provenance. A finding about the
-   data's behaviour is not a limitation of the analysis that found it.
-3. **The abstract states both contributions.**
-4. **The title changes.** "A Fragile Equilibrium" names the demographic half only.
+| file | what carried the title |
+|---|---|
+| `paper/manuscript.md` | the `#` heading |
+| `CITATION.cff` | `title:`, and the `abstract:`, which described a decomposition study only |
+| `.zenodo.json` | `title:`, and the `description`, same problem |
+| `README.md` | the `#` heading; now carries the short form with the full title beneath it |
+| `src/__init__.py` | the package docstring |
+| `notebooks/01_walkthrough.ipynb` | the first markdown cell |
+| `paper/public_health_policy.md` | the "Companion to:" line |
 
-### What the title change drags with it
+Short form where the full title does not fit: *Decomposing U.S. Crude Death Rates, 2010-2024*.
 
-The title is not only in `paper/manuscript.md`. Changing it means changing, in the same pass:
+Year ranges are written with a hyphen throughout, matching the interval strings `src/report.py` builds into
+`results.json`. The title carried an en-dash briefly and the paper rendered `2010-2019`
+two ways on one page as a result.
 
-- `CITATION.cff` — `title:`
-- `.zenodo.json` — `title:`, and the `description`, which currently summarises the paper as a
-  decomposition study and would then understate it the way the abstract does now
+`CITATION.cff` also carries `version: 0.1.0` and `date-released: "2026-08-31"`. Both are still
+wrong and both are **deliberately left wrong until tag time**, so the file never describes a
+release that does not exist.
 
-`CITATION.cff` also carries `version: 0.1.0` and `date-released: "2026-08-31"`. Both are now
-wrong for a release that will not happen on that date. **Update them in the same commit as the
-tag, not before**, so they never describe a release that does not exist.
+### The regression test, and its result
 
-### What is deliberately not being changed
+Nothing in this restructure was allowed to touch a computed value. `python -m src.report` was
+re-run afterwards and `git diff` reports **no change** in `data/processed/results.json` or in
+any of the five figures. 193 tests pass, including the sweep in `tests/test_documents.py` for
+statistic-shaped literals — the new §4.4 table and every figure quoted in the new abstract are
+bound to tokens, not typed.
 
-The analysis, the data, the code, and the numbers. Nothing in this restructure touches a
-computed value — it is a decision about which findings are presented as findings. `results.json`
-should be byte-identical before and after, and that is worth checking as the restructure's own
-regression test.
-
-One wording question to settle while restructuring, noted here so it is not discovered late:
-`docs/denominator-methods.md` and §6.2 both say **three** known discontinuities and then discuss
-the bridged/single-race seam separately, which makes **four** measured boundaries in total. The
-count needs to be stated one way consistently once this becomes a Results section, since "four,
-one of which is zero" is the stronger and more accurate framing.
+> One note for whoever reads a raw `git status` here. `results.json` will show as modified
+> after any report or test run, at 4,372 bytes against the blob's 4,173 — exactly its 199
+> newlines. That is the CRLF normalization documented in step 2, not a moved result.
+> **`git diff` is the authority, not `git status`, and not a byte count.**
 
 ## Open, in the order to tackle it
 
@@ -336,20 +358,26 @@ it whenever. It is the *Release* in step 5 that must wait.
 > in the GitHub UI. Tagging first and connecting after means the DOI never appears, and the
 > fix is cutting a throwaway v0.1.1 purely to trigger it.
 
-### 5. Tag `v0.1.0`, create the Release, mint the DOI — 🛑 **BLOCKED, deliberately**
+### 5. Tag `v0.1.0`, create the Release, mint the DOI — **unblocked 2026-09-01**
 
-**Do not do this yet.** Blocked on the manuscript restructure described in "The restructure,
-and why the tag is deferred" above. The block is a decision, not an oversight, and it is not
-cleared by the repository being otherwise ready — it is cleared only when the paper is
-reframed.
+**The editorial block is cleared.** It was blocked on the manuscript restructure, and the
+restructure is executed — see "The restructure, executed" above. Nothing analytical stands in
+the way now.
 
-Order once unblocked: Zenodo toggle on (step 4, may already be done and is harmless on its
-own), *then* tag, *then* create the Release in the GitHub UI.
+What is left is an order and one file, and getting the order wrong costs a version number:
 
-Check `CITATION.cff` in the same commit as the tag: it carries `version: 0.1.0` and
-`date-released: "2026-08-31"`, which is now certainly the wrong date, and its `title:` will
-have changed with the restructure. Fix all of it at tag time rather than earlier, so the file
-never describes a release that does not exist.
+1. **Zenodo toggle on** (step 4). May already be done; harmless either way. Zenodo archives
+   only Releases created *after* the toggle is on, and **a pushed tag is not a Release.**
+2. **Tag `v0.1.0`**, in a commit that also fixes `CITATION.cff` — it still carries
+   `version: 0.1.0` and `date-released: "2026-08-31"`, a date that has now passed without a
+   release. Its `title:` is already updated. Fix the version and date *at tag time*, never
+   earlier, so the file never describes a release that does not exist.
+3. **Create the Release in the GitHub UI.** This is the irreversible step: it is what mints
+   the DOI, and **a DOI is permanent.**
+
+One thing worth re-reading before step 3 rather than after: step 7 below, on the preprint
+licence. That decision is also effectively irreversible once a version is posted, and it is
+independent of the DOI.
 
 ### 6. Put the DOI in **two** places, not one
 

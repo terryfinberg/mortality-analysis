@@ -163,8 +163,27 @@ def _flatten(res: dict) -> dict[str, str]:
         flat[f"DECOMP_{alias}_INTERVAL"] = d["interval"]
         flat[f"DECOMP_{alias}_TOTAL"] = d["total_change"]
         flat[f"DECOMP_{alias}_RATE"] = d["rate_effect"]
+        # Magnitude, for prose that carries the direction in words ("moved
+        # it down by X") rather than in a minus sign. Separated deliberately:
+        # a literal magnitude typed into the text would pass
+        # test_documents.py only because its sign differs from the stored
+        # value, which is a hole in the check rather than a licence to use
+        # one.
+        flat[f"DECOMP_{alias}_RATE_ABS"] = abs(d["rate_effect"])
         flat[f"DECOMP_{alias}_AGE"] = d["age_effect"]
         flat[f"DECOMP_{alias}_RATIO"] = d["ratio"]
+
+    # The three treatments of the 2010 measurement basis, as a table in
+    # section 4.4. Aliased A/B/C by position rather than keyed by the results
+    # file's own "C'" -- an apostrophe cannot appear in a {{TOKEN}} name, and
+    # position is what the table's row order follows anyway.
+    for alias, t in zip(["A", "B", "C"], res.get("treatments", [])):
+        flat[f"TREAT_{alias}_LABEL"] = t["label"]
+        flat[f"TREAT_{alias}_INTERVAL"] = t["interval"]
+        flat[f"TREAT_{alias}_RATE"] = t["rate_effect"]
+        flat[f"TREAT_{alias}_AGE"] = t["age_effect"]
+        flat[f"TREAT_{alias}_RATIO"] = t["age_to_rate_ratio"]
+        flat[f"TREAT_{alias}_EXCESS"] = f"{t['excess_2020_2021']:,}"
 
     # How much larger age-specific mortality improvement would have had to be
     # for the rate effect to match the age effect: (ratio - 1) as a percentage.
