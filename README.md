@@ -268,6 +268,7 @@ data/raw/census/   Census population vintages, committed, with PROVENANCE.md.
 data/queries/      CDC WONDER query parameters for reproducing each extract.
 data/processed/    results.json, generated.
 docs/              Method notes: denominator sourcing, vintages, discontinuities.
+docs/ai-assistance/ The prompt that commissioned src/fetch.py, kept as a record.
 src/               Analysis modules.
 tests/             pytest suite.
 figures/           Generated PNGs. Tracked, so a release archives what the paper shows.
@@ -301,6 +302,29 @@ Excess mortality projects the **age-adjusted** rate rather than the raw count. A
 baseline attributes the mechanical effect of population aging to the pandemic. This choice
 produces lower estimates than count-based published figures; the difference is methodological,
 not an error on either side. See manuscript section 3.3.
+
+## AI assistance
+
+Parts of this repository were written with AI assistance — Anthropic's Claude, via Claude
+Code — including source modules, tests and documentation. Commits carrying a
+`Co-Authored-By: Claude` trailer record where that assistance was used, and
+`docs/ai-assistance/fetch-layer-prompt.md` is the actual prompt that specified the fetch
+layer, kept as a record of how that module was commissioned.
+
+**The trailer is provenance, not authorship.** Authorship of this work is mine. I directed it,
+reviewed every change before committing it, and I am responsible for the analysis, its methods
+and its conclusions, including any error in them. No AI system is an author of this software or
+of the manuscript, consistent with [ICMJE](https://www.icmje.org/recommendations/) and
+[COPE](https://publicationethics.org/) guidance that AI tools cannot satisfy authorship
+criteria and cannot be accountable for a work.
+
+The distinction this repository already draws does the load-bearing work here.
+**`verified_by` is an attestation that only a person may write**, and no machine path in this
+repository — AI-assisted or otherwise — is able to write one. A test asserts that against a
+temporary directory rather than against the current CSVs, so the guarantee does not expire
+with the data's state. Every one of the 150 data rows was checked against its cited export by
+a person before the analysis would run at all. Whatever wrote the code, no value in this
+analysis is vouched for by anything other than a human signature.
 
 ## License and citation
 

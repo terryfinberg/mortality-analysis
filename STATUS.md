@@ -189,7 +189,26 @@ where a recorded SHA-256 is the artifact (the Census files, the WONDER exports),
 normalization moves bytes underneath the hash, which is why those paths carry `-text` in
 `.gitattributes`. Nothing here has a recorded hash, so nothing here is at risk.
 
-### 3. Create the GitHub repository and push
+### 3. Create the GitHub repository and push ✅ done 2026-08-31
+
+**Pushed.** `origin/main` carries all 27 commits at `4e12f99`, 69 files, tracking configured.
+Verified against the remote rather than assumed: `git ls-remote` shows `refs/heads/main` and
+nothing else — no tags, and neither scaffolding branch. `figures/` and
+`data/processed/results.json` are present, and no ignored artifact reached the remote.
+
+Two attempts failed silently first, which is worth recording because the failure mode gives no
+output at all. Git Credential Manager had **no stored GitHub credential**, so `git push` blocked
+on an interactive sign-in that a non-interactive shell cannot answer: it printed nothing and
+hung until timeout, rather than erroring. Both `git ls-remote` returning zero refs and the
+absence of a `[branch "main"]` section in `.git/config` are reliable ways to tell "never
+pushed" from "pushed and something went wrong." The fix was signing in from a real terminal.
+
+Authorship metadata was declared before tagging rather than left to inference: GitHub's
+Contributors panel had read the AI co-author trailer as the sole contributor, and Zenodo pulls
+creator metadata from GitHub when it mints a DOI. `CITATION.cff` and `.zenodo.json` now state
+it explicitly, so the citation record says what was declared rather than what was guessed.
+
+### 3b. Superseded — how the repository was created
 
 Public. **`origin` is configured** —
 `https://github.com/terryfinberg/mortality-analysis.git` — and **nothing has been pushed.**
@@ -212,11 +231,24 @@ put a commit on the remote that this history does not contain.
 
 ### 5. Tag `v0.1.0`, create the Release, mint the DOI
 
-In that order, after step 4.
+In that order, after step 4. Check `CITATION.cff` at the same moment: it carries
+`version: 0.1.0` and `date-released: "2026-08-31"`, and **if the tag is cut on a different
+date, that line is wrong** — update it in the same commit as the tag rather than afterwards.
 
-### 6. Put the DOI into `paper/medrxiv_submission.md`
+### 6. Put the DOI in **two** places, not one
 
-It has a placeholder at the top and a checklist item.
+Once minted, the DOI goes into:
+
+- `paper/medrxiv_submission.md` — placeholder at the top and a checklist item
+- `CITATION.cff` — a commented `doi:` line, ready to uncomment
+
+Both are placeholders now. A DOI recorded in only one of them produces a repository whose
+"Cite this repository" button disagrees with the preprint, which is worse than one that omits
+it in both.
+
+`CITATION.cff` also has a commented-out `orcid:` field. It was left commented rather than
+filled with a dummy identifier, because an ORCID-shaped string that resolves to nobody is
+worse than an absent field — it looks checkable and fails only for whoever tries.
 
 ### 7. Confirm the preprint license before posting
 

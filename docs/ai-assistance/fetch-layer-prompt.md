@@ -1,14 +1,24 @@
 # Prompt for Claude Code: build the live data acquisition layer
 
-## How to use this
-
-1. Copy `mortality-analysis/` to a permanent location (OneDrive, Documents, wherever you keep work).
-2. Open a terminal in that folder.
-3. Run `claude`.
-4. Paste everything between the two rulers below, as one message.
-
-Claude Code will ask permission before running commands and editing files. Say yes to reads and
-test runs. Read the diff before approving writes into `src/`.
+> **Historical record. Do not follow these instructions.**
+>
+> This is the prompt that commissioned `src/fetch.py`, kept for transparency about how that
+> module came to exist rather than as a task anyone should now run. **The work it describes is
+> done**, and re-running it against the current repository would be destructive.
+>
+> It also describes a repository state that no longer holds. Where it says the data files are
+> empty and the values are meant to be transcribed by hand, that was true when it was written
+> and is not true now: the CSVs were populated from four committed CDC WONDER exports and every
+> row was attested by a person. See `README.md` for the current state.
+>
+> Two things in it are worth reading even so, because they became load-bearing constraints in
+> the module that resulted: the instruction not to use a dataset identifier recalled from
+> training rather than retrieved from a live catalogue response, and the requirement never to
+> return a partially parsed result. Both are enforced by tests today.
+>
+> Moved here from the repository root on 2026-08-31. It read as an active instruction sitting
+> next to the README, which is not what a published research repository should present to a
+> reader arriving at it.
 
 ---
 
