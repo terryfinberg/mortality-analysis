@@ -1,7 +1,25 @@
 # Status
 
-**Last updated:** 2026-08-31 · **HEAD:** `977211d` · **Branch:** `main` ·
-**Remote:** `origin` → `github.com/terryfinberg/mortality-analysis` · **nothing pushed yet**
+**Last updated:** 2026-08-31 · **HEAD:** `0dd274b` · **Branch:** `main` ·
+**Remote:** `origin` → `github.com/terryfinberg/mortality-analysis` · **pushed, not tagged**
+
+> ## 🛑 DO NOT TAG. DO NOT CREATE A RELEASE.
+>
+> **Decided 2026-08-31, deliberately, and not a task that was left unfinished.** The manuscript
+> is being restructured before publication. Tagging `v0.1.0` or creating a GitHub Release now
+> would mint a DOI against the wrong framing of the paper, and **a DOI is permanent.** The
+> restructure is described in **"The restructure, and why the tag is deferred"** below. Read it
+> before touching a tag, a release, or `paper/`.
+>
+> Everything else about the repository is finished and correct: the analysis runs, 193 tests
+> pass, the code review is done and its findings are fixed, and `main` is pushed. The only
+> thing standing between here and a DOI is a decision about how the paper is framed, and that
+> decision has been made and not yet executed.
+>
+> The Zenodo integration toggle may already be switched on. **That is harmless on its own** —
+> Zenodo archives Releases, and the toggle merely arms it for the next one. An armed toggle
+> with no Release produces no DOI and no record. The irreversible step is creating the
+> Release, which is exactly the step being deferred.
 
 > The branch was renamed `master` → `main` on 2026-08-31, before any push, so it matches the
 > default GitHub gives a new repository. Renaming after pushing means fixing the default
@@ -17,10 +35,15 @@ against a pre-pandemic trend, and characterising the age distribution of COVID-1
 and hash-verified, all 150 data rows are populated from those exports and personally
 attested, 14 of the 15 annual totals are corroborated against NCHS's published NVSR reports,
 and `python -m src.report` produces `results.json`, five figures and a built manuscript with
-every value substituted from code. 193 tests pass. What remains is not analysis: it is
-publication mechanics — a scoped review of the arithmetic, then GitHub, Zenodo, a DOI, and a
-preprint. The artifact question is settled: `figures/` is tracked, so a release archives the
-images the paper shows.
+every value substituted from code. 193 tests pass. The arithmetic has been reviewed and its
+findings fixed, `figures/` is tracked so a release archives the images the paper shows, and
+`main` is pushed to GitHub.
+
+**What remains is not analysis and no longer publication mechanics either. It is one editorial
+decision, already made and not yet executed:** the paper's strongest contribution — the
+denominator work — is currently presented as a limitation in §6.2 and is absent from the
+abstract. The manuscript is being restructured before anything is tagged, because a DOI would
+make the wrong framing permanent. See **"The restructure, and why the tag is deferred"** below.
 
 ## Done
 
@@ -46,6 +69,86 @@ images the paper shows.
 - **193 tests.** (The commit count that used to sit here was removed: nothing checks it and
   it goes stale on every commit, which is the exact defect `test_docs_are_current` exists to
   catch. `git rev-list --count main` answers it on demand.)
+
+## The restructure, and why the tag is deferred
+
+**Decided 2026-08-31. Work starts 2026-09-01.**
+
+### The problem
+
+The paper's strongest contribution is currently filed as a limitation, in §6.2 "Denominator
+vintage."
+
+The introduction concedes, correctly, that the Kitagawa decomposition is not novel —
+"demographers have applied it routinely since." That is honest and it should stay. But it means
+the demographic half of the paper contributes a careful application of a 1955 method to a
+recent series. Useful; not new.
+
+What is new is the denominator work:
+
+- **Four discontinuities documented and quantified in a single series** — the per-year vintage
+  chain WONDER carries, the Vintage 2024 restatement of 2023, the 2010 April 1 measurement
+  basis, and the bridged-race to single-race seam at 2017/2018.
+- **One of them measured at exactly zero.** The seam is zero in every band, deaths and
+  population alike, measured against a purpose-run export rather than assumed. A null result
+  someone actually went and measured.
+- **The V2024 restatement accounts for 26.6% of the published 2023→2024 crude-rate decline**,
+  70.1% of that booking as a spurious improvement in age-specific mortality.
+- **NCHS has published two different crude death rates for the same year (2020), in two of its
+  own reports, and named denominator rebasing as the cause.** This converts the paper's
+  argument into an instance: the claim that a crude rate is a statement about a denominator as
+  much as about mortality does not rest on our own sensitivity analysis, because the agency
+  that publishes the rates has already demonstrated it.
+
+### The tell
+
+**The abstract does not mention the denominator findings at all.** It describes the
+decomposition, the excess mortality, and the COVID-19 age distribution. If the strongest
+contribution is absent from the abstract and present only in the limitations section, the paper
+is framed wrongly — not incompletely, wrongly. Reviewers and readers take the abstract as the
+claim being made.
+
+### The decision: one paper, two stated contributions
+
+Not two papers. The findings are causally linked — the denominator work is what licenses the
+decomposition's interpretation, and the decomposition is what makes the denominator work matter
+to anyone who is not a methodologist. A methods-only paper would be thin without a result to
+demonstrate on, and splitting reads as salami-slicing to reviewers.
+
+Concretely, tomorrow:
+
+1. **Denominator findings move out of §6 Limitations into their own Results section.** They are
+   results. They were measured, not conceded.
+2. **§6 keeps only limitations of this work** — baseline sensitivity, age-group coarseness, no
+   cause-of-death modelling, and the genuine caveats on data provenance. A finding about the
+   data's behaviour is not a limitation of the analysis that found it.
+3. **The abstract states both contributions.**
+4. **The title changes.** "A Fragile Equilibrium" names the demographic half only.
+
+### What the title change drags with it
+
+The title is not only in `paper/manuscript.md`. Changing it means changing, in the same pass:
+
+- `CITATION.cff` — `title:`
+- `.zenodo.json` — `title:`, and the `description`, which currently summarises the paper as a
+  decomposition study and would then understate it the way the abstract does now
+
+`CITATION.cff` also carries `version: 0.1.0` and `date-released: "2026-08-31"`. Both are now
+wrong for a release that will not happen on that date. **Update them in the same commit as the
+tag, not before**, so they never describe a release that does not exist.
+
+### What is deliberately not being changed
+
+The analysis, the data, the code, and the numbers. Nothing in this restructure touches a
+computed value — it is a decision about which findings are presented as findings. `results.json`
+should be byte-identical before and after, and that is worth checking as the restructure's own
+regression test.
+
+One wording question to settle while restructuring, noted here so it is not discovered late:
+`docs/denominator-methods.md` and §6.2 both say **three** known discontinuities and then discuss
+the bridged/single-race seam separately, which makes **four** measured boundaries in total. The
+count needs to be stated one way consistently once this becomes a Results section, since "four,
+one of which is zero" is the stronger and more accurate framing.
 
 ## Open, in the order to tackle it
 
@@ -221,7 +324,11 @@ first `git push -u origin main` fails on authentication rather than saying so pl
 it there first, empty, with no README, licence or `.gitignore` — GitHub's initialisers would
 put a commit on the remote that this history does not contain.
 
-### 4. Connect Zenodo — **BEFORE tagging**
+### 4. Connect Zenodo — **BEFORE tagging** (safe to do now)
+
+This step is **not** blocked by the restructure. Switching the toggle on arms Zenodo for the
+next Release; with no Release it produces no DOI, no record, and nothing to correct later. Do
+it whenever. It is the *Release* in step 5 that must wait.
 
 > **Order matters and getting it wrong costs a version number.** Zenodo archives only
 > Releases created *after* the repository toggle is switched on. **A pushed tag is not a
@@ -229,11 +336,20 @@ put a commit on the remote that this history does not contain.
 > in the GitHub UI. Tagging first and connecting after means the DOI never appears, and the
 > fix is cutting a throwaway v0.1.1 purely to trigger it.
 
-### 5. Tag `v0.1.0`, create the Release, mint the DOI
+### 5. Tag `v0.1.0`, create the Release, mint the DOI — 🛑 **BLOCKED, deliberately**
 
-In that order, after step 4. Check `CITATION.cff` at the same moment: it carries
-`version: 0.1.0` and `date-released: "2026-08-31"`, and **if the tag is cut on a different
-date, that line is wrong** — update it in the same commit as the tag rather than afterwards.
+**Do not do this yet.** Blocked on the manuscript restructure described in "The restructure,
+and why the tag is deferred" above. The block is a decision, not an oversight, and it is not
+cleared by the repository being otherwise ready — it is cleared only when the paper is
+reframed.
+
+Order once unblocked: Zenodo toggle on (step 4, may already be done and is harmless on its
+own), *then* tag, *then* create the Release in the GitHub UI.
+
+Check `CITATION.cff` in the same commit as the tag: it carries `version: 0.1.0` and
+`date-released: "2026-08-31"`, which is now certainly the wrong date, and its `title:` will
+have changed with the restructure. Fix all of it at tag time rather than earlier, so the file
+never describes a release that does not exist.
 
 ### 6. Put the DOI in **two** places, not one
 
