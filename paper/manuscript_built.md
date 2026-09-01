@@ -217,6 +217,12 @@ Beyond the COVID-19 stratification, this analysis does not decompose by cause. T
 
 ---
 
+## Declarations
+
+**Declaration of AI assistance.** This work was produced with AI assistance (Anthropic's Claude, via Claude Code), including the analysis software, its tests and documentation, and drafting of this manuscript. The author directed the work, verified every data value against the CDC WONDER export it was taken from, and is solely responsible for the analysis, its interpretation, and its conclusions. No AI system meets authorship criteria and none is listed as an author.
+
+---
+
 ## References
 
 Kitagawa EM. Components of a difference between two rates. *Journal of the American Statistical Association* 1955;50(272):1168-1194.

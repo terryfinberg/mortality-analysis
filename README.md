@@ -305,18 +305,22 @@ not an error on either side. See manuscript section 3.3.
 
 ## AI assistance
 
-Parts of this repository were written with AI assistance — Anthropic's Claude, via Claude
-Code — including source modules, tests and documentation. Commits carrying a
-`Co-Authored-By: Claude` trailer record where that assistance was used, and
+This work was produced with AI assistance — Anthropic's Claude, via Claude Code — including
+the analysis software, its tests and documentation, and drafting of the manuscript. Commits
+carrying a `Co-Authored-By: Claude` trailer record where that assistance was used, and
 `docs/ai-assistance/fetch-layer-prompt.md` is the actual prompt that specified the fetch
 layer, kept as a record of how that module was commissioned.
 
 **The trailer is provenance, not authorship.** Authorship of this work is mine. I directed it,
-reviewed every change before committing it, and I am responsible for the analysis, its methods
-and its conclusions, including any error in them. No AI system is an author of this software or
-of the manuscript, consistent with [ICMJE](https://www.icmje.org/recommendations/) and
-[COPE](https://publicationethics.org/) guidance that AI tools cannot satisfy authorship
-criteria and cannot be accountable for a work.
+verified every data value against the CDC WONDER export it was taken from, and I am solely
+responsible for the analysis, its methods and its conclusions, including any error in them. No
+AI system is an author of this software or of the manuscript, consistent with
+[ICMJE](https://www.icmje.org/recommendations/) and [COPE](https://publicationethics.org/)
+guidance that AI tools cannot satisfy authorship criteria and cannot be accountable for a work.
+
+That claim is deliberately narrower than "reviewed every change." It names the thing this
+repository can actually demonstrate, rather than a standard of oversight that no artifact here
+records and no reader could check.
 
 The distinction this repository already draws does the load-bearing work here.
 **`verified_by` is an attestation that only a person may write**, and no machine path in this
