@@ -18,8 +18,6 @@ from dataclasses import dataclass
 import numpy as np
 import pandas as pd
 
-from .rates import PER
-
 
 @dataclass
 class ExcessResult:
@@ -50,14 +48,20 @@ def fit_baseline(
 
 def excess_mortality(
     adjusted: pd.DataFrame,
-    by_age: pd.DataFrame,
-    standard_pop: pd.Series,
     observed_deaths: pd.DataFrame,
     population: pd.DataFrame,
     baseline_start: int = 2010,
     baseline_end: int = 2019,
 ) -> ExcessResult:
-    """Observed minus expected deaths, by year."""
+    """Observed minus expected deaths, by year.
+
+    Takes the age-adjusted series rather than recomputing it. ``by_age`` and
+    ``standard_pop`` used to sit in this signature and were never read, which
+    advertised a direct-standardization step this function does not perform;
+    callers had to build both to have them discarded. If you need the two to
+    be guaranteed consistent, compute ``adjusted`` with
+    ``rates.age_adjusted_rate`` and pass the result straight through.
+    """
     slope, intercept = fit_baseline(adjusted, baseline_start, baseline_end)
 
     df = adjusted.merge(observed_deaths, on="year", validate="one_to_one")

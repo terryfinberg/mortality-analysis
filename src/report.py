@@ -37,8 +37,7 @@ def compute(strict: bool = True) -> dict:
     ]
 
     ex = excess.excess_mortality(
-        adjusted, ds.by_age, ds.standard_pop,
-        ds.annual_deaths[["year", "deaths"]], ds.population,
+        adjusted, ds.annual_deaths[["year", "deaths"]], ds.population,
         baseline_start=y0, baseline_end=y_pre,
     )
 

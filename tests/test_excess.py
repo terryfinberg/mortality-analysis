@@ -35,7 +35,7 @@ def test_zero_excess_when_observed_matches_trend(linear_adjusted):
         "population": [100_000_000] * len(adjusted),
     })
     res = excess.excess_mortality(
-        adjusted, None, None, deaths, pop,
+        adjusted, deaths, pop,
         baseline_start=2010, baseline_end=2019,
     )
     # Sitting exactly on the fitted trend means excess is exactly zero, not

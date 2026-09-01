@@ -16,7 +16,7 @@ from dataclasses import dataclass
 
 import pandas as pd
 
-from .rates import PER, age_specific_rates, population_shares
+from .rates import age_specific_rates, population_shares
 
 
 @dataclass

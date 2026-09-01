@@ -123,7 +123,7 @@ def _measure(key, label, by_age, annual, population, standard_pop,
              baseline, interval) -> Treatment:
     adjusted = rates.age_adjusted_rate(by_age, standard_pop)
     ex = excess.excess_mortality(
-        adjusted, by_age, standard_pop, annual, population,
+        adjusted, annual, population,
         baseline_start=baseline[0], baseline_end=baseline[1],
     )
     kit = decomposition.kitagawa(by_age, interval[0], interval[1])
