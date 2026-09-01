@@ -1,6 +1,7 @@
 # Status
 
-**Last updated:** 2026-08-31 · **HEAD:** `6b535a9` · **Branch:** `main` · **No remote yet**
+**Last updated:** 2026-08-31 · **HEAD:** `977211d` · **Branch:** `main` ·
+**Remote:** `origin` → `github.com/terryfinberg/mortality-analysis` · **nothing pushed yet**
 
 > The branch was renamed `master` → `main` on 2026-08-31, before any push, so it matches the
 > default GitHub gives a new repository. Renaming after pushing means fixing the default
@@ -48,7 +49,55 @@ images the paper shows.
 
 ## Open, in the order to tackle it
 
-### 1. Review the arithmetic — scoped, not whole-repo
+### 1. Review the arithmetic — scoped, not whole-repo ✅ done 2026-08-31
+
+**Outcome: five findings, all nit severity, all fixed. No published number moved.** Verified
+rather than asserted: `python -m src.report` was re-run after the fixes and `git diff` reports
+no content change in `data/processed/results.json`, `figures/` or either built manuscript.
+
+The five, and where they went:
+
+| finding | fix |
+|---|---|
+| `age_adjusted_rate` inner-joins after normalizing weights — a band on one side only yields a downward-biased partial sum | guard, plus the root-cause fix below |
+| `kitagawa` intersects the two years' bands without renormalizing shares | guard, same commit |
+| `PER` imported and unused in `excess.py` and `decomposition.py` | removed |
+| `excess_mortality` declared `by_age` and `standard_pop` and read neither | removed, four call sites updated |
+| `excess.py` docstring described a conversion the code does not perform | docstring corrected |
+
+**The root cause sat outside the reviewed files.** `loader.load_deaths_by_age` checked that the
+age-band set was a *subset* of `AGE_GROUPS`, never that it was complete — and a missing band is
+not a missing *value*, so `_require_complete` saw nothing wrong. The completeness guarantee did
+exist, but only in `fetch.assert_population_identity` and `fetch.assert_annual_identity`, which
+run on promotion rather than on load; any path reaching the CSVs without `promote()` was
+unguarded. That is now refused at the loader, for `deaths_by_age` and `covid_deaths_by_age`
+alike, and the two guards in `rates.py` and `decomposition.py` are defence in depth rather than
+the only defence.
+
+Worth keeping: **neither join defect could have been caught by a test on the output.** The
+Kitagawa additivity identity holds just as exactly over biased shares as over correct ones, so
+the invariant this suite leans on hardest is blind to that failure by construction.
+
+#### What the scoping cost, measured against what it predicted
+
+The note below predicted that a scoped review buys depth on the arithmetic and pays for it in
+coverage of the data path. Both halves came true, and the price was paid in a specific way
+worth recording:
+
+- **The review got a fact wrong because of the scope.** It reported that `excess_mortality`
+  "has no callers in the repo — this is fresh API surface being introduced by this PR." There
+  are four (`report.py`, `treatments.py`, `test_excess.py`, and two notebook cells). `report.py`
+  was not on the branch, so the reviewer could not see it. The finding was right; its reasoning
+  about blast radius was wrong.
+- **It overstated exposure on both join findings**, because `fetch.py`'s identity assertions
+  were not in scope either. It could not know that the committed data satisfies them, so it
+  could not tell a live defect from a latent one. Both were latent.
+
+Neither is a fault in the review. Both are the arithmetic of reviewing three files instead of
+sixty-nine, and the right response is the one taken here: treat a scoped review's claims about
+*the rest of the repository* as unverified, and check them against the repository before acting.
+A reviewer that cannot see `report.py` cannot be wrong about `report.py` in a way that is its
+own fault.
 
 **Decided 2026-08-31: review the three arithmetic modules only.** Branch
 `review-arithmetic` carries `src/rates.py`, `src/decomposition.py` and `src/excess.py` as a
@@ -73,14 +122,19 @@ computation, the Kitagawa decomposition and the excess-mortality baseline fit ar
 manuscript's claims reduce to. A defect in `figures.py` is visible to any reader; a defect in
 `decomposition.py` is not, and it would be archived under a version number that never changes.
 
-`fetch.py`, `loader.py`, `census.py`, `vintage.py` and `treatments.py` are **not** reviewed by
-this pass and remain unreviewed. They are left for future PRs whose diffs are small enough for
-a review to mean something, rather than being swept into one pass that would skim all of them.
-Note what this does and does not buy: the review covers the arithmetic, not the data path that
-feeds it.
+`fetch.py`, `census.py`, `vintage.py` and `treatments.py` are **not** reviewed by this pass and
+remain unreviewed. They are left for future PRs whose diffs are small enough for a review to
+mean something, rather than being swept into one pass that would skim all of them. Note what
+this does and does not buy: the review covers the arithmetic, not the data path that feeds it.
 
-**Do not merge `review-arithmetic`.** It exists to be diffed. Its parent shares no history
-with `main`, and the files on it are copies of files `main` already tracks.
+`loader.py` is a partial exception after the fact — the review did not read it, but its
+completeness hole was found by following a finding upstream, and that one function is now
+guarded and tested. The rest of the module remains unreviewed.
+
+`review-base` and `review-arithmetic` were deleted once the findings were in. They existed to
+be diffed, never merged: the parent shared no history with `main` and the files on them were
+copies of files `main` already tracks. Recreating an equivalent pair is a two-command job if
+another scoped review is wanted — see the commit that introduced them for the plumbing.
 
 ### 2. What is tracked vs generated — decided
 
@@ -116,19 +170,37 @@ Making the output explicitly deterministic (pinning or stripping the PNG `Softwa
 would close the trap rather than document it. Not done: it would rewrite all five figures'
 bytes for no change in what they show, and the trap is now written down in two places.
 
+**A second phantom diff, unrelated to figures and already live.** `paper/manuscript_built.md`
+and `paper/public_health_policy_built.md` show as modified after any `python -m pytest` run,
+because `tests/test_documents.py` calls `report.build_document()` and that writes the files as
+a side effect. `git diff` then reports *no* content change. The explanation is line endings:
+`.gitattributes` stores these as LF, Python's `write_text` emits CRLF on Windows, so the
+working file differs from the blob by one byte per line while normalizing to something
+identical. `data/processed/results.json` behaves the same way after a report run — it came
+back 4,372 bytes against the blob's 4,173, which is exactly its 199 newlines.
+
+The rule that resolves it: **`git diff` is the authority, not `git status`, and not a byte
+count.** Status flags the file; diff normalizes and shows the truth. `git checkout -- <path>`
+discards the churn. This is worth knowing before a release, because it is indistinguishable at
+a glance from a real change and it is *always present* on Windows after a test run.
+
+Note this is the benign half of a hazard the README already records the dangerous half of:
+where a recorded SHA-256 is the artifact (the Census files, the WONDER exports), the same
+normalization moves bytes underneath the hash, which is why those paths carry `-text` in
+`.gitattributes`. Nothing here has a recorded hash, so nothing here is at risk.
+
 ### 3. Create the GitHub repository and push
 
-Public. The repo has no remote. `main` is the branch to push and the one GitHub should treat
-as default — already named to match, so nothing needs fixing in settings afterwards.
+Public. **`origin` is configured** —
+`https://github.com/terryfinberg/mortality-analysis.git` — and **nothing has been pushed.**
+`main` is the only branch and the one GitHub should treat as default; it is already named to
+match, so nothing needs fixing in settings afterwards. The scaffolding branches from step 1
+are deleted, so there is nothing left that must be kept back from a push.
 
-**Push `main` only.** `review-base` and `review-arithmetic` are local scaffolding for step 1;
-pushing them would publish a rootless branch and a duplicate copy of three source files, and
-Zenodo would archive the repository with both hanging off it. Delete them once the review is
-done:
-
-```bash
-git branch -D review-arithmetic review-base
-```
+Adding the remote does not create the repository. If it does not already exist on GitHub, the
+first `git push -u origin main` fails on authentication rather than saying so plainly; create
+it there first, empty, with no README, licence or `.gitignore` — GitHub's initialisers would
+put a commit on the remote that this history does not contain.
 
 ### 4. Connect Zenodo — **BEFORE tagging**
 
