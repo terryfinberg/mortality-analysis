@@ -1,7 +1,9 @@
 # Status
 
-**Last updated:** 2026-09-01 · **HEAD:** `7f63e62` (this state is uncommitted) · **Branch:** `main` ·
-**Remote:** `origin` → `github.com/terryfinberg/mortality-analysis` · **pushed, not tagged**
+**Last updated:** 2026-09-01 · **HEAD:** `0aa523d`, the §5.3 read-through (this doc-only commit
+is the one after it) · **Branch:** `main` ·
+**Remote:** `origin` → `github.com/terryfinberg/mortality-analysis` · **pushed through `0aa523d`,
+not tagged**
 
 > ## ✅ The restructure is done. The tag is no longer blocked on it.
 >
