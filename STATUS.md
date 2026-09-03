@@ -11,7 +11,7 @@ the tag points at; this DOI commit is the one after it) · **Branch:** `main` ·
 > limitation, §6 keeps only limitations of this work, the abstract states both contributions,
 > and the title has changed in all six files that carried it. `data/processed/results.json`
 > and all five figures are **byte-identical** before and after — that was the restructure's
-> own regression test, and it passes. 205 tests pass.
+> own regression test, and it passes. 207 tests pass.
 >
 > **Both remaining steps were executed, in the order that matters.** The Zenodo toggle was
 > armed before the Release, so the Release was archived rather than missed; `CITATION.cff`
@@ -61,7 +61,7 @@ exactly zero.
 and hash-verified, all 150 data rows are populated from those exports and personally
 attested, 14 of the 15 annual totals are corroborated against NCHS's published NVSR reports,
 and `python -m src.report` produces `results.json`, five figures and a built manuscript with
-every value substituted from code. 205 tests pass. The arithmetic has been reviewed and its
+every value substituted from code. 207 tests pass. The arithmetic has been reviewed and its
 findings fixed, `figures/` is tracked so a release archives the images the paper shows, and
 `main` is pushed to GitHub.
 
@@ -90,7 +90,7 @@ above and steps 4 through 7 below.
   age-to-rate ratio 3.41–3.87.
 - **Licensing done** three ways: BSD-3-Clause (`LICENSE`), a public-domain status statement
   for the federal data (`DATA.md`), CC BY 4.0 for the manuscript (`paper/LICENSE`).
-- **205 tests.** (The commit count that used to sit here was removed: nothing checks it and
+- **207 tests.** (The commit count that used to sit here was removed: nothing checks it and
   it goes stale on every commit, which is the exact defect `test_docs_are_current` exists to
   catch. `git rev-list --count main` answers it on demand.)
 
@@ -180,7 +180,7 @@ points at, so the file never described a release that did not exist.
 
 Nothing in this restructure was allowed to touch a computed value. `python -m src.report` was
 re-run afterwards and `git diff` reports **no change** in `data/processed/results.json` or in
-any of the five figures. 205 tests pass, including the sweep in `tests/test_documents.py` for
+any of the five figures. 207 tests pass, including the sweep in `tests/test_documents.py` for
 statistic-shaped literals — the new §4.4 table and every figure quoted in the new abstract are
 bound to tokens, not typed.
 

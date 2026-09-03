@@ -113,6 +113,35 @@ def test_keywords_survive_and_respect_the_ten_limit(identity):
         assert kw in md
 
 
+def test_keywords_are_visible_prose_not_a_metadata_key(identity):
+    """The keywords line is in the body, and the YAML key must stay gone.
+
+    Two things depend on this. Pandoc 3.6.2's typst template renders a
+    keywords list as `keywords: (,,,,,,,,,)` -- separators without values --
+    and typst then refuses to compile, so the PDF silently stopped being a
+    PDF and fell back to a browser. And Demographic Research wants the
+    keywords *listed in the file*, which a document property nobody opens
+    does not satisfy.
+    """
+    md = export.prepare(identity, anonymous=False)
+    front = md.split("---", 2)[1]
+    assert "keywords:" not in front, (
+        "keywords are back in the YAML block; this breaks the typst PDF"
+    )
+    assert "**Keywords:** " + ", ".join(identity.keywords) in md
+
+
+def test_the_typst_path_names_a_font(identity):
+    """typst 0.15 rejects an empty font fallback list, which is pandoc's default.
+
+    Without an explicit font the document does not compile at all. The face
+    named must be one typst bundles, or the build stops being reproducible
+    across machines.
+    """
+    assert export.TYPST_FONT
+    assert export.TYPST_FONT in ("Libertinus Serif", "New Computer Modern")
+
+
 # --------------------------------------------------------------------------
 # Anonymisation
 # --------------------------------------------------------------------------

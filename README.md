@@ -204,16 +204,26 @@ and the author name, ORCID, title and keywords are read from `CITATION.cff` rath
 retyped, so a title page cannot disagree with the citation record.
 
 **Requires [pandoc](https://pandoc.org/installing.html)** (`winget install --id
-JohnMacFarlane.Pandoc`). DOCX needs nothing else. PDF uses the best engine it can find —
-`tectonic`, `xelatex`, `lualatex`, `pdflatex`, `typst`, `weasyprint`, `wkhtmltopdf` — and
-falls back to headless Chrome or Edge if none is installed. That fallback works and produces
-a legible document, but its output depends on a browser version this repository cannot pin,
-so for a final submission install a real engine first:
+JohnMacFarlane.Pandoc`) **and, for the PDF, [typst](https://typst.app)** (`winget install
+--id Typst.Typst`). DOCX needs pandoc only.
 
-```bash
-winget install --id Typst.Typst     # small single binary, recommended
-winget install --id MiKTeX.MiKTeX   # full LaTeX, larger
+The build prints the engine it used on every run, because the fallback chain means the
+answer is not always the same:
+
 ```
+  PDF   dist\manuscript.pdf  [typst]
+```
+
+PDF uses the best engine it can find — `tectonic`, `xelatex`, `lualatex`, `pdflatex`,
+`typst`, `weasyprint`, `wkhtmltopdf` — and falls back to headless Chrome or Edge if none is
+installed. **Check that line before submitting anything.** The browser fallback produces a
+legible document, but it is a fallback: its output depends on a browser version this
+repository cannot pin, and it needs 23 pages where typst needs 17.
+
+The typst path names `Libertinus Serif` explicitly. Pandoc's typst template defaults to an
+empty font list, which typst 0.15 rejects outright with *"font fallback list must not be
+empty"*; naming a face typst bundles fixes that and keeps the output identical across
+machines, which a system font like Georgia would not.
 
 `--anonymous` is for Demographic Research, which requires identifying information removed from
 PDF submissions. It strips the byline, deletes the ORCID declaration, and replaces the

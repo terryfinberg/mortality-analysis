@@ -45,6 +45,9 @@ CITATION = ROOT / "CITATION.cff"
 
 AFFILIATION = "Independent researcher"
 
+# Bundled with typst, so the PDF renders identically wherever the build runs.
+TYPST_FONT = "Libertinus Serif"
+
 # Lines the built manuscript carries for the benefit of whoever edits the
 # repository, which have no business in a submitted document. Matched on a
 # distinctive fragment rather than the whole line, so rewording the banner does
@@ -177,9 +180,32 @@ def prepare(identity: Identity, anonymous: bool) -> str:
         body = _anonymise(body, identity)
         _assert_anonymous(body)
 
+    # Keywords go in the body, not the metadata block.
+    #
+    # Two reasons, one forced and one wanted. Pandoc 3.6.2's typst template
+    # renders a keywords list as `keywords: (,,,,,,,,,)` -- it emits the
+    # separators and not the values -- and typst then refuses the document.
+    # That is a pandoc bug and it fires for every input form, inline list and
+    # block sequence alike. Independently, Demographic Research asks for the
+    # keywords to be *listed in the file*, which document properties nobody
+    # opens do not satisfy. A visible line fixes both.
+    #
+    # The docx build still sets the document property, passed on the command
+    # line where the writer handles it correctly. See build_docx().
+    if identity.keywords:
+        line = "**Keywords:** " + ", ".join(identity.keywords) + "\n"
+        marker = "\n---\n\n## 1. Introduction"
+        if marker in body:
+            body = body.replace(marker, f"\n{line}{marker}", 1)
+        else:
+            raise ExportError(
+                "could not place the keywords line: the abstract no longer "
+                "ends with a rule before section 1. Fix the marker in "
+                "src/export.py rather than dropping the keywords."
+            )
+
     meta: dict = {
         "title": identity.title,
-        "keywords": identity.keywords,
         "lang": "en-US",
     }
     if not anonymous:
@@ -274,8 +300,14 @@ def _pandoc(md: str, out: Path, writer: str, extra: list[str]) -> None:
             print(f"    pandoc: {line}", file=sys.stderr)
 
 
-def build_docx(md: str, out: Path) -> Path:
-    _pandoc(md, out, "docx", ["--to", "docx", "--toc-depth", "3"])
+def build_docx(md: str, out: Path, keywords: list[str] | None = None) -> Path:
+    extra = ["--to", "docx", "--toc-depth", "3"]
+    if keywords:
+        # Word's Keywords document property. Passed here rather than in the
+        # YAML block because the same key breaks the typst writer; see
+        # prepare().
+        extra += ["--metadata", "keywords=" + ", ".join(keywords)]
+    _pandoc(md, out, "docx", extra)
     return out
 
 
@@ -290,6 +322,19 @@ def build_pdf(md: str, out: Path) -> tuple[Path, str]:
                 "--variable", "geometry:margin=1in",
                 "--variable", "fontsize=11pt",
                 "--variable", "linkcolor=blue",
+            ]
+        elif writer == "typst":
+            # A font must be named. Pandoc's typst template defaults to
+            # `font: ()` and typst 0.15 rejects an empty fallback list with
+            # "font fallback list must not be empty", so the document fails to
+            # compile at all rather than falling back to a default.
+            #
+            # Libertinus Serif ships with typst itself, so this renders the
+            # same on any machine that can run the build -- which a
+            # system-installed face like Georgia would not.
+            extra += [
+                "--variable", f"mainfont={TYPST_FONT}",
+                "--variable", "fontsize=11pt",
             ]
         _pandoc(md, out, writer, extra)
         return out, name
@@ -341,7 +386,7 @@ def run(pdf: bool, docx: bool, anonymous: bool) -> list[Path]:
     written: list[Path] = []
 
     if docx:
-        out = build_docx(md, DIST / f"{stem}.docx")
+        out = build_docx(md, DIST / f"{stem}.docx", identity.keywords)
         print(f"  DOCX  {out.relative_to(ROOT)}")
         written.append(out)
     if pdf:

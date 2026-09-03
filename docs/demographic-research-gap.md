@@ -15,7 +15,8 @@ template they publish is optional rather than expected. The mechanical requireme
 word-processor tables, 300 dpi PNG figures, captions on everything, figures placed in the
 text rather than collected at the end — are all met by the current build.
 
-What is left is editorial, and one item of it is substantial.
+What is left is editorial, and one item of it is substantial. Of the ten requirements below,
+seven are met; item 1 is the only one that is real work.
 
 ## The gaps
 
@@ -24,7 +25,7 @@ What is left is editorial, and one item of it is substantial.
 | **1** | **Structured abstract, 250 words max**, headed BACKGROUND, OBJECTIVE, METHODS, RESULTS, CONCLUSIONS, CONTRIBUTION. CONTRIBUTION is mandatory. | 548 words, unstructured, six paragraphs. | **The real work.** Needs cutting by more than half and rebuilding under six headings. |
 | **2** | Author-year references: `Surname, Initials (Year). Title. Journal Volume(Issue): Pages.` Alphabetical, unnumbered, all authors named. | Vancouver style: `Kitagawa EM. Components of a difference between two rates. *JASA* 1955;50(272):1168-1194.` Six entries, and the last two break alphabetical order. | Mechanical. An hour, six entries. |
 | **3** | In-text citations as surname + year; `(Author and Author 1995)`, `(Author et al. 1995)` above three. | The paper cites narratively ("Kitagawa published the decomposition in 1955") and never parenthetically. Not wrong, but thin for the venue. | Small, and partly a judgement call. |
-| **4** | Up to ten keywords listed in the file. | Ten live in `CITATION.cff` and reach the DOCX as document metadata, but appear nowhere a reader sees. | Trivial: one visible line. |
+| **4** | Up to ten keywords listed in the file. | Ten, read from `CITATION.cff`, printed as a visible line after the abstract in both formats, and also set as the Word document property. | **Done.** |
 | **5** | PDF submissions must have author names and identifying information removed. | `--anonymous` does this and is verified by tests. | **Done.** |
 | **6** | Title carries geographic and temporal focus. | "…U.S. Crude Death Rates, 2010-2024…" | **Done.** |
 | **7** | Main text recommended under 8,000 words. | 5,231. | **Done.** |
