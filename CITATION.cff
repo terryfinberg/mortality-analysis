@@ -46,7 +46,7 @@ keywords:
   - United States
 license: BSD-3-Clause
 version: 0.1.0
-date-released: "2026-08-31"
+date-released: "2026-09-02"
 # Add the Zenodo DOI here once the release is archived, then rebuild any
 # citation text that quotes it:
 # doi: "10.5281/zenodo.XXXXXXX"
