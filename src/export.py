@@ -32,6 +32,7 @@ import shutil
 import subprocess
 import sys
 from dataclasses import dataclass
+from datetime import datetime
 from pathlib import Path
 
 import yaml
@@ -311,8 +312,19 @@ def build_docx(md: str, out: Path, keywords: list[str] | None = None) -> Path:
     return out
 
 
-def build_pdf(md: str, out: Path) -> tuple[Path, str]:
-    """Returns (path, description of the engine used)."""
+def build_pdf(md: str, out: Path, allow_browser: bool = False) -> tuple[Path, str]:
+    """Returns (path, description of the engine used).
+
+    The browser fallback is opt-in. It was not, and the reason it is now is
+    worth keeping: a run that quietly degrades to headless Chrome prints one
+    line saying so, and one line is easy to scroll past. A PDF built that way
+    is indistinguishable from a good one until somebody reads its metadata,
+    which is a poor place to discover it after a preprint is posted.
+
+    Failing instead means the person who wanted a submission PDF is told to
+    install an engine, and the person who genuinely wants a rough preview
+    passes --allow-browser-fallback and knows what they are getting.
+    """
     engine = find_pdf_engine()
     if engine:
         name, writer = engine
@@ -339,13 +351,26 @@ def build_pdf(md: str, out: Path) -> tuple[Path, str]:
         _pandoc(md, out, writer, extra)
         return out, name
 
+    install_hint = (
+        "  winget install --id Typst.Typst          (small, fast, recommended)\n"
+        "  winget install --id MiKTeX.MiKTeX        (full LaTeX)\n"
+        "then re-run. DOCX needs neither and builds already.\n"
+        "\n"
+        "If a rough preview is all you want, --allow-browser-fallback renders it\n"
+        "through headless Chrome. Do not submit that output: it depends on a\n"
+        "browser version this repository cannot pin."
+    )
+    if not allow_browser:
+        raise ExportError(
+            "No PDF engine found, and the browser fallback is opt-in.\n"
+            f"{install_hint}"
+        )
+
     browser = find_browser()
     if not browser:
         raise ExportError(
-            "No PDF engine and no browser to fall back on. Install one of:\n"
-            "  winget install --id Typst.Typst          (small, fast, recommended)\n"
-            "  winget install --id MiKTeX.MiKTeX        (full LaTeX)\n"
-            "then re-run. DOCX needs none of these and builds already."
+            "No PDF engine, and no browser to fall back on either. Install one:\n"
+            f"{install_hint}"
         )
 
     html = out.with_suffix(".html")
@@ -371,7 +396,58 @@ def build_pdf(md: str, out: Path) -> tuple[Path, str]:
 # --------------------------------------------------------------------------
 
 
-def run(pdf: bool, docx: bool, anonymous: bool) -> list[Path]:
+def _git(*args: str) -> str:
+    try:
+        r = subprocess.run(["git", *args], cwd=ROOT, capture_output=True,
+                           text=True, timeout=15)
+        return r.stdout.strip() if r.returncode == 0 else "?"
+    except Exception:
+        return "?"
+
+
+def write_manifest(engine: str | None, files: list[Path]) -> Path:
+    """Record what produced these artifacts, next to the artifacts.
+
+    The engine is printed on every run, but a printed line lives only as long
+    as the terminal does. Once it is gone the only way to answer "which engine
+    made this PDF" is to read the file's own metadata, which is a question
+    that came up for real and should not need forensics twice.
+
+    The commit and the dirty flag matter as much as the engine: a submission
+    PDF built from a working tree with uncommitted changes does not correspond
+    to any archived release, and that is exactly the divergence between a
+    posted preprint and its deposit that the release ordering exists to stop.
+    """
+    described = _git("describe", "--tags", "--always", "--dirty")
+    lines = [
+        "Build record for the artifacts in this directory.",
+        "Written by src/export.py. Not committed; dist/ is gitignored.",
+        "",
+        f"built            {datetime.now().astimezone().isoformat(timespec='seconds')}",
+        f"git describe     {described}",
+        f"commit           {_git('rev-parse', 'HEAD')}",
+        f"working tree     {'DIRTY -- does not match any commit' if described.endswith('-dirty') else 'clean'}",
+        f"pdf engine       {engine or '(no PDF built)'}",
+        f"pandoc           {_pandoc_version()}",
+        "",
+        "files:",
+        *(f"  {p.name}" for p in files),
+    ]
+    path = DIST / "BUILD.txt"
+    path.write_text("\n".join(lines) + "\n", encoding="utf-8")
+    return path
+
+
+def _pandoc_version() -> str:
+    try:
+        r = subprocess.run([_require_pandoc(), "--version"],
+                           capture_output=True, text=True, timeout=15)
+        return r.stdout.splitlines()[0].strip() if r.returncode == 0 else "?"
+    except Exception:
+        return "?"
+
+
+def run(pdf: bool, docx: bool, anonymous: bool, allow_browser: bool = False) -> list[Path]:
     if not SOURCE.exists():
         raise ExportError(
             f"{SOURCE.relative_to(ROOT)} does not exist. Run "
@@ -389,10 +465,14 @@ def run(pdf: bool, docx: bool, anonymous: bool) -> list[Path]:
         out = build_docx(md, DIST / f"{stem}.docx", identity.keywords)
         print(f"  DOCX  {out.relative_to(ROOT)}")
         written.append(out)
+    engine = None
     if pdf:
-        out, engine = build_pdf(md, DIST / f"{stem}.pdf")
+        out, engine = build_pdf(md, DIST / f"{stem}.pdf", allow_browser)
         print(f"  PDF   {out.relative_to(ROOT)}  [{engine}]")
+        if "fallback" in engine:
+            print("  ^^^^  NOT a submission artifact. See --allow-browser-fallback.")
         written.append(out)
+    run.last_engine = engine  # type: ignore[attr-defined]
     return written
 
 
@@ -412,6 +492,14 @@ def main(argv: list[str] | None = None) -> int:
         "--both", action="store_true",
         help="build identified and anonymised variants in one run",
     )
+    ap.add_argument(
+        "--allow-browser-fallback", action="store_true",
+        help="permit rendering the PDF through headless Chrome when no real "
+             "engine is installed. Produces a preview, not a submission "
+             "artifact: the output depends on a browser version this "
+             "repository cannot pin. Without this flag, a missing engine is "
+             "an error.",
+    )
     args = ap.parse_args(argv)
 
     # Neither flag means both formats, which is what a bare invocation should
@@ -421,9 +509,15 @@ def main(argv: list[str] | None = None) -> int:
 
     try:
         variants = [False, True] if args.both else [args.anonymous]
+        produced: list[Path] = []
         for anonymous in variants:
             print("anonymised:" if anonymous else "identified:")
-            run(pdf, docx, anonymous)
+            produced += run(pdf, docx, anonymous, args.allow_browser_fallback)
+        manifest = write_manifest(
+            getattr(run, "last_engine", None), produced
+        )
+        print(f"\n  {manifest.relative_to(ROOT)}  records the engine, commit "
+              "and tree state")
     except ExportError as exc:
         print(f"\nerror: {exc}", file=sys.stderr)
         return 1

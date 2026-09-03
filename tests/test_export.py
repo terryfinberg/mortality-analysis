@@ -170,6 +170,31 @@ def test_the_manuscript_names_the_release_from_the_citation_record(built):
     )
 
 
+def test_the_browser_fallback_is_opt_in(monkeypatch, tmp_path):
+    """A missing engine must fail, not quietly produce a browser PDF.
+
+    It used to fall back silently-in-effect: the run printed one line naming
+    the engine, and one line is easy to miss. The resulting PDF is
+    indistinguishable from a good one without reading its metadata, which is
+    a bad way to find out after a preprint is posted.
+    """
+    monkeypatch.setattr(export, "find_pdf_engine", lambda: None)
+    with pytest.raises(export.ExportError, match="opt-in"):
+        export.build_pdf("# x\n", tmp_path / "out.pdf", allow_browser=False)
+
+
+def test_the_fallback_reports_itself_as_a_fallback():
+    """Whatever the browser path returns must be recognisable as one.
+
+    run() decides whether to print the warning by looking for "fallback" in
+    the engine string, so that word carries load and a rename would silence
+    the warning without failing anything.
+    """
+    src = (ROOT / "src" / "export.py").read_text(encoding="utf-8")
+    assert 'headless (fallback)"' in src
+    assert '"fallback" in engine' in src
+
+
 def test_the_typst_path_names_a_font(identity):
     """typst 0.15 rejects an empty font fallback list, which is pandoc's default.
 

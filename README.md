@@ -207,18 +207,35 @@ retyped, so a title page cannot disagree with the citation record.
 JohnMacFarlane.Pandoc`) **and, for the PDF, [typst](https://typst.app)** (`winget install
 --id Typst.Typst`). DOCX needs pandoc only.
 
-The build prints the engine it used on every run, because the fallback chain means the
-answer is not always the same:
+PDF uses the best engine it can find — `tectonic`, `xelatex`, `lualatex`, `pdflatex`,
+`typst`, `weasyprint`, `wkhtmltopdf`. **If none is installed the build fails**, rather than
+quietly producing something that is not a submission artifact:
+
+```
+error: No PDF engine found, and the browser fallback is opt-in.
+```
+
+`--allow-browser-fallback` renders through headless Chrome or Edge instead. That output is a
+preview, not a submission: it depends on a browser version this repository cannot pin, and it
+needs 23 pages where typst needs 17. A run that uses it says so twice.
+
+Every run reports its engine, and writes `dist/BUILD.txt` recording the engine, the commit,
+whether the working tree was clean, and the pandoc version:
 
 ```
   PDF   dist\manuscript.pdf  [typst]
+
+git describe     v0.1.1
+working tree     clean
+pdf engine       typst
 ```
 
-PDF uses the best engine it can find — `tectonic`, `xelatex`, `lualatex`, `pdflatex`,
-`typst`, `weasyprint`, `wkhtmltopdf` — and falls back to headless Chrome or Edge if none is
-installed. **Check that line before submitting anything.** The browser fallback produces a
-legible document, but it is a fallback: its output depends on a browser version this
-repository cannot pin, and it needs 23 pages where typst needs 17.
+The manifest exists because a printed line lives only as long as the terminal does, and
+"which engine produced this PDF" then becomes a question answerable only by reading the
+file's metadata. **The `working tree` line matters as much as the engine**: a submission PDF
+built from a tree with uncommitted changes corresponds to no archived release, which is the
+divergence between a posted preprint and its deposit that the release ordering exists to
+prevent.
 
 The typst path names `Libertinus Serif` explicitly. Pandoc's typst template defaults to an
 empty font list, which typst 0.15 rejects outright with *"font fallback list must not be
