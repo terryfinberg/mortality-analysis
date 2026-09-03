@@ -7,11 +7,7 @@ type: software
 authors:
   - family-names: Finberg
     given-names: Terry
-    # Replace with your ORCID iD once registered, in the form
-    # https://orcid.org/0000-0000-0000-0000 -- then delete this comment.
-    # An unfilled placeholder is better left absent than left wrong, so the
-    # field is commented out rather than carrying a fake identifier.
-    # orcid: "https://orcid.org/0000-0000-0000-0000"
+    orcid: "https://orcid.org/0009-0006-1598-4200"
 repository-code: "https://github.com/terryfinberg/mortality-analysis"
 abstract: >-
   A reproducible analysis of United States mortality, 2010-2024, with two

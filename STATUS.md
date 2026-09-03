@@ -28,12 +28,19 @@ the tag points at; this DOI commit is the one after it) · **Branch:** `main` ·
 > because a reader chasing a number needs the archive that produced it. `CITATION.cff`
 > carries both — `doi:` for the version, `identifiers:` for the concept. See step 6.
 >
-> What remains is the preprint, not the archive: step 7's licence confirmation, and **one**
-> open medRxiv declaration. Funding, competing interests, ethics and author contributions
-> are written into the manuscript's Declarations; **ORCID is the last one**, unfilled in
-> both the manuscript and `CITATION.cff` while registration is in progress. Fill both or
-> neither — a repository that carries an iD in one and not the other is the same
-> two-places-disagree failure step 6 was written about.
+> **Every medRxiv declaration is now written.** Funding, competing interests, ethics,
+> author contributions, data availability and ORCID (`0009-0006-1598-4200`) are all in the
+> manuscript's Declarations. The iD went into `CITATION.cff` and `.zenodo.json` in the same
+> commit, because an identifier in one place and not the others is the two-places-disagree
+> failure step 6 was written about.
+>
+> What remains is the preprint, not the archive: step 7's licence confirmation, the UAT
+> pass, and the format items in `paper/medrxiv_submission.md`.
+>
+> **`.zenodo.json` describes the *next* deposit, not the one that exists.** Zenodo read that
+> file when it archived `v0.1.0`, and it had no ORCID then, so the live record's creator is
+> still bare. Add the iD to the existing record in the Zenodo UI, or it will not appear
+> until a future release.
 
 > The branch was renamed `master` → `main` on 2026-08-31, before any push, so it matches the
 > default GitHub gives a new repository. Renaming after pushing means fixing the default
@@ -412,9 +419,12 @@ manuscript should reach the archive that produced the numbers in it, not a later
 whose numbers may have moved. The concept DOI is the one to cite for the project as an
 ongoing thing, and it is labelled that way rather than left for a reader to infer.
 
-`CITATION.cff` also has a commented-out `orcid:` field. It was left commented rather than
-filled with a dummy identifier, because an ORCID-shaped string that resolves to nobody is
-worse than an absent field — it looks checkable and fails only for whoever tries.
+`CITATION.cff`'s `orcid:` field was commented out until an iD existed, rather than filled
+with a dummy, because an ORCID-shaped string that resolves to nobody is worse than an absent
+field — it looks checkable and fails only for whoever tries. **Registered 2026-09-02:**
+`0009-0006-1598-4200`, now in `CITATION.cff` (as the full `https://orcid.org/…` URL, which
+is the form CFF wants), `.zenodo.json` (bare, which is the form Zenodo wants) and the
+manuscript's Declarations. The checksum was verified before it was written anywhere.
 
 ### 7. Confirm the preprint license before posting
 

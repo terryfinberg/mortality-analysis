@@ -64,9 +64,10 @@ manuscript, not on a later release whose numbers may have moved. The concept DOI
 - [x] **Author contributions:** sole author, in the manuscript's Declarations. Worded to
       agree with the AI disclosure rather than around it: the author *directed and takes
       responsibility for* the work, which is what the AI declaration also says
-- [ ] **ORCID** linked — **the last one open.** Registration in progress. It is unfilled in
-      both the manuscript's Declarations and `CITATION.cff`'s commented `orcid:` line;
-      fill both, or neither
+- [x] **ORCID** linked — `0009-0006-1598-4200`, filled in all three places it belongs: the
+      manuscript's Declarations, `CITATION.cff`'s `orcid:` field, and `.zenodo.json`'s
+      creator record. Link it on the medRxiv submission form too, which is a separate act
+      from any of these
 
 ### Format
 
