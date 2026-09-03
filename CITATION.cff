@@ -62,3 +62,10 @@ identifiers:
   - type: doi
     value: "10.5281/zenodo.22263668"
     description: "Version DOI for release v0.1.0."
+  # Not 22263669. v0.1.0's version DOI happened to be the concept DOI plus one,
+  # which made the next one look predictable; it was allocation order, not a
+  # rule. Zenodo assigns at deposit time and this release landed four thousand
+  # away. A version DOI is only ever copied from the record it was minted on.
+  - type: doi
+    value: "10.5281/zenodo.22267191"
+    description: "Version DOI for release v0.1.1."

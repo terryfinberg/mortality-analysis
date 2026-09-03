@@ -1,12 +1,13 @@
 # Status
 
 **Last updated:** 2026-09-03 · **Branch:** `main` ·
-**Remote:** `origin` → `github.com/terryfinberg/mortality-analysis` · **`v0.1.0` archived;
-`v0.1.1` is the release the preprint will cite**
+**Remote:** `origin` → `github.com/terryfinberg/mortality-analysis` · **`v0.1.1` tagged,
+archived and citable; it is the release the preprint cites**
 
-> ## ⏳ `v0.1.1` is staged and not yet tagged. Tag it before the preprint goes up.
+> ## ✅ `v0.1.1` is tagged and archived. The preprint cites it.
 >
-> **`v0.1.0` is archived and permanent, and its manuscript is defective.** Everything that
+> **`v0.1.0` is archived and permanent, and its manuscript is defective.** That is why
+> `v0.1.1` exists. Everything that
 > makes the paper citable landed *after* that tag: the deposited Declarations section
 > contains the AI disclosure and nothing else — no data availability, funding, competing
 > interests, ethics, author contributions or ORCID. The deposited abstract still says
@@ -14,7 +15,9 @@
 > two of six bands. Its §4.1 has no band-level discussion at all, its figures are named as
 > prose filenames rather than embedded, they run 1, 5, 3, 4, and `fig2` is archived uncited.
 >
-> Those are defects in the deposited record, not cosmetics, which is why `v0.1.1` exists.
+> Those are defects in the deposited record, not cosmetics. `v0.1.1` corrects all of them;
+> the submission artifacts in `dist/` were built from the tagged tree and verified
+> identical to it, so the posted preprint and the deposit are the same document.
 >
 > ### The DOI rule this release established
 >
@@ -29,13 +32,19 @@
 > | | DOI | where it may be written |
 > |---|---|---|
 > | **Concept** | [10.5281/zenodo.22263667](https://doi.org/10.5281/zenodo.22263667) | anywhere, including inside the archive. Always exists, always resolves |
-> | **Version** | one per release; `v0.1.0` is [10.5281/zenodo.22263668](https://doi.org/10.5281/zenodo.22263668) | the Zenodo record, and `CITATION.cff`'s `identifiers:` in a **post-tag** commit |
+> | **Version `v0.1.0`** | [10.5281/zenodo.22263668](https://doi.org/10.5281/zenodo.22263668) | the Zenodo record, and `CITATION.cff`'s `identifiers:` in a **post-tag** commit |
+> | **Version `v0.1.1`** | [10.5281/zenodo.22267191](https://doi.org/10.5281/zenodo.22267191) | same |
+>
+> **The allocation is not sequential, and this release proved it.** `v0.1.0`'s version DOI
+> was the concept DOI plus one, which made `22263669` look like a safe guess for the next
+> one. `v0.1.1` landed at `22267191`, some three and a half thousand away. Zenodo assigns
+> at deposit time. A version DOI is only ever copied from the record it was minted on.
 >
 > The manuscript, `README.md` and `paper/medrxiv_submission.md` all cite the concept DOI
 > and say why. The manuscript names its own release from `{{RELEASE_VERSION}}`, which
 > `report.py` reads out of `CITATION.cff`, so the paper cannot name a version the citation
-> record disagrees with. **Do not guess a version DOI**: `v0.1.0`'s is concept+1, and that
-> is allocation coincidence, not a rule.
+> record disagrees with. **Do not guess a version DOI**; the table above records what
+> happened when that pattern looked predictable.
 >
 > **Every medRxiv declaration is now written.** Funding, competing interests, ethics,
 > author contributions, data availability and ORCID (`0009-0006-1598-4200`) are all in the
@@ -436,7 +445,7 @@ field — it looks checkable and fails only for whoever tries. **Registered 2026
 is the form CFF wants), `.zenodo.json` (bare, which is the form Zenodo wants) and the
 manuscript's Declarations. The checksum was verified before it was written anywhere.
 
-### 8. Cut `v0.1.1` — **before the preprint goes up**
+### 8. Cut `v0.1.1` ✅ done 2026-09-03 — DOI `10.5281/zenodo.22267191`
 
 `v0.1.0` is archived and permanent and its manuscript is not the manuscript anyone should
 read. The deposit predates the whole Declarations section bar the AI disclosure, carries the
@@ -457,7 +466,7 @@ that the tag is the last moment any of them can be fixed:
    commit the tag points at, so the file never describes a release that does not exist.
 6. The manuscript's release string comes from `{{RELEASE_VERSION}}`, not typed.
 
-**The sequence, and why the order is the whole of it.**
+**Executed in this order, and the order is the whole of it.**
 
 1. Commit every one of the above **together**. The tag points at one commit and every file in
    it has to describe `v0.1.1`.
@@ -469,8 +478,14 @@ that the tag is the last moment any of them can be fixed:
 4. Create the Release in the GitHub UI. Zenodo archives it and mints `v0.1.1`'s version DOI.
 5. **Post-tag**, add that version DOI to `CITATION.cff` under `identifiers:` with a
    `description` naming the release. Commit and push. The archive is untouched; this is for
-   whoever reads `main` later.
-6. Post the preprint using the PDF built at step 3.
+   whoever reads `main` later. **Done** — `10.5281/zenodo.22267191`, and `dist/` was
+   deliberately *not* rebuilt afterward.
+6. Post the preprint using the PDF built at step 3. ← **the only step left**
+
+Steps 1 through 5 are done. `dist/manuscript.pdf` is the file to post: it was built from
+the tagged tree, before step 5 touched anything, and `git diff v0.1.1` was clean at the
+time. Rebuilding it now would put `22267191` in a PDF whose archived counterpart does not
+carry it, which is the divergence this ordering exists to prevent.
 
 ### 7. Confirm the preprint license before posting
 
