@@ -54,14 +54,19 @@ manuscript, not on a later release whose numbers may have moved. The concept DOI
 
 ### Required medRxiv declarations
 
-- [ ] **Funding:** state source, or "None."
-- [ ] **Competing interests:** state, or "The author declares no competing interests."
-- [ ] **Ethics / IRB:** this analysis uses publicly available aggregate vital statistics and
-      involves no identifiable individual data. State this explicitly; medRxiv screens for it.
+- [x] **Funding:** none; stated in the manuscript's Declarations
+- [x] **Competing interests:** none declared, in the manuscript's Declarations
+- [x] **Ethics / IRB:** stated explicitly in the manuscript's Declarations — aggregate
+      published statistics, no individual-level data, no human subjects research, so no IRB
+      approval was required. medRxiv screens for this
 - [x] **Data availability:** in the manuscript's Declarations — the version DOI for the
       archive, and the development repository, named separately
-- [ ] **Author contributions**
-- [ ] **ORCID** linked
+- [x] **Author contributions:** sole author, in the manuscript's Declarations. Worded to
+      agree with the AI disclosure rather than around it: the author *directed and takes
+      responsibility for* the work, which is what the AI declaration also says
+- [ ] **ORCID** linked — **the last one open.** Registration in progress. It is unfilled in
+      both the manuscript's Declarations and `CITATION.cff`'s commented `orcid:` line;
+      fill both, or neither
 
 ### Format
 

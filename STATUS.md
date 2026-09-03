@@ -28,9 +28,12 @@ the tag points at; this DOI commit is the one after it) · **Branch:** `main` ·
 > because a reader chasing a number needs the archive that produced it. `CITATION.cff`
 > carries both — `doi:` for the version, `identifiers:` for the concept. See step 6.
 >
-> What remains is the preprint, not the archive: step 7's licence confirmation, and the
-> unchecked medRxiv declarations in `paper/medrxiv_submission.md` (funding, competing
-> interests, ethics, author contributions, ORCID).
+> What remains is the preprint, not the archive: step 7's licence confirmation, and **one**
+> open medRxiv declaration. Funding, competing interests, ethics and author contributions
+> are written into the manuscript's Declarations; **ORCID is the last one**, unfilled in
+> both the manuscript and `CITATION.cff` while registration is in progress. Fill both or
+> neither — a repository that carries an iD in one and not the other is the same
+> two-places-disagree failure step 6 was written about.
 
 > The branch was renamed `master` → `main` on 2026-08-31, before any push, so it matches the
 > default GitHub gives a new repository. Renaming after pushing means fixing the default
