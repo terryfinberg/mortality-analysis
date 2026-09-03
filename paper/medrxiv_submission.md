@@ -16,7 +16,12 @@
 
 **Preprint server:** medRxiv (health sciences)
 **Suggested category:** Epidemiology
-**DOI:** *[to be minted from a tagged GitHub release via Zenodo]*
+**DOI:** [10.5281/zenodo.22263668](https://doi.org/10.5281/zenodo.22263668)
+*This is the **version** DOI for `v0.1.0`, chosen over the concept DOI on purpose: a
+reader following it should land on the exact archive that produced the numbers in this
+manuscript, not on a later release whose numbers may have moved. The concept DOI
+(10.5281/zenodo.22263667) resolves to the latest version and is recorded in
+`CITATION.cff`.*
 
 ---
 
@@ -26,9 +31,10 @@
 
 - [ ] All UAT sections pass (see `UAT_CHECKLIST.md`)
 - [ ] Every row in `data/raw/` has `verified_by` and `verified_date`
-- [ ] Repository pushed to GitHub, public
-- [ ] Release tagged (`v0.1.0` or later)
-- [ ] Zenodo connected, DOI minted, DOI inserted above and in the manuscript
+- [x] Repository pushed to GitHub, public
+- [x] Release tagged (`v0.1.0` or later)
+- [x] Zenodo connected, DOI minted, DOI inserted above and in the manuscript's
+      Declarations
 - [ ] `LICENSE` (BSD-3-Clause, code), `paper/LICENSE` (CC BY 4.0, manuscript) and
       `DATA.md` (public-domain status of the federal data) all present
 - [ ] **Target journal's preprint policy re-confirmed against CC BY 4.0** — see the
@@ -52,7 +58,8 @@
 - [ ] **Competing interests:** state, or "The author declares no competing interests."
 - [ ] **Ethics / IRB:** this analysis uses publicly available aggregate vital statistics and
       involves no identifiable individual data. State this explicitly; medRxiv screens for it.
-- [ ] **Data availability:** point to the GitHub repository and the Zenodo DOI
+- [x] **Data availability:** in the manuscript's Declarations — the version DOI for the
+      archive, and the development repository, named separately
 - [ ] **Author contributions**
 - [ ] **ORCID** linked
 

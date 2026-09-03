@@ -47,6 +47,11 @@ keywords:
 license: BSD-3-Clause
 version: 0.1.0
 date-released: "2026-09-02"
-# Add the Zenodo DOI here once the release is archived, then rebuild any
-# citation text that quotes it:
-# doi: "10.5281/zenodo.XXXXXXX"
+# The version DOI. It resolves to the v0.1.0 archive specifically, so a reader
+# following a citation of this version reaches the bytes that produced its
+# numbers rather than whatever the latest release happens to be.
+doi: "10.5281/zenodo.22263668"
+identifiers:
+  - type: doi
+    value: "10.5281/zenodo.22263667"
+    description: "Concept DOI, resolves to the latest version."

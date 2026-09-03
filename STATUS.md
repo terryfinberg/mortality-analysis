@@ -1,11 +1,11 @@
 # Status
 
-**Last updated:** 2026-09-01 · **HEAD:** `0aa523d`, the §5.3 read-through (this doc-only commit
-is the one after it) · **Branch:** `main` ·
-**Remote:** `origin` → `github.com/terryfinberg/mortality-analysis` · **pushed through `0aa523d`,
-not tagged**
+**Last updated:** 2026-09-02 · **HEAD:** `0b4645c`, the `CITATION.cff` release date (the commit
+the tag points at; this DOI commit is the one after it) · **Branch:** `main` ·
+**Remote:** `origin` → `github.com/terryfinberg/mortality-analysis` · **pushed, tagged
+`v0.1.0`, archived, DOI minted**
 
-> ## ✅ The restructure is done. The tag is no longer blocked on it.
+> ## ✅ Released. `v0.1.0` is tagged, archived on Zenodo, and has a DOI.
 >
 > **Executed 2026-09-01.** The denominator findings are now Results §4.4 rather than a
 > limitation, §6 keeps only limitations of this work, the abstract states both contributions,
@@ -13,20 +13,24 @@ not tagged**
 > and all five figures are **byte-identical** before and after — that was the restructure's
 > own regression test, and it passes. 193 tests pass.
 >
-> **Two things still stand between here and a DOI. Neither is analysis.**
+> **Both remaining steps were executed, in the order that matters.** The Zenodo toggle was
+> armed before the Release, so the Release was archived rather than missed; `CITATION.cff`
+> was corrected in `0b4645c`, the commit the tag points at, so the file never described a
+> release that did not exist.
 >
-> 1. **Switch the Zenodo integration toggle on** (step 4), if it is not already. Zenodo
->    archives only Releases created *after* the toggle is on, and **a pushed tag is not a
->    Release.** An armed toggle with no Release produces no DOI and no record, so this is
->    safe to do at any time and cannot be done too early.
-> 2. **Fix `CITATION.cff`'s `version:` and `date-released:` in the same commit as the tag.**
->    It still carries `0.1.0` and `"2026-08-31"` — a release date that has now passed without
->    a release. Fixing it at tag time rather than earlier keeps the file from ever describing
->    a release that does not exist.
+> | | DOI | resolves to |
+> |---|---|---|
+> | **Version** | [10.5281/zenodo.22263668](https://doi.org/10.5281/zenodo.22263668) | the `v0.1.0` archive, fixed forever |
+> | **Concept** | [10.5281/zenodo.22263667](https://doi.org/10.5281/zenodo.22263667) | whatever the latest release is |
 >
-> Order: toggle, *then* tag, *then* create the Release in the GitHub UI. Getting that order
-> wrong means the DOI never appears, and the fix is cutting a throwaway v0.1.1 purely to
-> trigger it.
+> **Cite the version DOI for a result, the concept DOI for the project.** The manuscript's
+> Declarations, `paper/medrxiv_submission.md` and `README.md` all lead with the version DOI,
+> because a reader chasing a number needs the archive that produced it. `CITATION.cff`
+> carries both — `doi:` for the version, `identifiers:` for the concept. See step 6.
+>
+> What remains is the preprint, not the archive: step 7's licence confirmation, and the
+> unchecked medRxiv declarations in `paper/medrxiv_submission.md` (funding, competing
+> interests, ethics, author contributions, ORCID).
 
 > The branch was renamed `master` → `main` on 2026-08-31, before any push, so it matches the
 > default GitHub gives a new repository. Renaming after pushing means fixing the default
@@ -51,9 +55,9 @@ every value substituted from code. 193 tests pass. The arithmetic has been revie
 findings fixed, `figures/` is tracked so a release archives the images the paper shows, and
 `main` is pushed to GitHub.
 
-**The restructure is executed and nothing analytical remains.** What is left is release
-mechanics in a fixed order: the Zenodo toggle, then the tag, then the Release. See the banner
-above and steps 4 and 5 below.
+**The restructure is executed, the release is cut, and nothing analytical remains.** `v0.1.0`
+is tagged, archived and citable; what is left is preprint mechanics only. See the banner
+above and steps 4 through 7 below.
 
 ## Done
 
@@ -157,9 +161,10 @@ Year ranges are written with a hyphen throughout, matching the interval strings 
 `results.json`. The title carried an en-dash briefly and the paper rendered `2010-2019`
 two ways on one page as a result.
 
-`CITATION.cff` also carries `version: 0.1.0` and `date-released: "2026-08-31"`. Both are still
-wrong and both are **deliberately left wrong until tag time**, so the file never describes a
-release that does not exist.
+`CITATION.cff` also carries `version: 0.1.0` and `date-released:`. The date was
+**deliberately left wrong until tag time** — it read `"2026-08-31"`, a date that passed
+without a release — and was corrected to `"2026-09-02"` in `0b4645c`, the commit the tag
+points at, so the file never described a release that did not exist.
 
 ### The regression test, and its result
 
@@ -348,11 +353,13 @@ first `git push -u origin main` fails on authentication rather than saying so pl
 it there first, empty, with no README, licence or `.gitignore` — GitHub's initialisers would
 put a commit on the remote that this history does not contain.
 
-### 4. Connect Zenodo — **BEFORE tagging** (safe to do now)
+### 4. Connect Zenodo — **BEFORE tagging** ✅ done, before the Release
 
-This step is **not** blocked by the restructure. Switching the toggle on arms Zenodo for the
-next Release; with no Release it produces no DOI, no record, and nothing to correct later. Do
-it whenever. It is the *Release* in step 5 that must wait.
+The toggle was armed while there was still no Release, which is the state this step was
+written to produce: an armed toggle with no Release makes no DOI and no record, so it could
+not be done too early. The warning below is kept rather than deleted, because it is the part
+that costs a version number when it is got wrong, and the next release has to get it right
+too.
 
 > **Order matters and getting it wrong costs a version number.** Zenodo archives only
 > Releases created *after* the repository toggle is switched on. **A pushed tag is not a
@@ -360,37 +367,47 @@ it whenever. It is the *Release* in step 5 that must wait.
 > in the GitHub UI. Tagging first and connecting after means the DOI never appears, and the
 > fix is cutting a throwaway v0.1.1 purely to trigger it.
 
-### 5. Tag `v0.1.0`, create the Release, mint the DOI — **unblocked 2026-09-01**
+### 5. Tag `v0.1.0`, create the Release, mint the DOI ✅ done 2026-09-02
 
-**The editorial block is cleared.** It was blocked on the manuscript restructure, and the
-restructure is executed — see "The restructure, executed" above. Nothing analytical stands in
-the way now.
+Executed in the order the step prescribed, which was the whole of the step:
 
-What is left is an order and one file, and getting the order wrong costs a version number:
+1. **Zenodo toggle on** (step 4), while there was still no Release for it to archive.
+2. **`CITATION.cff` fixed, then tagged.** `date-released:` went to `"2026-09-02"` in
+   `0b4645c`; `version:` was already `0.1.0` and needed no change. The annotated tag
+   `v0.1.0` points at that commit, so the file *at the tag* describes the release that
+   exists. Commit and tag were pushed together.
+3. **Release created in the GitHub UI**, which is the event Zenodo watches. Two DOIs came
+   back, a version DOI and a concept DOI; both are in the banner and in step 6.
 
-1. **Zenodo toggle on** (step 4). May already be done; harmless either way. Zenodo archives
-   only Releases created *after* the toggle is on, and **a pushed tag is not a Release.**
-2. **Tag `v0.1.0`**, in a commit that also fixes `CITATION.cff` — it still carries
-   `version: 0.1.0` and `date-released: "2026-08-31"`, a date that has now passed without a
-   release. Its `title:` is already updated. Fix the version and date *at tag time*, never
-   earlier, so the file never describes a release that does not exist.
-3. **Create the Release in the GitHub UI.** This is the irreversible step: it is what mints
-   the DOI, and **a DOI is permanent.**
+The DOI is permanent and the archive is fixed at `v0.1.0`. Everything after it — this
+document, the DOI insertions — is a post-tag commit on `main`, which is normal and does not
+disturb what was archived. No re-tag.
 
-One thing worth re-reading before step 3 rather than after: step 7 below, on the preprint
-licence. That decision is also effectively irreversible once a version is posted, and it is
-independent of the DOI.
+Still worth reading before anything is posted: step 7 below, on the preprint licence. That
+decision is also effectively irreversible, and it is independent of the DOI.
 
-### 6. Put the DOI in **two** places, not one
+### 6. Put the DOI everywhere it was pending ✅ done 2026-09-02
 
-Once minted, the DOI goes into:
+The step was written as "two places, not one": a DOI recorded in only one of them produces a
+repository whose "Cite this repository" button disagrees with the preprint, which is worse
+than one that omits it in both. Grepping for the pending language found five places, not
+two.
 
-- `paper/medrxiv_submission.md` — placeholder at the top and a checklist item
-- `CITATION.cff` — a commented `doi:` line, ready to uncomment
+| file | what it now carries |
+|---|---|
+| `CITATION.cff` | `doi:` = version DOI, `identifiers:` = concept DOI described as such. That split is the CFF convention and it records both without ambiguity |
+| `paper/manuscript.md` | a **Data availability** declaration naming the version DOI, the concept DOI and the development repository separately |
+| `paper/medrxiv_submission.md` | the version DOI replaces the placeholder at the top, with the reason it is the version and not the concept DOI |
+| `README.md` | both DOIs under "License and citation", with which to cite when |
+| `UAT_CHECKLIST.md` | the two release items closed, with the DOIs recorded against them |
 
-Both are placeholders now. A DOI recorded in only one of them produces a repository whose
-"Cite this repository" button disagrees with the preprint, which is worse than one that omits
-it in both.
+`.zenodo.json` needs no DOI. Zenodo mints the DOI *from* that record, so a DOI written into
+it would be describing its own output.
+
+**The version DOI leads wherever a result is cited.** A reader following a DOI out of the
+manuscript should reach the archive that produced the numbers in it, not a later release
+whose numbers may have moved. The concept DOI is the one to cite for the project as an
+ongoing thing, and it is labelled that way rather than left for a reader to infer.
 
 `CITATION.cff` also has a commented-out `orcid:` field. It was left commented rather than
 filled with a dummy identifier, because an ORCID-shaped string that resolves to nobody is

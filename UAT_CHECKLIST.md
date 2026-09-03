@@ -184,8 +184,10 @@ means a stale kernel; restart and rerun.
 - [ ] Read the manuscript limitations section against what you actually did and add anything
       missing
 - [ ] Fill `verified_by` and `verified_date` for every row, against the cited source
-- [ ] Push to GitHub, tag a release, connect Zenodo, mint the DOI
-- [ ] Put the DOI into `paper/medrxiv_submission.md`
+- [x] Push to GitHub, tag a release, connect Zenodo, mint the DOI — `v0.1.0`, 2026-09-02,
+      version DOI 10.5281/zenodo.22263668, concept DOI 10.5281/zenodo.22263667
+- [x] Put the DOI into `paper/medrxiv_submission.md`, `CITATION.cff`, `README.md` and the
+      manuscript's Declarations
 
 ---
 

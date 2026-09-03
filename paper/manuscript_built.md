@@ -256,6 +256,8 @@ A reader who needs a single-vintage series should build one and should expect th
 
 **Declaration of AI assistance.** This work was produced with AI assistance (Anthropic's Claude, via Claude Code), including the analysis software, its tests and documentation, and drafting of this manuscript. The author directed the work, verified every data value against the CDC WONDER export it was taken from, and is solely responsible for the analysis, its interpretation, and its conclusions. No AI system meets authorship criteria and none is listed as an author.
 
+**Data availability.** All code and data needed to reproduce every number and figure in this manuscript are archived at <https://doi.org/10.5281/zenodo.22263668>. That is the *version* DOI for release `v0.1.0`: it resolves to the exact archive these results were computed from, rather than to a later release. The concept DOI <https://doi.org/10.5281/zenodo.22263667> resolves to the latest version. Development continues at <https://github.com/terryfinberg/mortality-analysis>. The four CDC WONDER export files the analysis reads are redistributed inside the archive rather than described, each carrying WONDER's own query-parameter footer and a SHA-256 digest that the test suite recomputes; the underlying mortality and population data are U.S. federal government works in the public domain.
+
 ---
 
 ## References

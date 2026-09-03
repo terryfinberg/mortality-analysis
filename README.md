@@ -355,5 +355,14 @@ BSD-3-Clause rather than MIT for the code because of clause 3, the non-endorseme
 repository ships a model policy framework next to the analysis, so a fork reaching different
 conclusions while carrying the author's name is foreseeable rather than hypothetical.
 
-If this work is cited, cite the manuscript and the Zenodo DOI minted from a tagged release,
-not this README.
+If this work is cited, cite the manuscript and the Zenodo DOI, not this README.
+
+- **Version DOI** — [10.5281/zenodo.22263668](https://doi.org/10.5281/zenodo.22263668).
+  Resolves to the `v0.1.0` archive, which is the one that produced the numbers in the
+  paper. **Cite this one for a result.**
+- **Concept DOI** — [10.5281/zenodo.22263667](https://doi.org/10.5281/zenodo.22263667).
+  Resolves to whatever the latest release is. Cite this one when the reference is to the
+  project rather than to a number.
+
+`CITATION.cff` carries both, the version DOI in `doi:` and the concept DOI in
+`identifiers:`, which is what GitHub's "Cite this repository" button reads.
