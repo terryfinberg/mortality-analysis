@@ -14,4 +14,9 @@ data/raw/fetched/*
 # figures/ is tracked deliberately: the manuscript cites figures by filename and a
 # Zenodo archive should contain the images the preprint shows. See README, "Regenerated
 # figures and phantom diffs", for when to commit a regenerated figure and when not to.
+# Submission artifacts. Derived from paper/manuscript_built.md by
+# `python -m src.export` in one command, so committing them would commit a copy
+# of something the repository already produces -- and a copy that goes stale the
+# next time a number moves. Untracked until we decide they belong here.
+dist/
 .DS_Store

@@ -10,7 +10,7 @@
 
 The crude death rate is the most widely cited summary of a population's mortality experience and one of the most frequently misread. Because it is a simple ratio of deaths to population, it responds both to changes in the risk of dying at a given age and to changes in how many people are at each age. In an aging population these two forces pull in opposite directions, and the crude rate reports only their sum.
 
-This paper makes two contributions. The first is a decomposition of the change in the U.S. crude death rate between 2010 and 2024 into an age-specific mortality component and a population age-structure component, using the Kitagawa method. Over the full interval the crude rate rose by 103.9 deaths per 100,000: the age-specific mortality component moved it down by 24.4 while the age-structure component moved it up by 128.4. Over the pre-pandemic interval 2010-2019, uncontaminated by the shock, the age effect exceeds the rate effect by 3.41 to one. Aging does not merely dominate the change; it exceeds it, and mortality risk at a given age fell over a period in which the death rate rose.
+This paper makes two contributions. The first is a decomposition of the change in the U.S. crude death rate between 2010 and 2024 into an age-specific mortality component and a population age-structure component, using the Kitagawa method. Over the full interval the crude rate rose by 103.9 deaths per 100,000: the age-specific mortality component moved it down by 24.4 while the age-structure component moved it up by 128.4. Over the pre-pandemic interval 2010-2019, uncontaminated by the shock, the age effect exceeds the rate effect by 3.41 to one. Aging does not merely dominate the change; it exceeds it, and the age-standardised measure of mortality risk fell over a period in which the crude death rate rose. That improvement is a net across age bands and not a decline at every age: rates rose in two of the six bands, and section 5.1 takes up what that means for the equilibrium.
 
 The second contribution is a measurement of the denominator those rates are divided by. Four vintage boundaries fall inside this single fifteen-year series, and all four were measured against source data rather than assumed: the per-year vintage chain CDC WONDER carries, the Vintage 2024 restatement of 2023, the 2010 April 1 measurement basis, and the bridged-race to single-race seam at 2017/2018. One of them is **exactly zero**. The seam agrees to the person in every age band, in deaths and in population alike, against a purpose-run export rather than by assumption, and a boundary measured at zero is not the same object as a boundary nobody measured.
 
@@ -127,7 +127,11 @@ The crude death rate moved from 799.5 per 100,000 in 2010 to 903.4 in 2024. Over
 
 The gap between these two series is the contribution of the changing age structure. Where the crude and adjusted series move in opposite directions, the population's underlying mortality experience and its aggregate death count are telling different stories.
 
-*Figure 1: `figures/fig1_crude_vs_adjusted.png`*
+![Crude and age-adjusted death rates, United States, 2010-2024. The age-adjusted series is standardised to the 2000 U.S. standard population.](figures/fig1_crude_vs_adjusted.png)
+
+Figure 2 shows the same interval band by band, on a logarithmic scale, and the movement is not all one way. Age-specific rates fall in four of the six bands; the exceptions are 25-44 and 45-64, which rise. The decline is concentrated in the older bands, where the great majority of deaths occur, which is why the exposure-weighted net across all bands is still an improvement. That net is what section 4.2 quantifies as the rate effect; Figure 2 is its raw form, before any weighting. The rise in the middle of the age range is invisible in the crude rate and is not isolated anywhere else in this paper.
+
+![Age-specific death rates by age group, 2010-2024, on a logarithmic scale.](figures/fig2_age_specific_rates.png)
 
 ### 4.2 Decomposition
 
@@ -137,7 +141,9 @@ The gap between these two series is the contribution of the changing age structu
 | 2019-2024 | 33.7 | 7.7 | 26.0 | 3.38 |
 | 2010-2024 | 103.9 | -24.4 | 128.4 | 5.26 |
 
-*All values are deaths per 100,000. Figure 5: `figures/fig5_decomposition.png`*
+Table: Kitagawa decomposition of the change in the crude death rate, by interval. All values are deaths per 100,000.
+
+![Kitagawa decomposition of the change in the crude death rate, by interval. Positive components stack upward from zero and negative components downward; the diamond marks the net change, which the two components sum to.](figures/fig5_decomposition.png)
 
 The pre-pandemic interval is the substantively important one, because it is uncontaminated by the shock. An age-to-rate ratio above one means demographic pressure exceeded mortality improvement, so the crude rate rose despite falling risk at individual ages.
 
@@ -149,7 +155,9 @@ COVID-19 deaths were heavily concentrated among older adults: 75.7 percent occur
 
 Neither quantity is offered as a new finding. The concentration of COVID-19 deaths among older adults is well established, and the excess-mortality total is reported to place the pandemic shock on the same age-adjusted footing as the rest of the analysis rather than to improve on published estimates. Section 3.3 explains why this approach yields a figure below count-based ones; that difference is methodological, not a disagreement about the data. Both serve here as checks that the rate pipeline and the age grid behave as they should across the shock.
 
-*Figures 3 and 4: `figures/fig3_excess_mortality.png`, `figures/fig4_covid_by_age.png`*
+![Estimated excess deaths by year, against a baseline projected from the 2010-2019 trend in the age-adjusted rate.](figures/fig3_excess_mortality.png)
+
+![Distribution of COVID-19 deaths by age group, 2020-2024.](figures/fig4_covid_by_age.png)
 
 
 ### 4.4 The population denominator is not stable
@@ -170,7 +178,7 @@ That null is a measurement, not an assumption, and it was worth making: the mech
 | B, 2010 excluded | 2011-2019 | -24.0 | 86.5 | 3.599 | 1,105,148 |
 | C, published July 1 | 2010-2019 | -25.0 | 96.7 | 3.872 | 1,110,739 |
 
-*Rate and age effects are deaths per 100,000. Computed by `src/treatments.py`.*
+Table: Three treatments of the 2010 measurement basis. Rate and age effects are deaths per 100,000. Computed by `src/treatments.py`.
 
 The age-to-rate ratio ranges from 3.41 to 3.87 across the three, which is why section 5.1 reports that quantity as a range and not as a point estimate. The excess-death estimates barely move, for the reason given in 3.3: they depend on a projected level, which a rotation about the fit's centroid displaces far less than it displaces a slope.
 
@@ -191,6 +199,12 @@ This is worth stating plainly because it converts an argument into an instance. 
 For most of the postwar period, American age-specific mortality improved fast enough to absorb demographic aging. The crude rate stayed in a narrow band not because nothing was happening but because two large forces were nearly cancelling.
 
 An equilibrium sustained by cancellation is not durable. It holds only while improvement continues at roughly its historical pace, and the required pace rises as the population ages further, because the age effect grows with the size of the cohorts moving into high-mortality bands. The decomposition here shows the margin narrowing before the pandemic. Any sustained stall in improvement, or any reversal at particular ages, converts a flat crude rate into a rising one.
+
+**That reversal is not hypothetical in this series.** Age-specific rates rose in two of the six bands over 2010-2024, 25-44 and 45-64, and the larger movement is in 25-44, where the rate rose 23.4 percent. The pandemic did not cause it: over the pre-pandemic interval 2010-2019 alone, the same band rose 18.7 percent. The condition the previous paragraph names as a threat to the equilibrium is already satisfied somewhere in the age distribution, and has been for the whole of the period this paper covers.
+
+The net improvement survives it, but not because the reversal is confined to a corner where little happens. The rising bands together account for 21.9 percent of deaths in 2024. What outweighs them is the absolute size of the improvement above them: a decline of a few percent where the rate is thousands per 100,000 moves more deaths than a rise of a fifth where the rate is in the hundreds. That is arithmetic rather than reassurance. The same weighting that keeps the rate effect negative today would stop doing so if the rise continued, or if the cohorts carrying it aged into bands where the rates they meet are higher.
+
+This paper does not say why those rates rose. It has no cause-of-death breakdown beyond the COVID-19 stratification in section 4.3, and section 1.1 disclaims causal attribution. The narrower point stands without a cause. A decomposition reporting improvement in age-specific mortality is reporting a weighted average, and this one contains a component moving the other way — which is the condition under which an equilibrium sustained by cancellation stops holding.
 
 #### Robustness of the narrowing-margin result
 

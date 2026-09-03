@@ -55,6 +55,15 @@ def _computed_values(res) -> dict[float, str]:
         for k in ("baseline_slope", "excess_2020_2021", "rate_effect",
                   "age_effect", "age_to_rate_ratio"):
             put(t[k], f"treatments[{t['key']}].{k}")
+    # Section 4.1 and 5.1 quote band-level changes and the rising bands' share
+    # of deaths. Indexed here so a literal typed beside the token is caught:
+    # 23.4 in the prose is exactly the kind of value that agrees with itself
+    # indefinitely and goes stale the first time the series gains a year.
+    for b in res.get("age_band_change", []):
+        for k in ("rate_first", "rate_last", "pct_change", "pct_change_pre",
+                  "death_share_last"):
+            put(b[k], f"age_band_change[{b['age_group']}].{k}")
+
     rng = res.get("treatment_ratio_range")
     if rng:
         put(rng["low"], "treatment_ratio_range.low")
@@ -73,6 +82,22 @@ def _computed_values(res) -> dict[float, str]:
 # lookahead. A checker with a hole in it is worse than no checker, since the
 # suite then reports the absence of a search as the absence of a problem.
 LITERAL = re.compile(r"(?<![\w.])(\d{1,3}(?:,\d{3})+|\d+\.\d+)(?!\d)")
+
+# A section number is not a statistic, and this paper's section numbers are
+# decimal-shaped: 3.2, 4.1, 5.1. They began colliding the moment band-level
+# values entered results.json -- 45-64's rate rose 3.2 percent, and 25-44
+# accounts for 5.1 percent of deaths, so "section 5.1" started reading as a
+# restatement of a computed share.
+#
+# The narrow fix is to exempt the two forms a cross-reference actually takes:
+# prose that says "section N.N", and a heading that opens with "### N.N". It is
+# deliberately not a blanket exemption for small decimals -- 3.41 and 5.26 are
+# real findings in this paper and must stay checked.
+SECTION_REF = re.compile(r"(?:[Ss]ections?\s+|^#{2,4}\s+)$")
+
+
+def _is_section_reference(line: str, start: int) -> bool:
+    return bool(SECTION_REF.search(line[:start]))
 
 # Literals that are legitimately not from results.json. Each needs a reason.
 #
@@ -110,6 +135,8 @@ def test_templates_do_not_restate_a_computed_value_as_a_literal(results):
             for m in LITERAL.finditer(line):
                 raw = m.group(1)
                 if raw in ALLOWED:
+                    continue
+                if _is_section_reference(line, m.start(1)):
                     continue
                 key = round(float(raw.replace(",", "")), 4)
                 if key in values:

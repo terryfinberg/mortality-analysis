@@ -196,5 +196,55 @@
     "share_of_decline_pct": 26.6,
     "rate_share_of_restatement_pct": 70.1,
     "age_share_of_restatement_pct": 29.9
-  }
+  },
+  "age_band_change": [
+    {
+      "age_group": "0-24",
+      "rate_first": 60.8,
+      "rate_last": 57.2,
+      "pct_change": -5.9,
+      "pct_change_pre": -4.6,
+      "death_share_last": 1.9
+    },
+    {
+      "age_group": "25-44",
+      "rate_first": 136.7,
+      "rate_last": 168.8,
+      "pct_change": 23.4,
+      "pct_change_pre": 18.7,
+      "death_share_last": 5.1
+    },
+    {
+      "age_group": "45-64",
+      "rate_first": 606.2,
+      "rate_last": 625.9,
+      "pct_change": 3.2,
+      "pct_change_pre": 6.0,
+      "death_share_last": 16.8
+    },
+    {
+      "age_group": "65-74",
+      "rate_first": 1875.1,
+      "rate_last": 1772.9,
+      "pct_change": -5.4,
+      "pct_change_pre": -5.9,
+      "death_share_last": 20.5
+    },
+    {
+      "age_group": "75-84",
+      "rate_first": 4790.2,
+      "rate_last": 4264.0,
+      "pct_change": -11.0,
+      "pct_change_pre": -10.1,
+      "death_share_last": 26.8
+    },
+    {
+      "age_group": "85+",
+      "rate_first": 13934.3,
+      "rate_last": 13834.0,
+      "pct_change": -0.7,
+      "pct_change_pre": -5.1,
+      "death_share_last": 29.0
+    }
+  ]
 }

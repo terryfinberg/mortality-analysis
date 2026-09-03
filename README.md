@@ -183,6 +183,46 @@ template at `paper/manuscript.md`.
 **Never edit numbers in `manuscript_built.md`.** It is regenerated on every run. Edit the data
 or the code.
 
+## Building the submission artifacts
+
+```bash
+python -m src.export              # PDF and DOCX
+python -m src.export --docx       # Demographic Research prefers .docx
+python -m src.export --anonymous  # author name, ORCID, affiliation and repo links removed
+python -m src.export --both       # identified and anonymised, in one run
+```
+
+Outputs go to `dist/`, which is **gitignored**: they are derived from
+`paper/manuscript_built.md` in one command, so committing them would commit a copy of
+something the repository already produces, and a copy that goes stale the next time a number
+moves.
+
+The same principle as `report.py`, one level out. `report.py` stops a number reaching the
+paper unless the code produced it; `export.py` stops a *submission* reaching a journal unless
+the manuscript produced it. Nothing is hand-assembled: the body is the generated manuscript,
+and the author name, ORCID, title and keywords are read from `CITATION.cff` rather than
+retyped, so a title page cannot disagree with the citation record.
+
+**Requires [pandoc](https://pandoc.org/installing.html)** (`winget install --id
+JohnMacFarlane.Pandoc`). DOCX needs nothing else. PDF uses the best engine it can find —
+`tectonic`, `xelatex`, `lualatex`, `pdflatex`, `typst`, `weasyprint`, `wkhtmltopdf` — and
+falls back to headless Chrome or Edge if none is installed. That fallback works and produces
+a legible document, but its output depends on a browser version this repository cannot pin,
+so for a final submission install a real engine first:
+
+```bash
+winget install --id Typst.Typst     # small single binary, recommended
+winget install --id MiKTeX.MiKTeX   # full LaTeX, larger
+```
+
+`--anonymous` is for Demographic Research, which requires identifying information removed from
+PDF submissions. It strips the byline, deletes the ORCID declaration, and replaces the
+repository URL and DOI in the data availability statement with a note saying they were
+withheld — rather than deleting the statement, which would read as an author who never wrote
+one. `tests/test_export.py` asserts that nothing identifying survives, and that the check
+itself catches a planted leak. See [`docs/demographic-research-gap.md`](docs/demographic-research-gap.md)
+for what still does not conform to that journal's house style.
+
 ### Regenerated figures: when to commit them
 
 `figures/` is tracked, not ignored. The manuscript cites each figure by filename, and a Zenodo
@@ -296,6 +336,7 @@ paper/             Manuscript template, built manuscript, policy framework.
 | `excess.py` | Baseline fitting and excess mortality. |
 | `figures.py` | Figure generation. |
 | `report.py` | Orchestration, results.json, manuscript build. |
+| `export.py` | Submission artifacts: PDF and DOCX from the built manuscript, identified or anonymised. |
 
 ## Method notes
 

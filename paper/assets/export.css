@@ -1,0 +1,134 @@
+/* Print stylesheet for the browser-fallback PDF path in src/export.py.
+ *
+ * Only used when no real PDF engine is installed. It aims at a legible
+ * submission draft on US Letter, not at a journal's house style -- that is
+ * what the LaTeX and typst paths are for, and what the Demographic Research
+ * template would supply. */
+
+@page {
+  size: letter;
+  margin: 1in;
+}
+
+html {
+  font-size: 11pt;
+}
+
+body {
+  font-family: "Charter", "Georgia", "Times New Roman", serif;
+  line-height: 1.5;
+  color: #000;
+  max-width: none;
+  margin: 0;
+  hyphens: auto;
+}
+
+h1 {
+  font-size: 1.6rem;
+  line-height: 1.25;
+  margin: 0 0 0.25em;
+}
+
+/* Pandoc's html template puts the byline in .author. */
+.author {
+  font-size: 1rem;
+  margin: 0 0 1.5em;
+}
+
+h2 {
+  font-size: 1.2rem;
+  margin: 1.8em 0 0.5em;
+  page-break-after: avoid;
+}
+
+h3, h4 {
+  font-size: 1.02rem;
+  margin: 1.4em 0 0.4em;
+  page-break-after: avoid;
+}
+
+p {
+  margin: 0 0 0.7em;
+  text-align: justify;
+}
+
+/* Figures. A caption orphaned from its image on a page break is the main
+ * thing that goes wrong in a paginated build, so the pair is kept together. */
+figure {
+  margin: 1.4em 0;
+  page-break-inside: avoid;
+  text-align: center;
+}
+
+figure img {
+  max-width: 100%;
+  height: auto;
+}
+
+figcaption {
+  font-size: 0.86rem;
+  line-height: 1.4;
+  text-align: left;
+  margin-top: 0.5em;
+  color: #222;
+}
+
+/* Tables. Real rules rather than a grid: this is a paper, not a spreadsheet. */
+table {
+  border-collapse: collapse;
+  margin: 1.2em 0;
+  font-size: 0.9rem;
+  page-break-inside: avoid;
+  width: 100%;
+}
+
+caption {
+  caption-side: top;
+  text-align: left;
+  font-size: 0.86rem;
+  line-height: 1.4;
+  margin-bottom: 0.5em;
+  color: #222;
+}
+
+th, td {
+  padding: 0.35em 0.6em;
+  text-align: left;
+}
+
+thead th {
+  border-top: 1.1pt solid #000;
+  border-bottom: 0.6pt solid #000;
+}
+
+tbody tr:last-child td {
+  border-bottom: 1.1pt solid #000;
+}
+
+/* Numeric columns read better right-aligned, and every column after the
+ * first in both of this paper's tables is numeric. */
+td:not(:first-child), th:not(:first-child) {
+  text-align: right;
+}
+
+code {
+  font-family: "Consolas", "SFMono-Regular", monospace;
+  font-size: 0.88em;
+}
+
+a {
+  color: #000;
+  text-decoration: none;
+}
+
+hr {
+  border: none;
+  border-top: 0.5pt solid #999;
+  margin: 1.6em 0;
+}
+
+blockquote {
+  margin: 1em 0 1em 1.5em;
+  padding-left: 0.8em;
+  border-left: 2pt solid #ccc;
+}

@@ -121,6 +121,51 @@ def compute(strict: bool = True) -> dict:
         "age_share_of_restatement_pct": round(shift.age_share_of_restatement, 1),
     }
 
+    # Which way age-specific risk actually moved, band by band. Section 4.1
+    # reads Figure 2 aloud, and the honest reading is that the movement is
+    # not all one way: the older bands fall, the midlife bands rise, and the
+    # rate effect in 4.2 is the exposure-weighted net of the two.
+    #
+    # Counted here rather than described in the prose because the first
+    # draft of that sentence said rates decline in "nearly every band" and
+    # it was wrong by two of six. A sentence like that is right until the
+    # data moves and then silently wrong, which is the failure this whole
+    # token mechanism exists to prevent.
+    # The pre-pandemic column is not decoration. Section 5.1 claims the
+    # reversal is not an artefact of the shock, and that claim is only
+    # checkable against the interval that excludes it.
+    #
+    # The death share is here for the same reason. The first draft of 5.1 said
+    # the rising bands were "where few deaths occur"; 45-64 carries about a
+    # sixth of all deaths, so that was false, and the true version -- that they
+    # carry about a fifth between them and are outweighed anyway -- is the more
+    # useful sentence. Neither could be written safely without the number.
+    first = age_rates[age_rates["year"] == y0].set_index("age_group")["rate"]
+    pre = age_rates[age_rates["year"] == y_pre].set_index("age_group")["rate"]
+    last = age_rates[age_rates["year"] == y_last].set_index("age_group")["rate"]
+
+    deaths_last = ds.by_age[ds.by_age["year"] == y_last]
+    total_deaths_last = float(deaths_last["deaths"].sum())
+    share_last = (
+        deaths_last.set_index("age_group")["deaths"].astype(float)
+        / total_deaths_last * 100
+    )
+
+    def _pct(a: float, b: float) -> float:
+        return round((b - a) / a * 100, 1)
+
+    res["age_band_change"] = [
+        {
+            "age_group": g,
+            "rate_first": round(float(first[g]), 1),
+            "rate_last": round(float(last[g]), 1),
+            "pct_change": _pct(float(first[g]), float(last[g])),
+            "pct_change_pre": _pct(float(first[g]), float(pre[g])),
+            "death_share_last": round(float(share_last[g]), 1),
+        }
+        for g in sorted(first.index)
+    ]
+
     PROCESSED.mkdir(parents=True, exist_ok=True)
     (PROCESSED / "results.json").write_text(json.dumps(res, indent=2))
 
@@ -131,6 +176,29 @@ def compute(strict: bool = True) -> dict:
     figures.fig_decomposition(decomps)
 
     return res
+
+
+# Small counts read as words in prose, not numerals. The map stops at
+# twelve and falls back to digits above it: the age grid has six bands and
+# NCHS's has eleven, so twelve is headroom rather than a guess.
+_WORDS = {
+    1: "one", 2: "two", 3: "three", 4: "four", 5: "five", 6: "six",
+    7: "seven", 8: "eight", 9: "nine", 10: "ten", 11: "eleven",
+    12: "twelve",
+}
+
+
+def _word(n: int) -> str:
+    return _WORDS.get(n, str(n))
+
+
+def _join(items: list[str]) -> str:
+    """Serial list: "a", "a and b", "a, b, and c"."""
+    if len(items) <= 1:
+        return "".join(items)
+    if len(items) == 2:
+        return f"{items[0]} and {items[1]}"
+    return ", ".join(items[:-1]) + f", and {items[-1]}"
 
 
 def _flatten(res: dict) -> dict[str, str]:
@@ -191,6 +259,35 @@ def _flatten(res: dict) -> dict[str, str]:
     # ratio does and a stale version of it reads as a finding.
     pre_ratio = res["decomposition"][0]["ratio"]
     flat["DECOMP_PRE_RATE_SHORTFALL_PCT"] = round((pre_ratio - 1) * 100)
+
+    # Section 4.1's reading of Figure 2. Counts are rendered as words
+    # because they appear mid-sentence in prose, and the band names are
+    # joined into a list rather than typed, so naming the exceptions cannot
+    # drift from which bands actually are the exceptions.
+    bands = res.get("age_band_change", [])
+    if bands:
+        falling = [b for b in bands if b["pct_change"] < 0]
+        rising = [b for b in bands if b["pct_change"] > 0]
+        flat["AGE_BANDS_TOTAL_WORD"] = _word(len(bands))
+        flat["AGE_BANDS_FALLING_WORD"] = _word(len(falling))
+        flat["AGE_BANDS_RISING_WORD"] = _word(len(rising))
+        flat["AGE_BANDS_RISING_LIST"] = _join(
+            [b["age_group"] for b in rising]
+        )
+
+        # Section 5.1 needs the reversal's size, the band it is in, and its
+        # pre-pandemic value -- the last of these because the claim being made
+        # is that the shock did not cause it. "Worst" is by magnitude of rise,
+        # picked from the data rather than named in the prose, so the sentence
+        # cannot end up pointing at the wrong band.
+        if rising:
+            worst = max(rising, key=lambda b: b["pct_change"])
+            flat["AGE_BAND_RISE_MAX_GROUP"] = worst["age_group"]
+            flat["AGE_BAND_RISE_MAX_PCT"] = worst["pct_change"]
+            flat["AGE_BAND_RISE_MAX_PCT_PRE"] = worst["pct_change_pre"]
+            flat["AGE_BANDS_RISING_DEATH_SHARE"] = round(
+                sum(b["death_share_last"] for b in rising), 1
+            )
     return {k: str(v) for k, v in flat.items()}
 
 
