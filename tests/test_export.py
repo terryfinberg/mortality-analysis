@@ -131,6 +131,45 @@ def test_keywords_are_visible_prose_not_a_metadata_key(identity):
     assert "**Keywords:** " + ", ".join(identity.keywords) in md
 
 
+CONCEPT_DOI = "10.5281/zenodo.22263667"
+
+
+def test_nothing_in_the_archive_names_its_own_version_doi(built, identity):
+    """A deposit cannot contain the identifier of the deposit containing it.
+
+    Zenodo mints a version DOI when it archives the release, which is after
+    the commit the release is cut from. So a version DOI written into the
+    manuscript or into CITATION.cff's `doi:` is either an identifier that
+    does not exist yet or the *previous* release's, attached to a new version
+    number -- which is what this file read before v0.1.1, and is the same
+    class of error as a date-released describing a release that never
+    happened.
+
+    Version DOIs belong on the Zenodo record and under CITATION.cff's
+    `identifiers:`, added after their release was archived.
+    """
+    assert identity.version_doi == CONCEPT_DOI, (
+        f"CITATION.cff `doi:` is {identity.version_doi!r}; it must be the "
+        f"concept DOI {CONCEPT_DOI!r}. Version DOIs go under identifiers:."
+    )
+    found = set(re.findall(r"10\.5281/zenodo\.\d+", built))
+    assert found == {CONCEPT_DOI}, (
+        f"the manuscript cites {sorted(found)}; it may cite only the concept "
+        f"DOI. A version DOI in the manuscript cannot be true at tag time."
+    )
+
+
+def test_the_manuscript_names_the_release_from_the_citation_record(built):
+    """`v{{RELEASE_VERSION}}` must agree with CITATION.cff, not be typed."""
+    version = report._release_version()
+    assert f"release `v{version}`" in built
+    template = (ROOT / "paper" / "manuscript.md").read_text(encoding="utf-8")
+    assert "{{RELEASE_VERSION}}" in template, (
+        "the release string was typed into the template; it goes stale at the "
+        "next tag"
+    )
+
+
 def test_the_typst_path_names_a_font(identity):
     """typst 0.15 rejects an empty font fallback list, which is pandoc's default.
 

@@ -9,10 +9,10 @@ resolve it before continuing; later sections assume earlier ones passed.
 
 - [ ] `.\bootstrap.ps1` (Windows) or `./bootstrap.sh` completes without error
 - [ ] `.venv` directory exists
-- [ ] `python -m pytest` reports **207 passed**
+- [ ] `python -m pytest` reports **209 passed**
 - [ ] Jupyter kernel "Python (fragile-equilibrium)" appears in `jupyter kernelspec list`
 
-**Pass condition:** 207 tests pass.
+**Pass condition:** 209 tests pass.
 
 `data/raw/` is now populated from the committed WONDER exports and attested, so the old
 "repo ships empty" guard is gone. Two checks replaced it:
@@ -184,8 +184,9 @@ means a stale kernel; restart and rerun.
 - [ ] Read the manuscript limitations section against what you actually did and add anything
       missing
 - [ ] Fill `verified_by` and `verified_date` for every row, against the cited source
-- [x] Push to GitHub, tag a release, connect Zenodo, mint the DOI — `v0.1.0`, 2026-09-02,
-      version DOI 10.5281/zenodo.22263668, concept DOI 10.5281/zenodo.22263667
+- [x] Push to GitHub, tag a release, connect Zenodo, mint the DOI — concept DOI
+      10.5281/zenodo.22263667. `v0.1.0` (2026-09-02) is version DOI
+      10.5281/zenodo.22263668; later releases add theirs to `CITATION.cff` after archiving
 - [x] Put the DOI into `paper/medrxiv_submission.md`, `CITATION.cff`, `README.md` and the
       manuscript's Declarations
 

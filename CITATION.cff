@@ -41,13 +41,24 @@ keywords:
   - CDC WONDER
   - United States
 license: BSD-3-Clause
-version: 0.1.0
-date-released: "2026-09-02"
-# The version DOI. It resolves to the v0.1.0 archive specifically, so a reader
-# following a citation of this version reaches the bytes that produced its
-# numbers rather than whatever the latest release happens to be.
-doi: "10.5281/zenodo.22263668"
+version: 0.1.1
+date-released: "2026-09-03"
+# The CONCEPT DOI, deliberately, not this release's version DOI.
+#
+# A version DOI is minted when Zenodo archives the release, which happens after
+# the commit the release is cut from. Naming it here would mean either an
+# identifier that does not exist yet, or -- the way this file read before
+# v0.1.1 -- the previous release's DOI attached to a new version number. The
+# concept DOI always exists and always resolves, and Zenodo's record lists
+# every version with its own DOI.
+#
+# Version DOIs are recorded under identifiers: below, each added after its
+# release was archived. That is the only place they can be written truthfully.
+doi: "10.5281/zenodo.22263667"
 identifiers:
   - type: doi
     value: "10.5281/zenodo.22263667"
     description: "Concept DOI, resolves to the latest version."
+  - type: doi
+    value: "10.5281/zenodo.22263668"
+    description: "Version DOI for release v0.1.0."

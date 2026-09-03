@@ -1,32 +1,41 @@
 # Status
 
-**Last updated:** 2026-09-02 · **HEAD:** `0b4645c`, the `CITATION.cff` release date (the commit
-the tag points at; this DOI commit is the one after it) · **Branch:** `main` ·
-**Remote:** `origin` → `github.com/terryfinberg/mortality-analysis` · **pushed, tagged
-`v0.1.0`, archived, DOI minted**
+**Last updated:** 2026-09-03 · **Branch:** `main` ·
+**Remote:** `origin` → `github.com/terryfinberg/mortality-analysis` · **`v0.1.0` archived;
+`v0.1.1` is the release the preprint will cite**
 
-> ## ✅ Released. `v0.1.0` is tagged, archived on Zenodo, and has a DOI.
+> ## ⏳ `v0.1.1` is staged and not yet tagged. Tag it before the preprint goes up.
 >
-> **Executed 2026-09-01.** The denominator findings are now Results §4.4 rather than a
-> limitation, §6 keeps only limitations of this work, the abstract states both contributions,
-> and the title has changed in all six files that carried it. `data/processed/results.json`
-> and all five figures are **byte-identical** before and after — that was the restructure's
-> own regression test, and it passes. 207 tests pass.
+> **`v0.1.0` is archived and permanent, and its manuscript is defective.** Everything that
+> makes the paper citable landed *after* that tag: the deposited Declarations section
+> contains the AI disclosure and nothing else — no data availability, funding, competing
+> interests, ethics, author contributions or ORCID. The deposited abstract still says
+> "mortality risk at a given age fell", which reads as a per-band claim and is false for
+> two of six bands. Its §4.1 has no band-level discussion at all, its figures are named as
+> prose filenames rather than embedded, they run 1, 5, 3, 4, and `fig2` is archived uncited.
 >
-> **Both remaining steps were executed, in the order that matters.** The Zenodo toggle was
-> armed before the Release, so the Release was archived rather than missed; `CITATION.cff`
-> was corrected in `0b4645c`, the commit the tag points at, so the file never described a
-> release that did not exist.
+> Those are defects in the deposited record, not cosmetics, which is why `v0.1.1` exists.
 >
-> | | DOI | resolves to |
+> ### The DOI rule this release established
+>
+> **Nothing inside the archive names its own release's version DOI.** A version DOI is
+> minted when Zenodo archives the release, which is *after* the commit that release is cut
+> from, so a file inside the deposit cannot carry the identifier of the deposit containing
+> it. Writing one there yields either an identifier that does not exist yet or — the way
+> `CITATION.cff` read before this release — the *previous* release's DOI attached to a new
+> version number, which is the same class of error as a `date-released` describing a
+> release that never happened.
+>
+> | | DOI | where it may be written |
 > |---|---|---|
-> | **Version** | [10.5281/zenodo.22263668](https://doi.org/10.5281/zenodo.22263668) | the `v0.1.0` archive, fixed forever |
-> | **Concept** | [10.5281/zenodo.22263667](https://doi.org/10.5281/zenodo.22263667) | whatever the latest release is |
+> | **Concept** | [10.5281/zenodo.22263667](https://doi.org/10.5281/zenodo.22263667) | anywhere, including inside the archive. Always exists, always resolves |
+> | **Version** | one per release; `v0.1.0` is [10.5281/zenodo.22263668](https://doi.org/10.5281/zenodo.22263668) | the Zenodo record, and `CITATION.cff`'s `identifiers:` in a **post-tag** commit |
 >
-> **Cite the version DOI for a result, the concept DOI for the project.** The manuscript's
-> Declarations, `paper/medrxiv_submission.md` and `README.md` all lead with the version DOI,
-> because a reader chasing a number needs the archive that produced it. `CITATION.cff`
-> carries both — `doi:` for the version, `identifiers:` for the concept. See step 6.
+> The manuscript, `README.md` and `paper/medrxiv_submission.md` all cite the concept DOI
+> and say why. The manuscript names its own release from `{{RELEASE_VERSION}}`, which
+> `report.py` reads out of `CITATION.cff`, so the paper cannot name a version the citation
+> record disagrees with. **Do not guess a version DOI**: `v0.1.0`'s is concept+1, and that
+> is allocation coincidence, not a rule.
 >
 > **Every medRxiv declaration is now written.** Funding, competing interests, ethics,
 > author contributions, data availability and ORCID (`0009-0006-1598-4200`) are all in the
@@ -61,13 +70,14 @@ exactly zero.
 and hash-verified, all 150 data rows are populated from those exports and personally
 attested, 14 of the 15 annual totals are corroborated against NCHS's published NVSR reports,
 and `python -m src.report` produces `results.json`, five figures and a built manuscript with
-every value substituted from code. 207 tests pass. The arithmetic has been reviewed and its
+every value substituted from code. 209 tests pass. The arithmetic has been reviewed and its
 findings fixed, `figures/` is tracked so a release archives the images the paper shows, and
 `main` is pushed to GitHub.
 
-**The restructure is executed, the release is cut, and nothing analytical remains.** `v0.1.0`
-is tagged, archived and citable; what is left is preprint mechanics only. See the banner
-above and steps 4 through 7 below.
+**The restructure is executed, `v0.1.0` is archived, and nothing analytical remains.**
+`v0.1.1` is staged and must be tagged before the preprint goes up, because the `v0.1.0`
+deposit predates the Declarations, the abstract correction and the embedded figures. See
+the banner above and steps 4 through 8 below.
 
 ## Done
 
@@ -90,7 +100,7 @@ above and steps 4 through 7 below.
   age-to-rate ratio 3.41–3.87.
 - **Licensing done** three ways: BSD-3-Clause (`LICENSE`), a public-domain status statement
   for the federal data (`DATA.md`), CC BY 4.0 for the manuscript (`paper/LICENSE`).
-- **207 tests.** (The commit count that used to sit here was removed: nothing checks it and
+- **209 tests.** (The commit count that used to sit here was removed: nothing checks it and
   it goes stale on every commit, which is the exact defect `test_docs_are_current` exists to
   catch. `git rev-list --count main` answers it on demand.)
 
@@ -180,7 +190,7 @@ points at, so the file never described a release that did not exist.
 
 Nothing in this restructure was allowed to touch a computed value. `python -m src.report` was
 re-run afterwards and `git diff` reports **no change** in `data/processed/results.json` or in
-any of the five figures. 207 tests pass, including the sweep in `tests/test_documents.py` for
+any of the five figures. 209 tests pass, including the sweep in `tests/test_documents.py` for
 statistic-shaped literals — the new §4.4 table and every figure quoted in the new abstract are
 bound to tokens, not typed.
 
@@ -425,6 +435,42 @@ field — it looks checkable and fails only for whoever tries. **Registered 2026
 `0009-0006-1598-4200`, now in `CITATION.cff` (as the full `https://orcid.org/…` URL, which
 is the form CFF wants), `.zenodo.json` (bare, which is the form Zenodo wants) and the
 manuscript's Declarations. The checksum was verified before it was written anywhere.
+
+### 8. Cut `v0.1.1` — **before the preprint goes up**
+
+`v0.1.0` is archived and permanent and its manuscript is not the manuscript anyone should
+read. The deposit predates the whole Declarations section bar the AI disclosure, carries the
+abstract wording that permits a false per-band reading, has no band-level §4.1, names figures
+as prose filenames in the order 1, 5, 3, 4, and archives `fig2` uncited. A preprint citing a
+DOI that resolves to that is worse than one citing nothing.
+
+**What has to be true before the tag.** Each is checkable, and the point of listing them is
+that the tag is the last moment any of them can be fixed:
+
+1. `git status` clean, `main` level with `origin/main`.
+2. `python -m src.report` run, and `git diff` clean on `data/processed/results.json` and
+   `figures/` — a tag whose archive disagrees with its own committed results is the defect
+   this release exists to fix.
+3. All tests pass.
+4. **No file names this release's version DOI.** It does not exist yet. See the banner.
+5. `CITATION.cff` says `version: 0.1.1` and `date-released:` is the actual tag day, in the
+   commit the tag points at, so the file never describes a release that does not exist.
+6. The manuscript's release string comes from `{{RELEASE_VERSION}}`, not typed.
+
+**The sequence, and why the order is the whole of it.**
+
+1. Commit every one of the above **together**. The tag points at one commit and every file in
+   it has to describe `v0.1.1`.
+2. Tag `v0.1.1`, annotated, on that commit. Push commit and tag.
+3. **Build the submission artifacts from the tagged tree, now** — `python -m src.export
+   --both`. This is the step with a trap in it: do it after step 5 and the PDF you post
+   carries a DOI line the archived manuscript does not, and the preprint and the deposit
+   diverge again, which is exactly how `v0.1.0` went wrong.
+4. Create the Release in the GitHub UI. Zenodo archives it and mints `v0.1.1`'s version DOI.
+5. **Post-tag**, add that version DOI to `CITATION.cff` under `identifiers:` with a
+   `description` naming the release. Commit and push. The archive is untouched; this is for
+   whoever reads `main` later.
+6. Post the preprint using the PDF built at step 3.
 
 ### 7. Confirm the preprint license before posting
 

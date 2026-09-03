@@ -408,12 +408,17 @@ conclusions while carrying the author's name is foreseeable rather than hypothet
 
 If this work is cited, cite the manuscript and the Zenodo DOI, not this README.
 
-- **Version DOI** — [10.5281/zenodo.22263668](https://doi.org/10.5281/zenodo.22263668).
-  Resolves to the `v0.1.0` archive, which is the one that produced the numbers in the
-  paper. **Cite this one for a result.**
-- **Concept DOI** — [10.5281/zenodo.22263667](https://doi.org/10.5281/zenodo.22263667).
-  Resolves to whatever the latest release is. Cite this one when the reference is to the
-  project rather than to a number.
+**Concept DOI — [10.5281/zenodo.22263667](https://doi.org/10.5281/zenodo.22263667).** It
+resolves to the latest release, and the Zenodo record lists every release with its own
+version DOI, so a specific deposit is one step away.
 
-`CITATION.cff` carries both, the version DOI in `doi:` and the concept DOI in
-`identifiers:`, which is what GitHub's "Cite this repository" button reads.
+Cite a version DOI when a citation has to pin the exact numbers, and take it from the Zenodo
+record rather than from anything inside the archive. **Nothing in the repository names its
+own release's version DOI**, and this is deliberate: a version DOI is minted when Zenodo
+archives the release, which is after the commit that release is cut from, so a file inside
+the archive cannot contain the identifier of the archive that contains it. Writing one there
+means either an identifier that does not exist yet or the previous release's, attached to a
+new version number.
+
+`CITATION.cff` therefore carries the concept DOI in `doi:` and accumulates version DOIs under
+`identifiers:`, each added after its release was archived.

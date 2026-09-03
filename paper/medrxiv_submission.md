@@ -16,12 +16,12 @@
 
 **Preprint server:** medRxiv (health sciences)
 **Suggested category:** Epidemiology
-**DOI:** [10.5281/zenodo.22263668](https://doi.org/10.5281/zenodo.22263668)
-*This is the **version** DOI for `v0.1.0`, chosen over the concept DOI on purpose: a
-reader following it should land on the exact archive that produced the numbers in this
-manuscript, not on a later release whose numbers may have moved. The concept DOI
-(10.5281/zenodo.22263667) resolves to the latest version and is recorded in
-`CITATION.cff`.*
+**DOI:** [10.5281/zenodo.22263667](https://doi.org/10.5281/zenodo.22263667)
+*The **concept** DOI, which resolves to the latest release; the Zenodo record lists every
+release with its own version DOI. A version DOI is not used here because it is minted when
+its release is archived, which is after the commit that release is cut from — the manuscript
+inside a deposit cannot name that deposit's identifier. The manuscript states which release
+it belongs to, and `CITATION.cff` inside the archive records the version.*
 
 ---
 

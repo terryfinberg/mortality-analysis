@@ -192,6 +192,28 @@ def _word(n: int) -> str:
     return _WORDS.get(n, str(n))
 
 
+def _release_version() -> str:
+    """The release this manuscript belongs to, read from CITATION.cff.
+
+    The data availability statement names its own release, and that string
+    cannot be typed into the template: it would be correct for exactly one
+    tag and silently wrong for every one after it. CITATION.cff is where the
+    version already lives, so the manuscript reads it from there and the two
+    cannot disagree.
+
+    Parsed with a regex rather than the yaml module because report.py has no
+    other reason to depend on it and this is one scalar on a line of its own.
+    """
+    text = (ROOT / "CITATION.cff").read_text(encoding="utf-8")
+    m = re.search(r"^version:\s*[\"']?([^\s\"']+)", text, re.M)
+    if not m:
+        raise KeyError(
+            "CITATION.cff has no version: field, and the manuscript's data "
+            "availability statement names the release it belongs to."
+        )
+    return m.group(1)
+
+
 def _join(items: list[str]) -> str:
     """Serial list: "a", "a and b", "a, b, and c"."""
     if len(items) <= 1:
@@ -222,6 +244,7 @@ def _flatten(res: dict) -> dict[str, str]:
         "EXCESS_2020_2021": f"{res['excess']['total_2020_2021']:,}",
         "EXCESS_TOTAL": f"{res['excess']['total_pandemic_era']:,}",
         "BASELINE_WINDOW": res["excess"]["baseline"],
+        "RELEASE_VERSION": _release_version(),
     }
     # Stable aliases so the manuscript template does not break when the
     # dataset gains a year. PRE = first->2019, POST = 2019->last,
