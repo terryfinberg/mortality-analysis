@@ -1,8 +1,8 @@
 # Status
 
 **Last updated:** 2026-09-04 · **Branch:** `main` ·
-**Remote:** `origin` → `github.com/terryfinberg/mortality-analysis` · **`v0.1.2` tagged;
-it is the release the preprint cites, pending its version DOI**
+**Remote:** `origin` → `github.com/terryfinberg/mortality-analysis` · **`v0.1.2` tagged,
+archived and citable; it is the release the preprint cites**
 
 > ## ✅ `v0.1.2` is tagged. It is the release to post.
 >
@@ -40,12 +40,13 @@ it is the release the preprint cites, pending its version DOI**
 > | **Concept** | [10.5281/zenodo.22263667](https://doi.org/10.5281/zenodo.22263667) | anywhere, including inside the archive. Always exists, always resolves |
 > | **Version `v0.1.0`** | [10.5281/zenodo.22263668](https://doi.org/10.5281/zenodo.22263668) | the Zenodo record, and `CITATION.cff`'s `identifiers:` in a **post-tag** commit |
 > | **Version `v0.1.1`** | [10.5281/zenodo.22267191](https://doi.org/10.5281/zenodo.22267191) | same |
-> | **Version `v0.1.2`** | not yet minted | same, once the Release is created |
+> | **Version `v0.1.2`** | [10.5281/zenodo.22315017](https://doi.org/10.5281/zenodo.22315017) | same |
 >
-> **The allocation is not sequential, and this release proved it.** `v0.1.0`'s version DOI
-> was the concept DOI plus one, which made `22263669` look like a safe guess for the next
-> one. `v0.1.1` landed at `22267191`, some three and a half thousand away. Zenodo assigns
-> at deposit time. A version DOI is only ever copied from the record it was minted on.
+> **The allocation is not sequential, and three releases have now shown it.** `v0.1.0`'s
+> version DOI was the concept DOI plus one, which made `22263669` look like a safe guess
+> for the next one. `v0.1.1` landed at `22267191`, some three and a half thousand away.
+> `v0.1.2` landed at `22315017`, another forty-eight thousand on. Zenodo assigns at deposit
+> time. A version DOI is only ever copied from the record it was minted on.
 >
 > The manuscript, `README.md` and `paper/medrxiv_submission.md` all cite the concept DOI
 > and say why. The manuscript names its own release from `{{RELEASE_VERSION}}`, which
@@ -86,7 +87,7 @@ exactly zero.
 and hash-verified, all 150 data rows are populated from those exports and personally
 attested, 14 of the 15 annual totals are corroborated against NCHS's published NVSR reports,
 and `python -m src.report` produces `results.json`, five figures and a built manuscript with
-every value substituted from code. 219 tests pass. The arithmetic has been reviewed and its
+every value substituted from code. 220 tests pass. The arithmetic has been reviewed and its
 findings fixed, `figures/` is tracked so a release archives the images the paper shows, and
 `main` is pushed to GitHub.
 
@@ -117,7 +118,7 @@ above and steps 4 through 9 below.
   age-to-rate ratio 3.41–3.87.
 - **Licensing done** three ways: BSD-3-Clause (`LICENSE`), a public-domain status statement
   for the federal data (`DATA.md`), CC BY 4.0 for the manuscript (`paper/LICENSE`).
-- **219 tests.** (The commit count that used to sit here was removed: nothing checks it and
+- **220 tests.** (The commit count that used to sit here was removed: nothing checks it and
   it goes stale on every commit, which is the exact defect `test_docs_are_current` exists to
   catch. `git rev-list --count main` answers it on demand.)
 
@@ -207,7 +208,7 @@ points at, so the file never described a release that did not exist.
 
 Nothing in this restructure was allowed to touch a computed value. `python -m src.report` was
 re-run afterwards and `git diff` reports **no change** in `data/processed/results.json` or in
-any of the five figures. 219 tests pass, including the sweep in `tests/test_documents.py` for
+any of the five figures. 220 tests pass, including the sweep in `tests/test_documents.py` for
 statistic-shaped literals: the new §4.4 table and every figure quoted in the new abstract are
 bound to tokens, not typed.
 
@@ -545,9 +546,32 @@ a wrong abstract gets submitted.
 
 **Executed in the same order as step 8, and for the same reason.** The trap is unchanged:
 build `dist/` from the tagged tree *before* recording the new version DOI, or the posted
-PDF carries a DOI line the archived manuscript does not.
+PDF carries a DOI line the archived manuscript does not. **Done** in that order:
+`dist/` was built at `86dc268` with a clean tree, and `BUILD.txt` still records
+`git describe v0.1.2`. It has deliberately *not* been rebuilt since, so the five artifacts
+in it correspond to the tag rather than to any later commit on `main`.
 
-`results.json` and all five figures are byte-identical to `v0.1.1`. 219 tests pass.
+**Post-tag, `10.5281/zenodo.22315017`** is recorded under `CITATION.cff`'s `identifiers:`.
+The archive is untouched; this is for whoever reads `main` later.
+
+#### The sweep missed a file, and the Zenodo record showed it
+
+The em dash pass covered `paper/manuscript.md`, `README.md` and `STATUS.md`. It did not
+cover `.zenodo.json`, which is where the archive's title, description and keywords come
+from, so an em dash reached the **published Zenodo record** while every manuscript check
+passed clean. Found by reading the record, not by anything that could fail. `.zenodo.json`
+is now the third entry in `TYPOGRAPHY_SOURCES`.
+
+That file is JSON, so it is **decoded before it is checked**, not scanned as text. A
+literal em dash and the escape `\u2014` are the same character to a reader and different
+bytes to a grep, and the escaped form is the one an editor is more likely to write.
+Verified both ways: with the escape in the file, `grep` for an em dash returns nothing
+and the test still fails.
+
+Zenodo metadata is editable after publication, so the record was corrected in place. No
+release was needed and none was cut.
+
+`results.json` and all five figures are byte-identical to `v0.1.1`. 220 tests pass.
 
 ### 7. Confirm the preprint license before posting
 

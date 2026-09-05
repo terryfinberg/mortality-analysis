@@ -231,32 +231,70 @@ ALLOWED_NON_ASCII = {
     "–": "en dash",
 }
 
-TYPOGRAPHY_SOURCES = ("paper/manuscript.md", "paper/manuscript_built.md")
+# Everything the reader receives, not only the paper. `.zenodo.json` supplies
+# the archive's title, description and keywords, and an em dash reached the
+# published record through it while the manuscript sweep passed clean.
+TYPOGRAPHY_SOURCES = (
+    "paper/manuscript.md",
+    "paper/manuscript_built.md",
+    ".zenodo.json",
+)
+
+
+def _typography_chunks(relative: str) -> list[tuple[str, str]]:
+    """(where, text) pairs to inspect, one per line or per JSON string.
+
+    JSON is decoded rather than scanned as text, because `\\u2014` and a
+    literal em dash are the same character to a reader and different bytes to
+    a grep. Scanning the raw file would pass the escaped form, which is the
+    form an editor is most likely to write.
+    """
+    path = ROOT / relative
+    raw = path.read_text(encoding="utf-8")
+    if path.suffix != ".json":
+        return [(f"line {n}", line)
+                for n, line in enumerate(raw.splitlines(), start=1)]
+
+    chunks: list[tuple[str, str]] = []
+
+    def walk(node, where: str) -> None:
+        if isinstance(node, str):
+            chunks.append((where, node))
+        elif isinstance(node, dict):
+            for key, value in node.items():
+                walk(key, where)
+                walk(value, f"{where}.{key}" if where else key)
+        elif isinstance(node, list):
+            for i, value in enumerate(node):
+                walk(value, f"{where}[{i}]")
+
+    walk(json.loads(raw), "")
+    return chunks
 
 
 @pytest.mark.parametrize("relative", TYPOGRAPHY_SOURCES)
 def test_the_manuscript_uses_only_allowed_characters(relative):
-    """A character nobody chose must not reach a submitted document.
+    """A character nobody chose must not reach a published record.
 
     Both of us read the abstract page and neither saw that "2023's" had
     rendered as "2023-prime-s". That is the shape of the problem: it is not
-    illegible, it is almost right, so proofreading slides over it.
+    illegible, it is almost right, so proofreading slides over it. The same
+    thing then happened again in the Zenodo description, which no sweep of
+    the manuscript could have covered.
 
     The allowlist is deliberately short. Adding to it should mean deciding
     that a character belongs in the paper, which is a different act from
     letting one arrive.
     """
-    text = (ROOT / relative).read_text(encoding="utf-8")
-    offenders: dict[str, list[int]] = {}
-    for number, line in enumerate(text.splitlines(), start=1):
-        for char in line:
+    offenders: dict[str, list[str]] = {}
+    for where, text in _typography_chunks(relative):
+        for char in text:
             if ord(char) > 126 and char not in ALLOWED_NON_ASCII:
-                offenders.setdefault(char, []).append(number)
+                offenders.setdefault(char, []).append(where)
     assert not offenders, "\n".join(
-        f"U+{ord(c):04X} {unicodedata.name(c, 'unnamed')} in {relative} "
-        f"on line{'s' if len(ns) > 1 else ''} "
-        + ", ".join(str(n) for n in ns[:10])
-        for c, ns in sorted(offenders.items())
+        f"U+{ord(c):04X} {unicodedata.name(c, 'unnamed')} in {relative} at "
+        + ", ".join(dict.fromkeys(ws))
+        for c, ws in sorted(offenders.items())
     )
 
 

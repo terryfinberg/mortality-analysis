@@ -69,3 +69,9 @@ identifiers:
   - type: doi
     value: "10.5281/zenodo.22267191"
     description: "Version DOI for release v0.1.1."
+  # Third allocation, third gap: v0.1.2 landed some 48,000 from the concept DOI
+  # and 48,000 from v0.1.1's. Whatever pattern the first two suggested, there
+  # is none. Copied from the minted record, as every one of these must be.
+  - type: doi
+    value: "10.5281/zenodo.22315017"
+    description: "Version DOI for release v0.1.2."
