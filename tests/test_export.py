@@ -15,6 +15,7 @@ The document-shaping logic is pure Python and is tested directly, so the suite
 runs without pandoc; the two tests that drive a real build skip when the tools
 they need are absent.
 """
+import functools
 import json
 import re
 import shutil
@@ -231,49 +232,111 @@ ALLOWED_NON_ASCII = {
     "–": "en dash",
 }
 
+# `README.md` and `STATUS.md` are working documents rather than submitted
+# ones, and they carry marks the paper never should: section signs, arrows, a
+# status tick, the middle dot in their header rules, and the prime in the
+# treatment names A/B/C'.
+#
+# They also have to be able to *show* the character the manuscript must not
+# contain. Three of the four primes in them are the "2023's" defect being
+# quoted, and a document explaining a typographic fault cannot do it without
+# displaying the fault. So the prime is allowed here and refused two lines
+# above, which is the distinction this pair of lists exists to draw.
+#
+# The em dash is absent from both. That is the whole point of adding these two
+# files: the sweep that removed 88 of them was a one-off, and nothing stopped
+# the next one arriving.
+ALLOWED_IN_NOTES = ALLOWED_NON_ASCII | {
+    "§": "section sign",
+    "·": "middle dot",
+    "…": "horizontal ellipsis",
+    "′": "prime",
+    "←": "leftwards arrow",
+    "→": "rightwards arrow",
+    "✅": "white heavy check mark",
+}
+
 # Everything the reader receives, not only the paper. `.zenodo.json` supplies
 # the archive's title, description and keywords, and an em dash reached the
 # published record through it while the manuscript sweep passed clean.
-TYPOGRAPHY_SOURCES = (
-    "paper/manuscript.md",
-    "paper/manuscript_built.md",
-    ".zenodo.json",
+TYPOGRAPHY_SOURCES = {
+    "paper/manuscript.md": ALLOWED_NON_ASCII,
+    "paper/manuscript_built.md": ALLOWED_NON_ASCII,
+    ".zenodo.json": ALLOWED_NON_ASCII,
+    "README.md": ALLOWED_IN_NOTES,
+    "STATUS.md": ALLOWED_IN_NOTES,
+}
+
+# Passages exempted by hand: (file, exact text, why). Deliberately a passage
+# and not a character or a file, so an exemption licenses the one place it was
+# written for and nothing else.
+TYPOGRAPHY_EXEMPTIONS = (
+    (
+        "STATUS.md",
+        '"has no callers in the repo — this is fresh API surface being '
+        'introduced by this PR."',
+        "verbatim quotation of an external review; repunctuating it misquotes it",
+    ),
 )
 
 
-def _typography_chunks(relative: str) -> list[tuple[str, str]]:
+def _typography_chunks(
+    relative: str,
+    exemptions: tuple[tuple[str, str, str], ...] = TYPOGRAPHY_EXEMPTIONS,
+) -> list[tuple[str, str]]:
     """(where, text) pairs to inspect, one per line or per JSON string.
 
     JSON is decoded rather than scanned as text, because `\\u2014` and a
     literal em dash are the same character to a reader and different bytes to
     a grep. Scanning the raw file would pass the escaped form, which is the
     form an editor is most likely to write.
+
+    Exempted passages are removed here rather than skipped in the caller, so
+    an exemption cannot accidentally widen to the rest of its line.
     """
     path = ROOT / relative
     raw = path.read_text(encoding="utf-8")
     if path.suffix != ".json":
-        return [(f"line {n}", line)
-                for n, line in enumerate(raw.splitlines(), start=1)]
+        chunks = [(f"line {n}", line)
+                  for n, line in enumerate(raw.splitlines(), start=1)]
+    else:
+        chunks = []
 
-    chunks: list[tuple[str, str]] = []
+        def walk(node, where: str) -> None:
+            if isinstance(node, str):
+                chunks.append((where, node))
+            elif isinstance(node, dict):
+                for key, value in node.items():
+                    walk(key, where)
+                    walk(value, f"{where}.{key}" if where else key)
+            elif isinstance(node, list):
+                for i, value in enumerate(node):
+                    walk(value, f"{where}[{i}]")
 
-    def walk(node, where: str) -> None:
-        if isinstance(node, str):
-            chunks.append((where, node))
-        elif isinstance(node, dict):
-            for key, value in node.items():
-                walk(key, where)
-                walk(value, f"{where}.{key}" if where else key)
-        elif isinstance(node, list):
-            for i, value in enumerate(node):
-                walk(value, f"{where}[{i}]")
+        walk(json.loads(raw), "")
 
-    walk(json.loads(raw), "")
+    excused = [text for source, text, _ in exemptions if source == relative]
+    for text in excused:
+        found = sum(chunk.count(text) for _, chunk in chunks)
+        if found != 1:
+            raise AssertionError(
+                f"stale typography exemption for {relative}: expected exactly "
+                f"one occurrence of {text[:60]!r}, found {found}. An exemption "
+                "covering nothing is worse than no exemption -- it looks "
+                "identical to a working one, and the next passage that happens "
+                "to match inherits a licence nobody granted. Remove it, or "
+                "restore the passage it was written for."
+            )
+    if excused:
+        chunks = [
+            (where, functools.reduce(lambda s, t: s.replace(t, " "), excused, chunk))
+            for where, chunk in chunks
+        ]
     return chunks
 
 
-@pytest.mark.parametrize("relative", TYPOGRAPHY_SOURCES)
-def test_the_manuscript_uses_only_allowed_characters(relative):
+@pytest.mark.parametrize("relative", sorted(TYPOGRAPHY_SOURCES))
+def test_documents_use_only_allowed_characters(relative):
     """A character nobody chose must not reach a published record.
 
     Both of us read the abstract page and neither saw that "2023's" had
@@ -282,20 +345,35 @@ def test_the_manuscript_uses_only_allowed_characters(relative):
     thing then happened again in the Zenodo description, which no sweep of
     the manuscript could have covered.
 
-    The allowlist is deliberately short. Adding to it should mean deciding
-    that a character belongs in the paper, which is a different act from
-    letting one arrive.
+    The manuscript's allowlist is deliberately short. Adding to it should mean
+    deciding that a character belongs in the paper, which is a different act
+    from letting one arrive.
     """
+    allowed = TYPOGRAPHY_SOURCES[relative]
     offenders: dict[str, list[str]] = {}
     for where, text in _typography_chunks(relative):
         for char in text:
-            if ord(char) > 126 and char not in ALLOWED_NON_ASCII:
+            if ord(char) > 126 and char not in allowed:
                 offenders.setdefault(char, []).append(where)
     assert not offenders, "\n".join(
         f"U+{ord(c):04X} {unicodedata.name(c, 'unnamed')} in {relative} at "
         + ", ".join(dict.fromkeys(ws))
         for c, ws in sorted(offenders.items())
     )
+
+
+def test_a_stale_typography_exemption_is_an_error():
+    """An exemption that covers nothing must fail, not sit there quietly.
+
+    The same reasoning as the anonymisation leak check two sections down. A
+    rule that has stopped matching is indistinguishable from one that is
+    working, and this one is a standing licence to write an em dash.
+    """
+    with pytest.raises(AssertionError, match="stale typography exemption"):
+        _typography_chunks(
+            "STATUS.md",
+            (("STATUS.md", "a passage no longer in the file", "gone"),),
+        )
 
 
 def test_the_typst_path_disables_the_writers_smart_extension():

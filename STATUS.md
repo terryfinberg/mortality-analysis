@@ -87,7 +87,7 @@ exactly zero.
 and hash-verified, all 150 data rows are populated from those exports and personally
 attested, 14 of the 15 annual totals are corroborated against NCHS's published NVSR reports,
 and `python -m src.report` produces `results.json`, five figures and a built manuscript with
-every value substituted from code. 220 tests pass. The arithmetic has been reviewed and its
+every value substituted from code. 223 tests pass. The arithmetic has been reviewed and its
 findings fixed, `figures/` is tracked so a release archives the images the paper shows, and
 `main` is pushed to GitHub.
 
@@ -118,7 +118,7 @@ above and steps 4 through 9 below.
   age-to-rate ratio 3.41–3.87.
 - **Licensing done** three ways: BSD-3-Clause (`LICENSE`), a public-domain status statement
   for the federal data (`DATA.md`), CC BY 4.0 for the manuscript (`paper/LICENSE`).
-- **220 tests.** (The commit count that used to sit here was removed: nothing checks it and
+- **223 tests.** (The commit count that used to sit here was removed: nothing checks it and
   it goes stale on every commit, which is the exact defect `test_docs_are_current` exists to
   catch. `git rev-list --count main` answers it on demand.)
 
@@ -208,7 +208,7 @@ points at, so the file never described a release that did not exist.
 
 Nothing in this restructure was allowed to touch a computed value. `python -m src.report` was
 re-run afterwards and `git diff` reports **no change** in `data/processed/results.json` or in
-any of the five figures. 220 tests pass, including the sweep in `tests/test_documents.py` for
+any of the five figures. 223 tests pass, including the sweep in `tests/test_documents.py` for
 statistic-shaped literals: the new §4.4 table and every figure quoted in the new abstract are
 bound to tokens, not typed.
 
@@ -516,7 +516,7 @@ eye supplies the apostrophe it expects. Both the author and Claude read that pag
 
 **What guards it now**, in `tests/test_export.py` under Typography:
 
-- `test_the_manuscript_uses_only_allowed_characters` holds an explicit allowlist of the
+- `test_documents_use_only_allowed_characters` holds an explicit allowlist of the
   non-ASCII characters `manuscript.md` and `manuscript_built.md` may contain, run over
   every line. An allowlist and not a blocklist: the character that got through was one
   nobody had thought to look for.
@@ -571,7 +571,32 @@ and the test still fails.
 Zenodo metadata is editable after publication, so the record was corrected in place. No
 release was needed and none was cut.
 
-`results.json` and all five figures are byte-identical to `v0.1.1`. 220 tests pass.
+#### Two allowlists, because the notes must be able to show what the paper may not
+
+`README.md` and `STATUS.md` are now checked too, so the 88-dash sweep cannot quietly undo
+itself. They cannot share the manuscript's list: they legitimately carry section signs,
+arrows, a status tick, the middle dot in their header rules, and the prime in the
+treatment names `A/B/C′`. `ALLOWED_IN_NOTES` widens `ALLOWED_NON_ASCII` for those two
+files and nothing else.
+
+The prime is the interesting entry. Three of the four in these documents are `2023′s`,
+the defect itself being quoted, and a page explaining a typographic fault cannot do it
+without displaying the fault. So the same character is allowed here and refused in the
+manuscript, which is what the pair of lists exists to express. **The em dash is absent
+from both.**
+
+**One exemption**, and it is a passage rather than a character or a file: STATUS.md quotes
+an external review verbatim, em dash included, and repunctuating a quotation misquotes it.
+`TYPOGRAPHY_EXEMPTIONS` names the file, the exact text and the reason. A stale exemption
+is an **error**, not a no-op, for the reason the anonymisation leak check exists: a rule
+that has stopped matching looks identical to one that is working, and this one is a
+standing licence to write an em dash.
+
+Verified by mutation, three ways: an em dash in `README.md`, one in `STATUS.md` away from
+the quote, and one **on the quote's own line**. All three fail. The exemption covers its
+exact text and does not widen to the line around it.
+
+`results.json` and all five figures are byte-identical to `v0.1.1`. 223 tests pass.
 
 ### 7. Confirm the preprint license before posting
 
