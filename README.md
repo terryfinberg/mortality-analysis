@@ -3,13 +3,13 @@
 Reproducible analysis of U.S. mortality with two contributions: a Kitagawa decomposition
 of the change in the crude death rate into age-specific mortality and population
 age-structure components, and a measurement of the population denominator those rates
-are divided by — four vintage boundaries inside a single fifteen-year series, quantified
+are divided by: four vintage boundaries inside a single fifteen-year series, quantified
 rather than assumed, one of them at exactly zero.
 
 The full title is *Decomposing U.S. Crude Death Rates, 2010-2024: Population Aging Dominates, and the Denominator Is Not Stable*.
 
 **Repository status: populated, attested, and running. Corroboration against NCHS's published
-reports is partial and deliberately labelled as such — 14 of 15 annual totals.**
+reports is partial and deliberately labelled as such: 14 of 15 annual totals.**
 
 See [`STATUS.md`](STATUS.md) for where the project stands, what is still open and in what
 order, and the known limits stated plainly.
@@ -25,7 +25,7 @@ against those exports by a person, on 2026-08-30, so `python -m src.report` runs
 publication reports the same figure. Thirteen of the fifteen annual totals, 2010–2022, match
 Table B of the corresponding NVSR *Deaths: Final Data* report exactly, and our computed crude
 rate matches NVSR's published rate to one decimal in all thirteen. 2023's **count** is
-corroborated against NVSR 74-11, but not its rate — that report computes rates on a different
+corroborated against NVSR 74-11, but not its rate, because that report computes rates on a different
 population basis, at a precision too coarse to discriminate ours. `corroborated_measures`
 records which measures each row's source actually confirmed, so the weaker claim stays
 visibly weaker. 2024 has no published source at all, and blank means not corroborated rather
@@ -40,7 +40,7 @@ returned what NCHS published, not that NCHS is correct. See
 That gap is the point rather than an unfinished chore. An earlier version of this project
 carried mortality figures that had been transcribed rather than fetched and were never checked
 against the source documents. Numbers that carry a citation look verified whether or not
-anyone verified them, and an automated fetch does not fix that — it changes the costume. A run
+anyone verified them, and an automated fetch does not fix that; it changes the costume. A run
 against the wrong export writes an impeccably precise provenance string onto a wrong number,
 more convincingly than a hand transcription would. So promotion fills `source_type` and
 `fetched_from` and never `verified_by`.
@@ -95,7 +95,7 @@ ends up claiming more than it checked:
 | `source_citation` | *What this value is a copy of.* The export's footer `Dataset`, its query parameters, access date and sha256 | derived from the footer by `export_citation()` |
 | `fetched_from` | *Provenance.* `wonder-export:<filename>@sha256:<hash>` | `src.fetch.promote()` |
 | `verified_by` | *Attestation.* A person confirmed this value matches the cited export | **a human, only** |
-| `corroborated_against` | *Corroboration.* A separate publication reports the same figure — e.g. an NVSR volume and table. **Not independent:** see the note below | **a human, only** |
+| `corroborated_against` | *Corroboration.* A separate publication reports the same figure, e.g. an NVSR volume and table. **Not independent:** see the note below | **a human, only** |
 
 This split is the point, not bookkeeping. A number carrying a citation looks verified whether
 or not anyone verified it. An automated fetch does not solve that; it changes the costume. A
@@ -110,7 +110,7 @@ bytes in this repository.
 
 **Corroboration is deliberately separate, and deliberately incomplete.** Attestation says our
 number faithfully reproduces the source we took it from; corroboration says that source agrees
-with a different publication. It is not available for every row — NVSR publishes annual
+with a different publication. It is not available for every row: NVSR publishes annual
 totals, not the six-band grid, and a published report may not exist yet for the most recent
 years. **A blank `corroborated_against` means not corroborated. It does not mean corroboration
 failed, and the loader never requires it.** Partial corroboration stated as partial is worth
@@ -118,8 +118,8 @@ more than complete attestation to a standard met on a sample.
 
 **It is corroboration, not independent confirmation.** NVSR and WONDER are both NCHS products
 drawing on the same mortality file and the same Census-derived denominators. Agreement rules
-out a real class of error — a query returning the wrong slice would not reproduce the
-published national total for thirteen consecutive years — and says nothing about whether the
+out a real class of error (a query returning the wrong slice would not reproduce the
+published national total for thirteen consecutive years) and says nothing about whether the
 underlying NCHS data is right. The precise statement is in
 `docs/denominator-methods.md`.
 
@@ -129,7 +129,7 @@ So `verified_by` is never machine-written. `src.fetch.promote()` fills `source_t
 place; it does not sign them off. You do that, row by row, and the loader will not run in
 strict mode until you have.
 
-If `promote()` rewrites a row's `source_citation`, it clears `verified_by` too — a signature
+If `promote()` rewrites a row's `source_citation`, it clears `verified_by` too: a signature
 was made against what the old citation claimed.
 
 If `promote()` overwrites a value you had already signed off on, it clears your
@@ -166,7 +166,7 @@ Citation is requested rather than required, and is provided: every export's foot
 WONDER's own suggested citation, and `data/queries/cdc_wonder_queries.md` records the database
 and query behind each file.
 
-Use is subject to the WONDER Data Use Restrictions — statistical reporting and analysis only,
+Use is subject to the WONDER Data Use Restrictions: statistical reporting and analysis only,
 and no reported count or rate based on fewer than ten deaths. This analysis is national and
 its smallest cell is in the tens of thousands, so that rule is satisfied by a wide margin.
 
@@ -216,7 +216,7 @@ retyped, so a title page cannot disagree with the citation record.
 JohnMacFarlane.Pandoc`) **and, for the PDF, [typst](https://typst.app)** (`winget install
 --id Typst.Typst`). DOCX needs pandoc only.
 
-PDF uses the best engine it can find — `tectonic`, `xelatex`, `lualatex`, `pdflatex`,
+PDF uses the best engine it can find: `tectonic`, `xelatex`, `lualatex`, `pdflatex`,
 `typst`, `weasyprint`, `wkhtmltopdf`. **If none is installed the build fails**, rather than
 quietly producing something that is not a submission artifact:
 
@@ -253,7 +253,7 @@ machines, which a system font like Georgia would not.
 
 It also passes `--to typst-smart`, and that flag is load-bearing. Pandoc's reader resolves
 `'` to U+2019, but its typst writer normalises that back to an ASCII apostrophe on the
-assumption typst will re-smarten it — and typst's rule is not pandoc's: an apostrophe after
+assumption typst will re-smarten it, and typst's rule is not pandoc's: an apostrophe after
 a digit becomes a **prime**, because `5'11"` is the case that rule exists for. Through
 `v0.1.1` the PDF therefore set `2023's` as `2023′s` while `NVSR's` in the same paragraph
 came out right, from identical source characters. Turning the extension off in the writer
@@ -264,13 +264,13 @@ prime; this manuscript has none.
 Two tests in `tests/test_export.py` hold this: an explicit allowlist of the non-ASCII
 characters the manuscript may contain, and a check on real pandoc output that the writer
 emits U+2019 *and* the document tells typst to leave it alone. The allowlist alone would not
-have caught the original defect — the source file was innocent and the build was not — which
+have caught the original defect (the source file was innocent and the build was not), which
 is worth remembering the next time a rendering fault looks like a typo in the prose.
 
 `--anonymous` is for Demographic Research, which requires identifying information removed from
 PDF submissions. It strips the byline, deletes the ORCID declaration, and replaces the
 repository URL and DOI in the data availability statement with a note saying they were
-withheld — rather than deleting the statement, which would read as an author who never wrote
+withheld, rather than deleting the statement, which would read as an author who never wrote
 one. `tests/test_export.py` asserts that nothing identifying survives, and that the check
 itself catches a planted leak. See [`docs/demographic-research-gap.md`](docs/demographic-research-gap.md)
 for what still does not conform to that journal's house style.
@@ -282,7 +282,7 @@ archive of a release should contain the images a reader sees in the preprint rat
 promise that they could be rebuilt.
 
 **The convention: commit a regenerated figure only when the numbers behind it changed.** If a
-run was a no-op — a test run, a rebuild to check reproducibility, a docs edit — discard any
+run was a no-op (a test run, a rebuild to check reproducibility, a docs edit), discard any
 figure churn rather than committing it:
 
 ```bash
@@ -294,8 +294,8 @@ committed on its own breaks nothing, but it buries the commits where a figure mo
 *result* moved, which are the ones worth finding later.
 
 In practice there is usually nothing to discard. Re-running `python -m src.report` with
-unchanged inputs currently reproduces all five PNGs **byte for byte** — verified by hashing
-them across consecutive runs — because this matplotlib writes no timestamp into its output.
+unchanged inputs currently reproduces all five PNGs **byte for byte** (verified by hashing
+them across consecutive runs) because this matplotlib writes no timestamp into its output.
 The only metadata it embeds is a `Software` string naming its own version.
 
 That last detail is the thing to recognise later. **A matplotlib upgrade rewrites the bytes of
@@ -303,7 +303,7 @@ every figure while every number stays identical**, because the version string is
 file. So if `git status` ever shows all five figures modified at once, check
 `data/processed/results.json` first: it is byte-stable across runs, and if it has not moved,
 what you are looking at is a toolchain bump rather than a change in any result. Commit it as
-that, in a commit of its own, and say so in the message — or discard it. Do not fold it into
+that, in a commit of its own, and say so in the message, or discard it. Do not fold it into
 a substantive change, where it would masquerade as one.
 
 ## Running the tests
@@ -318,27 +318,27 @@ refusal to accept incomplete data, and the fetch layer: WONDER export parsing, a
 collapse arithmetic, "Not Stated" handling, cache behaviour, refusal to return partial data
 from a malformed response, the two exact identities, agreement with WONDER's published crude
 rate, rejection of an export whose years do not match the range the registry declares,
-measurement of the bridged/single-race vintage seam, and the vintage-sensitivity findings —
+measurement of the bridged/single-race vintage seam, and the vintage-sensitivity findings,
 including a test that fails if `docs/denominator-methods.md` drifts from the code that
 computes its numbers.
 
 They also verify the committed data itself. Every WONDER export is hashed against the
 `sha256` recorded in `WONDER_EXPORTS`, and every Census file against
 `data/raw/census/PROVENANCE.md`, with cases that mutate a single byte to prove the check
-fires. A recorded hash nobody recomputes is a claim, not a check — and the one integrity
+fires. A recorded hash nobody recomputes is a claim, not a check. The one integrity
 defect this repository has actually had (git rewriting line endings inside a committed data
 file, moving its bytes underneath its recorded hash) was caught by reading a warning, not by
 anything that could fail.
 
 Two further classes are covered because a defect in each got past everything else. **Figure
-geometry** is asserted against the values it encodes — a stacked bar once hid a negative
+geometry** is asserted against the values it encodes: a stacked bar once hid a negative
 component entirely, and every input-side check passed while it did. **Document prose** is
 checked for statistic-shaped literals that restate a value from `results.json`, because a
 hardcoded number that is right today agrees with itself forever.
 
 A third class was added after a scoped code review of the arithmetic modules: **an incomplete
 age grid**. Every year must carry all six bands, exactly once. A missing band is not a missing
-*value* — the surviving rows are fully populated — so it passes the completeness check, and
+*value* (the surviving rows are fully populated), so it passes the completeness check, and
 neither the age-adjusted rate nor the Kitagawa decomposition raises on it. Both quietly return
 a partial sum instead. The Kitagawa additivity identity holds just as exactly over biased
 shares as over correct ones, so the suite's strongest invariant is blind to this by
@@ -347,7 +347,7 @@ construction. It is refused at the loader, and refused again in `rates.py` and
 
 **Tolerance policy.** A quantity defined to be equal is asserted equal, at `1e-9` for
 floating-point representation only. A quantity merely expected to be close gets a real
-tolerance. Do not loosen a `1e-9` to make a failure go away — at that size it is reporting an
+tolerance. Do not loosen a `1e-9` to make a failure go away: at that size it is reporting an
 arithmetic defect, not fixture noise. The fixtures are synthetic values with known analytic properties, chosen
 to be obviously unlike real U.S. figures so nobody mistakes a fixture for data.
 
@@ -403,7 +403,7 @@ not an error on either side. See manuscript section 3.3.
 
 ## AI assistance
 
-This work was produced with AI assistance — Anthropic's Claude, via Claude Code — including
+This work was produced with AI assistance (Anthropic's Claude, via Claude Code), including
 the analysis software, its tests and documentation, and drafting of the manuscript. Commits
 carrying a `Co-Authored-By: Claude` trailer record where that assistance was used, and
 `docs/ai-assistance/fetch-layer-prompt.md` is the actual prompt that specified the fetch
@@ -422,7 +422,7 @@ records and no reader could check.
 
 The distinction this repository already draws does the load-bearing work here.
 **`verified_by` is an attestation that only a person may write**, and no machine path in this
-repository — AI-assisted or otherwise — is able to write one. A test asserts that against a
+repository (AI-assisted or otherwise) is able to write one. A test asserts that against a
 temporary directory rather than against the current CSVs, so the guarantee does not expire
 with the data's state. Every one of the 150 data rows was checked against its cited export by
 a person before the analysis would run at all. Whatever wrote the code, no value in this
@@ -435,12 +435,12 @@ all three would have to be wrong about at least one of them.
 
 | what | terms | file |
 |---|---|---|
-| Software — `src/`, `tests/`, `bootstrap.*`, `notebooks/` | BSD-3-Clause | [`LICENSE`](LICENSE) |
-| Data — `data/raw/wonder_exports/`, `data/raw/census/` | **Not licensed.** U.S. federal government works, public domain under 17 U.S.C. § 105 | [`DATA.md`](DATA.md) |
-| Manuscript and outputs — `paper/`, `figures/`, `results.json` | CC BY 4.0 | [`paper/LICENSE`](paper/LICENSE) |
+| Software: `src/`, `tests/`, `bootstrap.*`, `notebooks/` | BSD-3-Clause | [`LICENSE`](LICENSE) |
+| Data: `data/raw/wonder_exports/`, `data/raw/census/` | **Not licensed.** U.S. federal government works, public domain under 17 U.S.C. § 105 | [`DATA.md`](DATA.md) |
+| Manuscript and outputs: `paper/`, `figures/`, `results.json` | CC BY 4.0 | [`paper/LICENSE`](paper/LICENSE) |
 
-**The data is not licensed because it is not ours to license.** Applying any license to it —
-BSD, CC BY, even CC0 — would assert rights that do not exist. `DATA.md` states the status,
+**The data is not licensed because it is not ours to license.** Applying any license to it
+(BSD, CC BY, even CC0) would assert rights that do not exist. `DATA.md` states the status,
 records the CC0 release of the thin compilation right over the *selection and arrangement*
 only, and explains why that scope is kept narrow rather than simplified into a blanket CC0.
 
@@ -450,7 +450,7 @@ conclusions while carrying the author's name is foreseeable rather than hypothet
 
 If this work is cited, cite the manuscript and the Zenodo DOI, not this README.
 
-**Concept DOI — [10.5281/zenodo.22263667](https://doi.org/10.5281/zenodo.22263667).** It
+**Concept DOI: [10.5281/zenodo.22263667](https://doi.org/10.5281/zenodo.22263667).** It
 resolves to the latest release, and the Zenodo record lists every release with its own
 version DOI, so a specific deposit is one step away.
 
