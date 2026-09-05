@@ -1,10 +1,16 @@
 # Status
 
-**Last updated:** 2026-09-03 · **Branch:** `main` ·
-**Remote:** `origin` → `github.com/terryfinberg/mortality-analysis` · **`v0.1.1` tagged,
-archived and citable; it is the release the preprint cites**
+**Last updated:** 2026-09-04 · **Branch:** `main` ·
+**Remote:** `origin` → `github.com/terryfinberg/mortality-analysis` · **`v0.1.2` tagged;
+it is the release the preprint cites, pending its version DOI**
 
-> ## ✅ `v0.1.1` is tagged and archived. The preprint cites it.
+> ## ✅ `v0.1.2` is tagged. It is the release to post.
+>
+> **`v0.1.1` renders a typographic error the source never contained.** Its PDF sets
+> `2023's` as `2023′s`, with a prime where the apostrophe belongs, in the abstract, in
+> §4.4 and in §4.5. `paper/manuscript.md` held an ordinary ASCII apostrophe the whole
+> time; the build manufactured the prime. See step 9. `v0.1.2` also removes the em dash
+> from the manuscript, which is house style and now enforced by a test.
 >
 > **`v0.1.0` is archived and permanent, and its manuscript is defective.** That is why
 > `v0.1.1` exists. Everything that
@@ -34,6 +40,7 @@ archived and citable; it is the release the preprint cites**
 > | **Concept** | [10.5281/zenodo.22263667](https://doi.org/10.5281/zenodo.22263667) | anywhere, including inside the archive. Always exists, always resolves |
 > | **Version `v0.1.0`** | [10.5281/zenodo.22263668](https://doi.org/10.5281/zenodo.22263668) | the Zenodo record, and `CITATION.cff`'s `identifiers:` in a **post-tag** commit |
 > | **Version `v0.1.1`** | [10.5281/zenodo.22267191](https://doi.org/10.5281/zenodo.22267191) | same |
+| **Version `v0.1.2`** | not yet minted | same, once the Release is created |
 >
 > **The allocation is not sequential, and this release proved it.** `v0.1.0`'s version DOI
 > was the concept DOI plus one, which made `22263669` look like a safe guess for the next
@@ -79,14 +86,15 @@ exactly zero.
 and hash-verified, all 150 data rows are populated from those exports and personally
 attested, 14 of the 15 annual totals are corroborated against NCHS's published NVSR reports,
 and `python -m src.report` produces `results.json`, five figures and a built manuscript with
-every value substituted from code. 211 tests pass. The arithmetic has been reviewed and its
+every value substituted from code. 219 tests pass. The arithmetic has been reviewed and its
 findings fixed, `figures/` is tracked so a release archives the images the paper shows, and
 `main` is pushed to GitHub.
 
 **The restructure is executed, `v0.1.0` is archived, and nothing analytical remains.**
-`v0.1.1` is staged and must be tagged before the preprint goes up, because the `v0.1.0`
-deposit predates the Declarations, the abstract correction and the embedded figures. See
-the banner above and steps 4 through 8 below.
+`v0.1.2` is the release to post: `v0.1.0` predates the Declarations, the abstract
+correction and the embedded figures, and `v0.1.1` renders a prime where the abstract
+wants an apostrophe. Neither is analytical and both reach the reader. See the banner
+above and steps 4 through 9 below.
 
 ## Done
 
@@ -109,7 +117,7 @@ the banner above and steps 4 through 8 below.
   age-to-rate ratio 3.41–3.87.
 - **Licensing done** three ways: BSD-3-Clause (`LICENSE`), a public-domain status statement
   for the federal data (`DATA.md`), CC BY 4.0 for the manuscript (`paper/LICENSE`).
-- **211 tests.** (The commit count that used to sit here was removed: nothing checks it and
+- **219 tests.** (The commit count that used to sit here was removed: nothing checks it and
   it goes stale on every commit, which is the exact defect `test_docs_are_current` exists to
   catch. `git rev-list --count main` answers it on demand.)
 
@@ -199,7 +207,7 @@ points at, so the file never described a release that did not exist.
 
 Nothing in this restructure was allowed to touch a computed value. `python -m src.report` was
 re-run afterwards and `git diff` reports **no change** in `data/processed/results.json` or in
-any of the five figures. 211 tests pass, including the sweep in `tests/test_documents.py` for
+any of the five figures. 219 tests pass, including the sweep in `tests/test_documents.py` for
 statistic-shaped literals — the new §4.4 table and every figure quoted in the new abstract are
 bound to tokens, not typed.
 
@@ -480,12 +488,66 @@ that the tag is the last moment any of them can be fixed:
    `description` naming the release. Commit and push. The archive is untouched; this is for
    whoever reads `main` later. **Done** — `10.5281/zenodo.22267191`, and `dist/` was
    deliberately *not* rebuilt afterward.
-6. Post the preprint using the PDF built at step 3. ← **the only step left**
+6. Post the preprint using the PDF built at step 3. ← superseded by step 9
 
-Steps 1 through 5 are done. `dist/manuscript.pdf` is the file to post: it was built from
-the tagged tree, before step 5 touched anything, and `git diff v0.1.1` was clean at the
-time. Rebuilding it now would put `22267191` in a PDF whose archived counterpart does not
-carry it, which is the divergence this ordering exists to prevent.
+Steps 1 through 5 are done. The preprint was never posted from this tag; step 9 supersedes
+it.
+
+### 9. Cut `v0.1.2` — the typography the source never contained
+
+**The defect.** `v0.1.1`'s PDF sets `2023's` as `2023′s`, with a U+2032 PRIME where the
+apostrophe belongs, in the abstract, in §4.4 and in §4.5. It is not a typo in the
+manuscript. `paper/manuscript.md` has held an ordinary ASCII apostrophe throughout, and no
+edit to it could have fixed this.
+
+**Where it comes from, because the mechanism is the whole lesson.** Pandoc's reader
+resolves `'` to U+2019 in the AST. Pandoc's *typst writer* then normalises that back to an
+ASCII apostrophe, on the assumption that typst will re-smarten it. Typst's rule is not
+pandoc's: an apostrophe following a digit becomes a prime, because `5'11"` is the case that
+rule was written for. So `2023's` came out wrong and `NVSR's` came out right, in the same
+paragraph, from identical source characters. The fix is `--to typst-smart` in
+`build_pdf()`, which turns the smart extension off in the *writer* so it emits real
+punctuation, and makes pandoc's template emit `#set smartquote(enabled: false)` so typst
+renders what it is given.
+
+**Why it survived two readers.** A prime is not illegible. It is *almost right*, and the
+eye supplies the apostrophe it expects. Both the author and Claude read that page.
+
+**What guards it now**, in `tests/test_export.py` under Typography:
+
+- `test_the_manuscript_uses_only_allowed_characters` — an explicit allowlist of the
+  non-ASCII characters `manuscript.md` and `manuscript_built.md` may contain, run over
+  every line. An allowlist and not a blocklist: the character that got through was one
+  nobody had thought to look for.
+- `test_the_typst_path_disables_the_writers_smart_extension` — **this is the one that
+  would have caught the prime, and the allowlist is not.** The source was innocent; the
+  build was not. A test over the source file alone would have passed while the PDF stayed
+  wrong, which is worth remembering the next time a fix looks like it belongs in the
+  prose.
+- `test_the_typst_source_carries_real_punctuation` — the mechanism on real pandoc output:
+  the writer must emit U+2019, *and* the document must tell typst to leave it alone.
+  Either alone is insufficient.
+
+Both were verified by reintroducing the bug and watching them fail.
+
+**The em dash is gone from the manuscript**, all twelve of them, and is deliberately
+absent from the allowlist. House style, not a typo, so nothing else would have caught it
+returning. Seven single dashes became a period, a colon or a comma; four paired
+parentheticals became parentheses. `paper/manuscript.md` is now pure ASCII.
+
+**`dist/abstract.txt` is new.** medRxiv's abstract field accepts ASCII punctuation only
+and rejects a paste without naming the character it objected to; Demographic Research's
+form is expected to behave the same way. `src/export.py --abstract` writes the abstract as
+plain ASCII with markdown emphasis stripped, ready to paste. Every substitution is spelled
+out in `ASCII_PUNCTUATION` and an unmapped character is an **error**, not a silent
+deletion — a dropped character leaves a sentence that still reads plausibly, which is how
+a wrong abstract gets submitted.
+
+**Executed in the same order as step 8, and for the same reason.** The trap is unchanged:
+build `dist/` from the tagged tree *before* recording the new version DOI, or the posted
+PDF carries a DOI line the archived manuscript does not.
+
+`results.json` and all five figures are byte-identical to `v0.1.1`. 219 tests pass.
 
 ### 7. Confirm the preprint license before posting
 

@@ -186,11 +186,20 @@ or the code.
 ## Building the submission artifacts
 
 ```bash
-python -m src.export              # PDF and DOCX
+python -m src.export              # PDF, DOCX and the ASCII abstract
 python -m src.export --docx       # Demographic Research prefers .docx
+python -m src.export --abstract   # dist/abstract.txt, for the submission form
 python -m src.export --anonymous  # author name, ORCID, affiliation and repo links removed
 python -m src.export --both       # identified and anonymised, in one run
 ```
+
+`dist/abstract.txt` exists because a submission form is not a document. medRxiv's abstract
+field accepts ASCII punctuation only and rejects a paste without saying which character it
+objected to; Demographic Research's form is the same generation. The target writes the
+abstract with markdown emphasis stripped and every non-ASCII character mapped to an ASCII
+equivalent chosen deliberately. A character the mapping has never seen is an **error**, not
+a silent drop: `encode("ascii", "ignore")` would delete it and leave a sentence that still
+reads plausibly, which is how a wrong abstract gets submitted.
 
 Outputs go to `dist/`, which is **gitignored**: they are derived from
 `paper/manuscript_built.md` in one command, so committing them would commit a copy of
@@ -241,6 +250,22 @@ The typst path names `Libertinus Serif` explicitly. Pandoc's typst template defa
 empty font list, which typst 0.15 rejects outright with *"font fallback list must not be
 empty"*; naming a face typst bundles fixes that and keeps the output identical across
 machines, which a system font like Georgia would not.
+
+It also passes `--to typst-smart`, and that flag is load-bearing. Pandoc's reader resolves
+`'` to U+2019, but its typst writer normalises that back to an ASCII apostrophe on the
+assumption typst will re-smarten it — and typst's rule is not pandoc's: an apostrophe after
+a digit becomes a **prime**, because `5'11"` is the case that rule exists for. Through
+`v0.1.1` the PDF therefore set `2023's` as `2023′s` while `NVSR's` in the same paragraph
+came out right, from identical source characters. Turning the extension off in the writer
+makes it emit real punctuation and makes the template emit `#set smartquote(enabled:
+false)`, so typst renders what it is given. Feet-and-inches marks would now need an explicit
+prime; this manuscript has none.
+
+Two tests in `tests/test_export.py` hold this: an explicit allowlist of the non-ASCII
+characters the manuscript may contain, and a check on real pandoc output that the writer
+emits U+2019 *and* the document tells typst to leave it alone. The allowlist alone would not
+have caught the original defect — the source file was innocent and the build was not — which
+is worth remembering the next time a rendering fault looks like a typo in the prose.
 
 `--anonymous` is for Demographic Research, which requires identifying information removed from
 PDF submissions. It strips the byline, deletes the ORCID declaration, and replaces the

@@ -9,11 +9,17 @@ identity comes out of ``CITATION.cff`` rather than being retyped. A title page
 that disagrees with the citation record is the same two-places-disagree failure
 the repository already guards against elsewhere.
 
-Two targets, two venues:
+Three targets:
 
-    python -m src.export --pdf     medRxiv
-    python -m src.export --docx    Demographic Research, which prefers Word
-    python -m src.export           both
+    python -m src.export --pdf       medRxiv
+    python -m src.export --docx      Demographic Research, which prefers Word
+    python -m src.export --abstract  ASCII abstract, for the submission form
+    python -m src.export             all three
+
+The abstract is a separate target because a submission form is not a document.
+medRxiv's abstract field accepts ASCII punctuation only and rejects a paste
+without saying which character it objected to, so the paste-ready text is
+built here rather than hand-cleaned once per submission.
 
 Anonymised variants, for a venue that wants identifying information out of the
 file itself:
@@ -31,6 +37,7 @@ import re
 import shutil
 import subprocess
 import sys
+import unicodedata
 from dataclasses import dataclass
 from datetime import datetime
 from pathlib import Path
@@ -231,6 +238,102 @@ def prepare(identity: Identity, anonymous: bool) -> str:
 
 
 # --------------------------------------------------------------------------
+# ASCII abstract, for submission forms that predate Unicode
+# --------------------------------------------------------------------------
+
+# medRxiv's abstract field accepts ASCII punctuation and nothing else, and it
+# rejects a paste without naming the character or its position. Demographic
+# Research's form is the same generation and is expected to behave the same
+# way. The manuscript is not going to be written down to that constraint, so
+# the constraint gets its own artifact: one file, plain ASCII, paste-ready.
+#
+# Every substitution is written out rather than reached by
+# unicodedata.normalize + encode("ascii", "ignore"). The general approach
+# fails silently: a minus sign or a no-break space disappears and the sentence
+# still reads plausibly, which is how a wrong abstract gets submitted.
+ASCII_PUNCTUATION = {
+    "‘": "'",    # left single quotation mark
+    "’": "'",    # right single quotation mark, and the apostrophe
+    "“": '"',    # left double quotation mark
+    "”": '"',    # right double quotation mark
+    "′": "'",    # prime
+    "″": '"',    # double prime
+    "–": "-",    # en dash
+    "—": "--",   # em dash
+    "−": "-",    # minus sign
+    "…": "...",  # horizontal ellipsis
+    " ": " ",    # no-break space
+    "·": "-",    # middle dot
+    "­": "",     # soft hyphen
+}
+
+ABSTRACT_HEADING = "## Abstract"
+
+
+def extract_abstract(text: str) -> str:
+    """The abstract's prose, taken from the built manuscript.
+
+    Read from the generated document rather than the template, so the numbers
+    in the pasted abstract are the numbers the code produced -- the same
+    reason every other target here builds from manuscript_built.md.
+    """
+    _, heading, rest = text.partition(ABSTRACT_HEADING)
+    if not heading:
+        raise ExportError(
+            f"the built manuscript has no '{ABSTRACT_HEADING}' heading, so "
+            "there is no abstract to export. Fix the heading in "
+            "paper/manuscript.md or the marker in src/export.py."
+        )
+    body = rest.split("\n---\n", 1)[0]
+    return body.strip("\n")
+
+
+def _strip_inline_markdown(text: str) -> str:
+    """Emphasis and links become their own text.
+
+    A submission form takes plain prose. Pasting `**exactly zero**` into one
+    publishes the asterisks.
+    """
+    text = re.sub(r"\[([^\]]+)\]\([^)]*\)", r"\1", text)
+    text = re.sub(r"<((?:https?|mailto:)[^>]+)>", r"\1", text)
+    text = re.sub(r"\*\*([^*]+)\*\*", r"\1", text)
+    text = re.sub(r"(?<!\*)\*([^*]+)\*(?!\*)", r"\1", text)
+    text = re.sub(r"`([^`]+)`", r"\1", text)
+    return text
+
+
+def to_ascii(text: str) -> str:
+    """Every character replaced deliberately, or the build stops.
+
+    The unmapped case is an error rather than a fallback. A character this
+    table has never seen is exactly the one worth looking at before it reaches
+    a form that will reject it, and dropping it silently would reproduce the
+    problem this function exists to solve.
+    """
+    for char, replacement in ASCII_PUNCTUATION.items():
+        text = text.replace(char, replacement)
+    stray = sorted({c for c in text if ord(c) > 126})
+    if stray:
+        named = ", ".join(
+            f"U+{ord(c):04X} {unicodedata.name(c, 'unnamed')}" for c in stray
+        )
+        raise ExportError(
+            f"the abstract contains characters ASCII_PUNCTUATION has no entry "
+            f"for: {named}\nAdd them to the table in src/export.py rather than "
+            "letting the submission form reject the paste."
+        )
+    return text
+
+
+def build_abstract(out: Path) -> Path:
+    source = SOURCE.read_text(encoding="utf-8")
+    body = to_ascii(_strip_inline_markdown(extract_abstract(source)))
+    out.parent.mkdir(exist_ok=True)
+    out.write_text(body + "\n", encoding="ascii", newline="\n")
+    return out
+
+
+# --------------------------------------------------------------------------
 # Pandoc
 # --------------------------------------------------------------------------
 
@@ -344,7 +447,26 @@ def build_pdf(md: str, out: Path, allow_browser: bool = False) -> tuple[Path, st
             # Libertinus Serif ships with typst itself, so this renders the
             # same on any machine that can run the build -- which a
             # system-installed face like Georgia would not.
+            #
+            # `typst-smart` turns the smart extension off in the *writer*, and
+            # that is what stops "2023's" rendering as "2023 prime s".
+            #
+            # The default round trip loses the distinction. Pandoc's reader
+            # already resolves ' to U+2019 in the AST, but the typst writer
+            # normalises it back to an ASCII apostrophe on the assumption that
+            # typst will re-smarten it, and typst's rule is not pandoc's: an
+            # apostrophe after a digit becomes a prime, because 5'11" is the
+            # case that rule was written for. So `2023's` came out `2023-prime-s`
+            # while `NVSR's` came out correctly, and no amount of editing
+            # paper/manuscript.md could fix it -- the character in the source
+            # was already the right one, and the writer discarded it.
+            #
+            # With the extension off the writer emits real Unicode punctuation
+            # and pandoc's template emits `#set smartquote(enabled: false)`, so
+            # typst renders what it is given. Feet-and-inches marks would now
+            # need an explicit prime; this manuscript has none.
             extra += [
+                "--to", "typst-smart",
                 "--variable", f"mainfont={TYPST_FONT}",
                 "--variable", "fontsize=11pt",
             ]
@@ -484,6 +606,10 @@ def main(argv: list[str] | None = None) -> int:
     ap.add_argument("--pdf", action="store_true", help="build the PDF only")
     ap.add_argument("--docx", action="store_true", help="build the DOCX only")
     ap.add_argument(
+        "--abstract", action="store_true",
+        help="write the ASCII-only abstract only",
+    )
+    ap.add_argument(
         "--anonymous", action="store_true",
         help="strip author name, ORCID, affiliation, and neutralise the "
              "repository and DOI references",
@@ -502,17 +628,28 @@ def main(argv: list[str] | None = None) -> int:
     )
     args = ap.parse_args(argv)
 
-    # Neither flag means both formats, which is what a bare invocation should
-    # do. --pdf and --docx together mean the same thing.
-    pdf = args.pdf or not (args.pdf or args.docx)
-    docx = args.docx or not (args.pdf or args.docx)
+    # No target flag means every target, which is what a bare invocation
+    # should do. Naming all of them means the same thing.
+    chose = args.pdf or args.docx or args.abstract
+    pdf = args.pdf or not chose
+    docx = args.docx or not chose
+    abstract = args.abstract or not chose
 
     try:
         variants = [False, True] if args.both else [args.anonymous]
         produced: list[Path] = []
-        for anonymous in variants:
+        for anonymous in variants if (pdf or docx) else []:
             print("anonymised:" if anonymous else "identified:")
             produced += run(pdf, docx, anonymous, args.allow_browser_fallback)
+        if abstract:
+            # Written once, not per variant. The abstract names no author and
+            # cites no DOI, so an anonymised copy would be the same bytes
+            # under a second name, which implies a difference that is not
+            # there.
+            out = build_abstract(DIST / "abstract.txt")
+            print(f"\n  TXT   {out.relative_to(ROOT)}  ASCII abstract, for "
+                  "submission forms that reject Unicode")
+            produced.append(out)
         manifest = write_manifest(
             getattr(run, "last_engine", None), produced
         )

@@ -41,8 +41,8 @@ keywords:
   - CDC WONDER
   - United States
 license: BSD-3-Clause
-version: 0.1.1
-date-released: "2026-09-03"
+version: 0.1.2
+date-released: "2026-09-04"
 # The CONCEPT DOI, deliberately, not this release's version DOI.
 #
 # A version DOI is minted when Zenodo archives the release, which happens after

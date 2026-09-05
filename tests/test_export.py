@@ -7,12 +7,18 @@ anonymised build is the kind of artifact whose defect is invisible in the
 thing itself: a PDF with the author's name still in it looks exactly like one
 without, until a reviewer opens it.
 
-Nothing here requires pandoc. The document-shaping logic is pure Python and is
-tested directly; the pandoc invocation is a thin wrapper over it.
+A third failure was not: "2023's" rendered as "2023-prime-s" in the PDF while
+the markdown held an ordinary apostrophe, because the build turned it into one
+character and typst turned that into another. See the Typography section.
+
+The document-shaping logic is pure Python and is tested directly, so the suite
+runs without pandoc; the two tests that drive a real build skip when the tools
+they need are absent.
 """
 import json
 import re
 import shutil
+import unicodedata
 
 import pytest
 
@@ -204,6 +210,146 @@ def test_the_typst_path_names_a_font(identity):
     """
     assert export.TYPST_FONT
     assert export.TYPST_FONT in ("Libertinus Serif", "New Computer Modern")
+
+
+# --------------------------------------------------------------------------
+# Typography
+# --------------------------------------------------------------------------
+
+# Every non-ASCII character the manuscript is allowed to contain, named. An
+# allowlist and not a blocklist: the character that got through was one nobody
+# had thought to look for, and a blocklist only ever contains characters
+# somebody already thought of.
+#
+# The em dash is absent deliberately and is not an oversight. It is house
+# style, not a typo, so nothing else would have caught it coming back.
+ALLOWED_NON_ASCII = {
+    "‘": "left single quotation mark",
+    "’": "right single quotation mark",
+    "“": "left double quotation mark",
+    "”": "right double quotation mark",
+    "–": "en dash",
+}
+
+TYPOGRAPHY_SOURCES = ("paper/manuscript.md", "paper/manuscript_built.md")
+
+
+@pytest.mark.parametrize("relative", TYPOGRAPHY_SOURCES)
+def test_the_manuscript_uses_only_allowed_characters(relative):
+    """A character nobody chose must not reach a submitted document.
+
+    Both of us read the abstract page and neither saw that "2023's" had
+    rendered as "2023-prime-s". That is the shape of the problem: it is not
+    illegible, it is almost right, so proofreading slides over it.
+
+    The allowlist is deliberately short. Adding to it should mean deciding
+    that a character belongs in the paper, which is a different act from
+    letting one arrive.
+    """
+    text = (ROOT / relative).read_text(encoding="utf-8")
+    offenders: dict[str, list[int]] = {}
+    for number, line in enumerate(text.splitlines(), start=1):
+        for char in line:
+            if ord(char) > 126 and char not in ALLOWED_NON_ASCII:
+                offenders.setdefault(char, []).append(number)
+    assert not offenders, "\n".join(
+        f"U+{ord(c):04X} {unicodedata.name(c, 'unnamed')} in {relative} "
+        f"on line{'s' if len(ns) > 1 else ''} "
+        + ", ".join(str(n) for n in ns[:10])
+        for c, ns in sorted(offenders.items())
+    )
+
+
+def test_the_typst_path_disables_the_writers_smart_extension():
+    """The prime came from the PDF build, not from the manuscript.
+
+    This is the test that would have caught it, and the allowlist above is
+    not: paper/manuscript.md held a plain ASCII apostrophe the whole time.
+    Pandoc's typst writer normalises U+2019 back to `'` and lets typst
+    re-smarten it, and typst turns an apostrophe after a digit into a prime
+    because 5'11" is the case that rule exists for. Editing the source could
+    not have fixed it; the writer discarded the character either way.
+
+    `--to typst-smart` turns the writer's smart extension off, so it emits
+    real punctuation and pandoc's template tells typst to leave it alone.
+    """
+    src = (ROOT / "src" / "export.py").read_text(encoding="utf-8")
+    typst_branch = src.split('elif writer == "typst":', 1)[1].split("_pandoc(", 1)[0]
+    assert '"typst-smart"' in typst_branch, (
+        "the typst build no longer passes --to typst-smart; an apostrophe "
+        "after a digit will render as a prime again"
+    )
+
+
+@pytest.mark.skipif(shutil.which("pandoc") is None, reason="pandoc not installed")
+def test_the_typst_source_carries_real_punctuation(tmp_path):
+    """The flag above is intent; this is the mechanism, checked on real output.
+
+    Two things have to hold together and either alone is insufficient. The
+    writer must emit U+2019 rather than an ASCII apostrophe, and the document
+    must tell typst not to re-smarten what it is given. Assert both on the
+    typst source pandoc actually generates, which needs no typst and no PDF
+    reader, so it runs rather than skipping.
+    """
+    out = tmp_path / "probe.typ"
+    export._pandoc(
+        "The restatement moved 2023's population, and NVSR's rate.\n",
+        out, "typst", ["--to", "typst-smart"],
+    )
+    source = out.read_text(encoding="utf-8")
+    assert "2023’s" in source, (
+        "the typst writer emitted an ASCII apostrophe; typst will render it "
+        "as a prime after a digit"
+    )
+    assert "#set smartquote(enabled: false)" in source, (
+        "typst was left free to re-smarten the punctuation pandoc chose"
+    )
+
+
+# --------------------------------------------------------------------------
+# The ASCII abstract
+# --------------------------------------------------------------------------
+
+
+def test_the_ascii_abstract_is_ascii(tmp_path):
+    """The whole point of the artifact, asserted directly."""
+    out = export.build_abstract(tmp_path / "abstract.txt")
+    body = out.read_text(encoding="ascii")
+    assert body.strip()
+    assert body.isascii()
+
+
+def test_the_ascii_abstract_keeps_the_abstract_and_stops_there(tmp_path):
+    """It must be the abstract, not the front matter and not section 1."""
+    body = export.build_abstract(tmp_path / "abstract.txt").read_text()
+    assert "crude death rate" in body
+    assert "## " not in body
+    assert "Introduction" not in body
+    assert "**" not in body and "`" not in body
+
+
+def test_an_unmapped_character_is_an_error_not_a_silent_deletion():
+    """encode("ascii", "ignore") is the wrong tool and this says why.
+
+    A dropped character leaves a sentence that still reads plausibly, which
+    is how it survives review. The build stops instead, naming the character.
+    """
+    with pytest.raises(export.ExportError, match="U\\+2603"):
+        export.to_ascii("a snowman ☃ walks in")
+
+
+def test_every_allowed_manuscript_character_has_an_ascii_mapping():
+    """Whatever typography the manuscript permits, the abstract can carry.
+
+    These two tables are the same policy seen from both ends. A character
+    added to the allowlist and not to the mapping would pass every test here
+    and fail on the submission form.
+    """
+    missing = sorted(set(ALLOWED_NON_ASCII) - set(export.ASCII_PUNCTUATION))
+    assert not missing, (
+        "allowed in the manuscript but unmapped in ASCII_PUNCTUATION: "
+        + ", ".join(f"U+{ord(c):04X}" for c in missing)
+    )
 
 
 # --------------------------------------------------------------------------
