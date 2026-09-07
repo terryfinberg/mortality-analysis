@@ -13,9 +13,10 @@ it is the release the Demographic Research submission is built from**
 > read the built `.docx` and `.pdf` instead of only the markdown. `dist/` is built from the
 > tagged tree. **Submit `dist/manuscript-anonymous-journal.docx`.** See step 10.
 >
-> The reference list is deliberately unchanged: DR does not require it reformatted until
-> acceptance. The entry for the newly cited NVSR report is drafted and checked in
-> `docs/demographic-research-gap.md`, not inserted.
+> The other six reference entries are deliberately unchanged: DR does not require the list
+> reformatted until acceptance. The one entry for the newly cited NVSR report **is** in the
+> list, alphabetised under H, because leaving it out would have left the in-text citation
+> resolving to nothing.
 >
 > ### `v0.1.2` remains the release the preprint cites
 >
@@ -100,7 +101,7 @@ exactly zero.
 and hash-verified, all 150 data rows are populated from those exports and personally
 attested, 14 of the 15 annual totals are corroborated against NCHS's published NVSR reports,
 and `python -m src.report` produces `results.json`, five figures and a built manuscript with
-every value substituted from code. 244 tests pass. The arithmetic has been reviewed and its
+every value substituted from code. 246 tests pass. The arithmetic has been reviewed and its
 findings fixed, `figures/` is tracked so a release archives the images the paper shows, and
 `main` is pushed to GitHub.
 
@@ -221,7 +222,7 @@ points at, so the file never described a release that did not exist.
 
 Nothing in this restructure was allowed to touch a computed value. `python -m src.report` was
 re-run afterwards and `git diff` reports **no change** in `data/processed/results.json` or in
-any of the five figures. 244 tests pass, including the sweep in `tests/test_documents.py` for
+any of the five figures. 246 tests pass, including the sweep in `tests/test_documents.py` for
 statistic-shaped literals: the new §4.4 table and every figure quoted in the new abstract are
 bound to tokens, not typed.
 
@@ -609,7 +610,7 @@ Verified by mutation, three ways: an em dash in `README.md`, one in `STATUS.md` 
 the quote, and one **on the quote's own line**. All three fail. The exemption covers its
 exact text and does not widen to the line around it.
 
-`results.json` and all five figures are byte-identical to `v0.1.1`. 244 tests pass.
+`results.json` and all five figures are byte-identical to `v0.1.1`. 246 tests pass.
 
 ### 10. Cut `v0.1.3`: the Demographic Research submission
 
@@ -683,10 +684,19 @@ because the alternative is misspelling a cited author to keep a file plain. The 
 guard caught it on the first run after the edit, which is the guard working as designed
 rather than an obstacle to it.
 
-The reference-list entry is drafted and checked against the cover page in
-`docs/demographic-research-gap.md`, under DR's *Research report or working paper* template.
-**It is not in the manuscript**: the list stays as it is until acceptance, so the in-text
-citation has no matching entry yet.
+**The entry went into the reference list**, alphabetised under H, in DR's *Research report
+or working paper* form and checked against the cover page. Only that one: the other six
+entries keep their Vancouver styling until acceptance.
+
+It nearly did not. "Leave the list alone" was about not reformatting six entries, and for
+one revision it was applied to a seventh that did not exist yet, which left an in-text
+citation resolving to nothing. That is the mirror of the uncited reference, and the worse
+direction: a reader who follows an uncited entry finds a real work they did not need, and a
+reader who follows a dangling citation finds nothing at all.
+`tests/test_documents.py::test_every_in_text_citation_resolves_to_a_reference` now matches
+every author-year citation in the body against the list, with a companion test proving the
+pattern finds the citations that are there and ignores an ordinary parenthetical that
+happens to contain a year.
 
 *There were no numeric in-text citations to convert.* The paper cites by name and year in
 running prose throughout; only the reference list is Vancouver-styled, and DR does not want

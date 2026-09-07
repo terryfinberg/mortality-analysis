@@ -70,6 +70,7 @@ reference list are cited by nothing in the text.**
 
 | Entry | Cited in text? |
 |---|---|
+| Hamilton, Driscoll, and Miniño 2025 | Yes, parenthetically with a page, section 4.4. Added with that citation. |
 | Kitagawa 1955 | Yes, by name and year, sections 1 and 3.2. |
 | Noymer and Garenne 2000 | Yes, parenthetically, section 5.2. |
 | Klein and Schoenborn 2001 | By its title only — "NCHS Statistical Notes No. 20", section 2 — never by author or year. |
@@ -113,7 +114,7 @@ That surname costs the manuscript its ASCII purity, deliberately. `ñ` is now in
 misspelling a cited author to keep a file plain. It is the first entry in either table that
 is a letter rather than a mark.
 
-**The list entry, checked against the cover page:**
+**The list entry, checked against the cover page and now in the manuscript** under H:
 
 > Hamilton, B.E., Driscoll, A.K., and Miniño, A.M. (2025). Trends in births and deaths:
 > United States, 2010-2023. Hyattsville, MD: National Center for Health Statistics
@@ -127,10 +128,17 @@ recording so neither reads as a transcription slip. The cover sets the title in 
 manuscript is written. The wording is otherwise identical, and the volume, number and date
 — 74(11), August 27, 2025 — are read from the cover page too.
 
-**This entry is not in the manuscript yet.** The reference list stays untouched until
-acceptance, so the in-text citation currently has no matching entry; the list carries the
-*Deaths: Final Data* series generically instead. Add the block above when the list is
-reformatted, alphabetised under H.
+**This one entry was added; the other six were not.** "Not required to be reformatted until
+acceptance" is about restyling the existing entries, not about omitting an entry the text
+cites — a citation with nothing to resolve to is a defect in its own right, and the mirror
+of the two uncited entries above. So the list now runs Hamilton, Kitagawa, Klein, Noymer,
+Woolf, Human Mortality Database, National Center for Health Statistics: one entry in DR
+form at the top, six in Vancouver form behind it, and still not fully alphabetical, all of
+which the reformatting pass will settle at once.
+
+`tests/test_documents.py::test_every_in_text_citation_resolves_to_a_reference` holds the
+new invariant, with a companion test proving the pattern matches the citations that are
+there and skips an ordinary parenthetical carrying a year.
 
 ## The AI disclosure moved
 

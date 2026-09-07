@@ -284,6 +284,8 @@ A reader who needs a single-vintage series should build one and should expect th
 
 ## References
 
+Hamilton, B.E., Driscoll, A.K., and Miniño, A.M. (2025). Trends in births and deaths: United States, 2010-2023. Hyattsville, MD: National Center for Health Statistics (National Vital Statistics Reports 74(11)). https://www.cdc.gov/nchs/data/nvsr/nvsr74/nvsr74-11.pdf.
+
 Kitagawa EM. Components of a difference between two rates. *Journal of the American Statistical Association* 1955;50(272):1168-1194.
 
 Klein RJ, Schoenborn CA. Age adjustment using the 2000 projected U.S. population. *Healthy People Statistical Notes* No. 20. Hyattsville, MD: National Center for Health Statistics, 2001.

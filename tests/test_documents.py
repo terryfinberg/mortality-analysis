@@ -223,3 +223,49 @@ def test_the_page_citation_pattern_would_reject_a_missing_page():
     # No page, so not acceptable after a quotation.
     assert not PAGE_CITATION.search("(National Center for Health Statistics 2025)")
     assert not PAGE_CITATION.search("(Milewski 2007)")
+
+
+# An author-year citation: one or more capitalised surnames, then the year,
+# optionally with a page. The opening capital is what keeps it off ordinary
+# parentheses -- "(the primary series as published, 2010 excluded...)" carries
+# a year and is not a citation.
+AUTHOR_YEAR = re.compile(
+    r"\(([A-Z][A-Za-z\u00C0-\u024F'-]+"
+    r"(?:(?:,| and|, and)\s+[A-Z][A-Za-z\u00C0-\u024F'-]+)*)"
+    r"\s+\d{4}[a-z]?(?::\s?\d+(?:-\d+)?)?\)"
+)
+
+
+def test_every_in_text_citation_resolves_to_a_reference():
+    """A citation with no entry points at nothing.
+
+    This happened: (Hamilton, Driscoll, and Miniño 2025: 2) went into section
+    4.4 while the reference list was being left alone until acceptance, and
+    the two decisions were made a message apart. It is the mirror of the
+    uncited reference -- the list has two of those as well, recorded in
+    docs/demographic-research-gap.md -- and it is the more serious direction,
+    because a reader who follows this one finds nothing at all.
+    """
+    text = MANUSCRIPT.read_text(encoding="utf-8")
+    body, _, references = text.partition("## References")
+    assert references, "the manuscript has no References section"
+
+    dangling = []
+    for match in AUTHOR_YEAR.finditer(body):
+        # The first surname is what the entry is alphabetised under.
+        first = re.split(r",| and ", match.group(1))[0].strip()
+        if first not in references:
+            dangling.append(f"{match.group(0)} -- no entry under {first!r}")
+    assert not dangling, (
+        "in-text citations with no reference list entry:\n" + "\n".join(dangling)
+    )
+
+
+def test_the_citation_pattern_finds_the_citations_that_are_there():
+    """A pattern matching nothing would report a clean sweep of nothing."""
+    body = MANUSCRIPT.read_text(encoding="utf-8").split("## References")[0]
+    found = {m.group(1) for m in AUTHOR_YEAR.finditer(body)}
+    assert len(found) >= 2, f"expected the known citations, found {found}"
+    assert any("Noymer" in f for f in found)
+    # And it must not treat an ordinary parenthetical containing a year as one.
+    assert not AUTHOR_YEAR.search("(the primary series as published, 2010 excluded)")
