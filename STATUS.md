@@ -1,8 +1,9 @@
 # Status
 
 **Last updated:** 2026-09-07 · **Branch:** `main` ·
-**Remote:** `origin` → `github.com/terryfinberg/mortality-analysis` · **`v0.1.3` tagged;
-it is the release the Demographic Research submission is built from**
+**Remote:** `origin` → `github.com/terryfinberg/mortality-analysis` · **`v0.1.3` tagged,
+pushed, archived and citable; it is the release the Demographic Research submission is
+built from**
 
 > ## ✅ `v0.1.3` is tagged. It is the release to submit from.
 >
@@ -55,12 +56,19 @@ it is the release the Demographic Research submission is built from**
 > | **Version `v0.1.0`** | [10.5281/zenodo.22263668](https://doi.org/10.5281/zenodo.22263668) | the Zenodo record, and `CITATION.cff`'s `identifiers:` in a **post-tag** commit |
 > | **Version `v0.1.1`** | [10.5281/zenodo.22267191](https://doi.org/10.5281/zenodo.22267191) | same |
 > | **Version `v0.1.2`** | [10.5281/zenodo.22315017](https://doi.org/10.5281/zenodo.22315017) | same |
+> | **Version `v0.1.3`** | [10.5281/zenodo.22648433](https://doi.org/10.5281/zenodo.22648433) | same |
 >
-> **The allocation is not sequential, and three releases have now shown it.** `v0.1.0`'s
+> **The allocation is not sequential, and four releases have now shown it.** `v0.1.0`'s
 > version DOI was the concept DOI plus one, which made `22263669` look like a safe guess
 > for the next one. `v0.1.1` landed at `22267191`, some three and a half thousand away.
-> `v0.1.2` landed at `22315017`, another forty-eight thousand on. Zenodo assigns at deposit
-> time. A version DOI is only ever copied from the record it was minted on.
+> `v0.1.2` landed at `22315017`, another forty-eight thousand on. `v0.1.3` landed at
+> `22648433`, **333,416** further still. Zenodo assigns at deposit time. A version DOI is
+> only ever copied from the record it was minted on.
+>
+> The four gaps run 1, 3,523, 47,826 and 333,416. Each one is roughly an order of magnitude
+> on the last, which is the shape of a counter shared with every other deposit on Zenodo
+> rather than a sequence belonging to this record. It is not converging on a magnitude and
+> there is nothing here to extrapolate from.
 >
 > The manuscript, `README.md` and `paper/medrxiv_submission.md` all cite the concept DOI
 > and say why. The manuscript names its own release from `{{RELEASE_VERSION}}`, which

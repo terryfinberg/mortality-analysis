@@ -75,3 +75,10 @@ identifiers:
   - type: doi
     value: "10.5281/zenodo.22315017"
     description: "Version DOI for release v0.1.2."
+  # Fourth allocation, and the largest gap yet: 333,416 from v0.1.2's. The
+  # first three spanned one, four thousand, and forty-eight thousand, so the
+  # sequence is not even converging on a magnitude. Copied from the minted
+  # record, as every one of these must be.
+  - type: doi
+    value: "10.5281/zenodo.22648433"
+    description: "Version DOI for release v0.1.3."
