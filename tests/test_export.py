@@ -451,6 +451,82 @@ def test_the_ascii_abstract_keeps_the_abstract_and_stops_there(tmp_path):
     assert "**" not in body and "`" not in body
 
 
+# --------------------------------------------------------------------------
+# The structured abstract Demographic Research requires
+# --------------------------------------------------------------------------
+#
+# DR wants six headings, CONTRIBUTION mandatory, and 250 words. This was the
+# one item on the gap list that was real work rather than mechanics, and the
+# limit is the part that decays: an abstract is edited more than anything else
+# in a paper, and every edit is a chance to go one sentence over a bound
+# nobody is measuring. So it is measured here.
+
+ABSTRACT_LIMIT = 250
+
+ABSTRACT_HEADINGS = ["BACKGROUND", "OBJECTIVE", "METHODS", "RESULTS",
+                     "CONCLUSIONS", "CONTRIBUTION"]
+
+
+def _abstract_without_headings(built: str) -> str:
+    """The abstract's prose. Headings are structure, not content.
+
+    DR's limit is on the abstract, and the six headings are the form it
+    imposes rather than words the author chose. Counting them would charge
+    the author six words for obeying the instruction.
+    """
+    body = export.extract_abstract(built)
+    for word in ABSTRACT_HEADINGS:
+        body = re.sub(rf"\*{{0,2}}{word}\*{{0,2}}\s*:?", " ", body)
+    return re.sub(r"[*`#|>]", " ", body)
+
+
+def test_the_abstract_carries_all_six_headings_in_order(built):
+    """CONTRIBUTION is the one DR calls mandatory and the one most easily lost.
+
+    It is the only heading with no home in a conventional abstract, so it is
+    the one an edit that restores "flow" removes first.
+    """
+    body = export.extract_abstract(built)
+    missing = [w for w in ABSTRACT_HEADINGS if w not in body]
+    assert not missing, f"the abstract is missing {', '.join(missing)}"
+    positions = [body.index(w) for w in ABSTRACT_HEADINGS]
+    assert positions == sorted(positions), (
+        "the abstract's headings are out of DR's order: "
+        + ", ".join(sorted(ABSTRACT_HEADINGS, key=body.index))
+    )
+
+
+def test_the_abstract_is_within_the_word_limit(built):
+    words = len(_abstract_without_headings(built).split())
+    assert words <= ABSTRACT_LIMIT, (
+        f"the abstract runs {words} words excluding headings; Demographic "
+        f"Research allows {ABSTRACT_LIMIT}."
+    )
+
+
+def test_the_abstract_quotes_no_number_the_template_typed_by_hand(built):
+    """Every figure in RESULTS comes from a token.
+
+    The abstract is the most quoted part of a paper and the furthest from the
+    code that produced its numbers. A literal here would agree with
+    results.json on the day it was typed and silently stop agreeing after.
+    """
+    template = (ROOT / "paper" / "manuscript.md").read_text(encoding="utf-8")
+    source = export.extract_abstract(template)
+    # A section number is a decimal and is not a result. The previous abstract
+    # ended a paragraph with "section 5.1 takes up what that means", so this
+    # is a shape the abstract has actually had.
+    source = re.sub(r"\bsections?\s+\d+(\.\d+)*", " ", source, flags=re.I)
+    literals = re.findall(r"(?<![\w.{}-])\d+\.\d+(?![\w}])", source)
+    assert not literals, (
+        f"the abstract template types {literals} as literals; use the token "
+        "that already exists for each."
+    )
+    # And the built abstract must actually carry numbers, or the check above
+    # would pass on an abstract that had lost them.
+    assert re.search(r"\d+\.\d+", export.extract_abstract(built))
+
+
 def test_an_unmapped_character_is_an_error_not_a_silent_deletion():
     """encode("ascii", "ignore") is the wrong tool and this says why.
 

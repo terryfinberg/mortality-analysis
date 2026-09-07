@@ -41,7 +41,7 @@ keywords:
   - CDC WONDER
   - United States
 license: BSD-3-Clause
-version: 0.1.3
+version: 0.1.4
 date-released: "2026-09-07"
 # The CONCEPT DOI, deliberately, not this release's version DOI.
 #

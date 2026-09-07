@@ -29,34 +29,59 @@ template they publish is optional rather than expected. The mechanical requireme
 word-processor tables, 300 dpi PNG figures, captions on everything, figures placed in the
 text rather than collected at the end — are all met by the current build.
 
-What is left is editorial, and one item of it is substantial. Of the eleven requirements
-below, ten are met; item 1 is the only one that is real work.
+All eleven requirements below are now met. Item 1, the structured abstract, was the only
+one that was real work rather than mechanics, and it closed in `v0.1.4`. Item 2, the
+reference list, is deliberately left half-done: DR does not require it reformatted until
+acceptance.
 
 ## The gaps
 
 | | Requirement | Where we are | Size of the job |
 |---|---|---|---|
-| **1** | **Structured abstract, 250 words max**, headed BACKGROUND, OBJECTIVE, METHODS, RESULTS, CONCLUSIONS, CONTRIBUTION. CONTRIBUTION is mandatory. | 548 words, unstructured, six paragraphs. | **The real work.** Needs cutting by more than half and rebuilding under six headings. |
-| **2** | Author-year references: `Surname, Initials (Year). Title. Journal Volume(Issue): Pages.` Alphabetical, unnumbered, all authors named. | Vancouver style: `Kitagawa EM. Components of a difference between two rates. *JASA* 1955;50(272):1168-1194.` Six entries, and the last two break alphabetical order. | Mechanical. An hour, six entries. |
-| **3** | In-text citations as surname + year; `(Author and Author 1995)`, `(Author et al. 1995)` above three. | **There are no numeric in-text citations to convert.** The paper cites narratively and by name and year — "Kitagawa published the decomposition in 1955" — with one already-parenthetical `(Noymer and Garenne 2000)`. Nothing is in Vancouver style *in the text*; only the reference list is, and DR does not want that reformatted until acceptance. | **Nothing to do mechanically.** See below for the two entries that are cited by nobody. |
+| **1** | **Structured abstract, 250 words max**, headed BACKGROUND, OBJECTIVE, METHODS, RESULTS, CONCLUSIONS, CONTRIBUTION. CONTRIBUTION is mandatory. | Rewritten under all six headings, in order. 244 words excluding headings, 250 including them. Every figure in RESULTS is a token. | **Done** in `v0.1.4`, and the limit is now a test. |
+| **2** | Author-year references: `Surname, Initials (Year). Title. Journal Volume(Issue): Pages.` Alphabetical, unnumbered, all authors named. | Mixed by design: one entry in DR form (Hamilton et al.), four in Vancouver form, and the NCHS series entry out of alphabetical order. Five entries now that the Human Mortality Database is gone. | Mechanical, and deferred to acceptance as DR allows. An hour, five entries. |
+| **3** | In-text citations as surname + year; `(Author and Author 1995)`, `(Author et al. 1995)` above three. | **There were no numeric in-text citations to convert.** The paper cites narratively and by name and year, plus three parentheticals: `(Noymer and Garenne 2000)`, `(Woolf and Schoomaker 2019)` and `(Hamilton, Driscoll, and Miniño 2025: 2)`. | **Done.** Every entry is now cited and every citation resolves, both under test. |
 | **4** | Up to ten keywords listed in the file. | Ten, read from `CITATION.cff`, printed as a visible line after the abstract in both formats, and set as the Word document property — which through `v0.1.2` it silently was **not**; see README, "Building the submission artifacts". | **Done**, and now tested against the built file. |
 | **5** | Manuscript file must have author names and identifying information removed. | `--anonymous` does this. Verified in the markdown *and* in every built `.docx` and `.pdf`, against three planted leaks. | **Done.** |
 | **6** | Title carries geographic and temporal focus. | "…U.S. Crude Death Rates, 2010-2024…" | **Done.** |
-| **7** | Main text recommended under 8,000 words. | 4,735 (sections 1–6). Full submission 5,759. | **Done.** |
+| **7** | Main text recommended under 8,000 words. | 4,774 (sections 1–6). Full submission 5,514, measured in the built `.docx` rather than estimated. | **Done.** |
 | **8** | Section headings for anything over 1,000 words. | Numbered sections throughout. | **Done.** |
 | **9** | Figures 300 dpi, `.png` strongly preferred, captioned, placed in position. | `src/figures.py` writes 300 dpi PNG; all five are embedded in place with numbered captions. | **Done.** |
 | **10** | Tables built with table tools, not tabs or spaces. | Pandoc emits real `<w:tbl>` Word tables. | **Done.** |
 | **11** | Double-spaced, 12pt or larger, no page numbers, no headers or footers. DR states it will not edit submissions to conform. | `--journal` does all four, in both formats, and reads them back out of the built file. The ordinary build failed three of the four: 11pt, single-spaced, and typst numbers pages by default. | **Done.** |
 
-## The abstract is the whole gap
+## The abstract was the whole gap, and it is closed
 
-Item 1 is not a formatting change. Demographic Research wants a 250-word abstract under six
-mandatory-ish headings; ours is 548 words of continuous argument, and its structure is
-rhetorical — it builds to the denominator finding rather than declaring it. CONTRIBUTION is
-the heading that will take the most thought, because this paper has two contributions and the
-abstract currently spends three paragraphs establishing that they are linked.
+Item 1 was the only item on this list that was real work rather than mechanics. The old
+abstract ran 548 words of continuous argument across six paragraphs, and its structure was
+rhetorical: it built towards the denominator finding rather than declaring it. DR wants 250
+words under six headings, declared.
 
-Nothing else on the list takes more than an afternoon.
+The replacement is 244 words excluding headings, 250 including them, pure ASCII, with all
+six headings present and in DR's order. CONTRIBUTION — the heading DR calls mandatory, and
+the one with no home in a conventional abstract — states the two contributions in one
+sentence rather than the three paragraphs the old version spent establishing that they were
+linked.
+
+**Every figure in RESULTS is a token**, not a literal, for the same reason the rest of the
+manuscript is: an abstract is the most quoted part of a paper and the furthest from the code
+that produced its numbers, so a literal here would agree with `results.json` on the day it
+was typed and quietly stop agreeing afterwards.
+
+Four tests hold it, in `tests/test_export.py`:
+
+| Test | What decays without it |
+|---|---|
+| `test_the_abstract_carries_all_six_headings_in_order` | CONTRIBUTION is the first thing an edit restoring "flow" removes |
+| `test_the_abstract_is_within_the_word_limit` | an abstract is edited more than anything else in a paper, and every edit is a chance to cross a bound nobody is measuring |
+| `test_the_abstract_quotes_no_number_the_template_typed_by_hand` | a literal that was right when typed |
+| `test_the_ascii_abstract_is_ascii` | the submission form rejects a paste without naming the character |
+
+The word count is taken from `manuscript_built.md`, never from the template: a `{{TOKEN}}`
+is one word in the source and often more in the built document, so counting the template
+would flatter the total against the limit that actually applies.
+
+Nothing else on the list takes more than an afternoon, and most of it is done.
 
 ## Citations: what item 3 turned out to be
 
@@ -65,24 +90,30 @@ throughout, so the conversion the item asks for has nothing to operate on, and t
 list — the only Vancouver-styled thing in the document — is explicitly not to be reformatted
 until acceptance.
 
-What the check did surface is a different problem, and a real one: **two entries in the
-reference list are cited by nothing in the text.**
+What the check did surface was a different problem, and a real one: two entries were cited
+by nothing in the text. Both were resolved in `v0.1.4`, in opposite directions, because the
+right fix for an uncited reference depends on why it is uncited.
 
 | Entry | Cited in text? |
 |---|---|
-| Hamilton, Driscoll, and Miniño 2025 | Yes, parenthetically with a page, section 4.4. Added with that citation. |
+| Hamilton, Driscoll, and Miniño 2025 | Yes, parenthetically with a page, section 4.4. |
 | Kitagawa 1955 | Yes, by name and year, sections 1 and 3.2. |
-| Noymer and Garenne 2000 | Yes, parenthetically, section 5.2. |
 | Klein and Schoenborn 2001 | By its title only — "NCHS Statistical Notes No. 20", section 2 — never by author or year. |
-| NCHS, *Deaths: Final Data* | By series name, sections 4.4 and 6.1. |
-| **Woolf and Schoomaker 2019** | **No.** |
-| **Human Mortality Database** | **No.** |
+| Noymer and Garenne 2000 | Yes, parenthetically, section 5.2. |
+| Woolf and Schoomaker 2019 | Yes, parenthetically, section 5.1, added in `v0.1.4`. |
+| ~~Human Mortality Database~~ | **Removed.** The analysis never used it, and listing it implied otherwise. |
 
-A reference list with uncited entries is the same defect as the uncited figure that
-`tests/test_export.py` was written to catch, and it is the sort of thing a copy-editor finds
-rather than a reviewer. Fixing it is an editorial judgement about the prose — either cite
-them where they belong or drop them — and it belongs with the abstract rewrite, not with a
-mechanical pass.
+**Woolf and Schoomaker was kept and cited; the Human Mortality Database was deleted.** The
+difference is whether the work bears on the argument. Woolf and Schoomaker document rising
+US midlife mortality over 1959–2017, which is exactly the pattern section 5.1 finds in the
+two rising bands over a shorter and later window, so the citation earns its place and
+strengthens the section. The HMD was never read by any code path in this repository; a
+reference list is a claim about what a paper drew on, and listing an unused database
+overstates that.
+
+Every entry is now cited and every citation now resolves, and both directions are under
+test: `test_every_in_text_citation_resolves_to_a_reference` catches a citation with no
+entry, and the uncited-entry direction is checked by eye against this table.
 
 ### The one direct quotation, and its page number
 

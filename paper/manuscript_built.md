@@ -8,15 +8,29 @@
 
 ## Abstract
 
-The crude death rate is the most widely cited summary of a population's mortality experience and one of the most frequently misread. Because it is a simple ratio of deaths to population, it responds both to changes in the risk of dying at a given age and to changes in how many people are at each age. In an aging population these two forces pull in opposite directions, and the crude rate reports only their sum.
+**BACKGROUND**
 
-This paper makes two contributions. The first is a decomposition of the change in the U.S. crude death rate between 2010 and 2024 into an age-specific mortality component and a population age-structure component, using the Kitagawa method. Over the full interval the crude rate rose by 103.9 deaths per 100,000: the age-specific mortality component moved it down by 24.4 while the age-structure component moved it up by 128.4. Over the pre-pandemic interval 2010-2019, uncontaminated by the shock, the age effect exceeds the rate effect by 3.41 to one. Aging does not merely dominate the change; it exceeds it, and the age-standardised measure of mortality risk fell over a period in which the crude death rate rose. That improvement is a net across age bands and not a decline at every age: rates rose in two of the six bands, and section 5.1 takes up what that means for the equilibrium.
+The crude death rate is put forward often and misread often. It responds to both mortality risk at any given age and the population's age composition; in an older society, the two are at odds.
 
-The second contribution is a measurement of the denominator those rates are divided by. Four vintage boundaries fall inside this single fifteen-year series, and all four were measured against source data rather than assumed: the per-year vintage chain CDC WONDER carries, the Vintage 2024 restatement of 2023, the 2010 April 1 measurement basis, and the bridged-race to single-race seam at 2017/2018. One of them is **exactly zero**. The seam agrees to the person in every age band, in deaths and in population alike, against a purpose-run export rather than by assumption, and a boundary measured at zero is not the same object as a boundary nobody measured.
+**OBJECTIVE**
 
-The others are not zero. The Vintage 2024 restatement moved 2023's population by 0.565 percent, non-uniformly across bands, and accounts for 26.6 percent of the published 2023-to-2024 crude-rate decline, 70.1 percent of which books as a spurious improvement in age-specific mortality. The 2010 measurement basis moves the pre-pandemic age-to-rate ratio across a range of 3.41 to 3.87, which is why that quantity is reported as a range and not as a point estimate. And the strongest evidence here is not ours: NCHS has itself published two different crude death rates for the same year, 2020, in two of its own reports, and named denominator rebasing as the cause.
+To determine how much of the 2010-2024 change in the United States crude death rate reflects mortality risk rather than age structure, and whether the population denominator is stable enough to support the comparison.
 
-The two findings are linked, and neither is complete without the other. The arrangement by which falling age-specific mortality has historically offset the arithmetic pressure of an aging population, holding the crude rate roughly flat, is an equilibrium sustained by cancellation and is therefore fragile; the decomposition shows the margin had already narrowed before 2020. But whether that margin is narrowing, and by how much, is a claim about a denominator as much as about mortality. A crude rate cannot be read as a statement about health until the population it is divided by is known to be stable, and across this series it demonstrably is not.
+**METHODS**
+
+Deaths and population by age come from CDC WONDER, and Census Bureau vintages are used to examine the denominator. Crude rate change is decomposed using the Kitagawa method across six age bands. Four vintage boundaries inside the series are measured against source data rather than assumed.
+
+**RESULTS**
+
+The crude rate rose 103.9 deaths per 100,000: age structure contributed +128.4, age-specific mortality -24.4. Over 2010-2019 the age effect exceeded the rate effect 3.41 to 1. Rates rose in two of six bands. The Vintage 2024 restatement moved the 2023 population by 0.565%, accounting for 26.6% of the published 2023-to-2024 crude-rate decline, 70.1% of which books as spurious mortality improvement.
+
+**CONCLUSIONS**
+
+The rise is compositional. Falling mortality at given ages has historically offset the pressure of aging, holding the crude rate level, but that margin narrowed before 2020. A crude rate is not a statement about health unless its denominator is stable.
+
+**CONTRIBUTION**
+
+Vintage boundaries in the denominator are measured rather than assumed, and a published rate change is shown to be materially attributable to population re-estimation rather than mortality.
 
 ---
 
@@ -200,7 +214,7 @@ For most of the postwar period, American age-specific mortality improved fast en
 
 An equilibrium sustained by cancellation is not durable. It holds only while improvement continues at roughly its historical pace, and the required pace rises as the population ages further, because the age effect grows with the size of the cohorts moving into high-mortality bands. The decomposition here shows the margin narrowing before the pandemic. Any sustained stall in improvement, or any reversal at particular ages, converts a flat crude rate into a rising one.
 
-**That reversal is not hypothetical in this series.** Age-specific rates rose in two of the six bands over 2010-2024, 25-44 and 45-64, and the larger movement is in 25-44, where the rate rose 23.4 percent. The pandemic did not cause it: over the pre-pandemic interval 2010-2019 alone, the same band rose 18.7 percent. The condition the previous paragraph names as a threat to the equilibrium is already satisfied somewhere in the age distribution, and has been for the whole of the period this paper covers.
+**That reversal is not hypothetical in this series.** Age-specific rates rose in two of the six bands over 2010-2024, 25-44 and 45-64, and the larger movement is in 25-44, where the rate rose 23.4 percent. The pandemic did not cause it: over the pre-pandemic interval 2010-2019 alone, the same band rose 18.7 percent. Both are midlife bands, and a rise at those ages is consistent with increases in U.S. midlife mortality documented over a longer and earlier window than this series covers (Woolf and Schoomaker 2019). The condition the previous paragraph names as a threat to the equilibrium is already satisfied somewhere in the age distribution, and has been for the whole of the period this paper covers.
 
 The net improvement survives it, but not because the reversal is confined to a corner where little happens. The rising bands together account for 21.9 percent of deaths in 2024. What outweighs them is the absolute size of the improvement above them: a decline of a few percent where the rate is thousands per 100,000 moves more deaths than a rise of a fifth where the rate is in the hundreds. That is arithmetic rather than reassurance. The same weighting that keeps the rate effect negative today would stop doing so if the rise continued, or if the cohorts carrying it aged into bands where the rates they meet are higher.
 
@@ -278,7 +292,7 @@ A reader who needs a single-vintage series should build one and should expect th
 
 **ORCID.** Terry Finberg, <https://orcid.org/0009-0006-1598-4200>.
 
-**Data availability.** All code and data needed to reproduce every number and figure in this manuscript are archived at <https://doi.org/10.5281/zenodo.22263667>. This manuscript belongs to release `v0.1.3`, which the archive records in its `CITATION.cff`; the Zenodo record lists every release with its own version DOI, so the exact deposit these results were computed from is one step from that link. The concept DOI is cited here rather than a version DOI because a version DOI is minted when its release is archived, which is after the commit the release is cut from. A manuscript cannot contain the identifier of the deposit that contains it. Development continues at <https://github.com/terryfinberg/mortality-analysis>. The four CDC WONDER export files the analysis reads are redistributed inside the archive rather than described, each carrying WONDER's own query-parameter footer and a SHA-256 digest that the test suite recomputes; the underlying mortality and population data are U.S. federal government works in the public domain.
+**Data availability.** All code and data needed to reproduce every number and figure in this manuscript are archived at <https://doi.org/10.5281/zenodo.22263667>. This manuscript belongs to release `v0.1.4`, which the archive records in its `CITATION.cff`; the Zenodo record lists every release with its own version DOI, so the exact deposit these results were computed from is one step from that link. The concept DOI is cited here rather than a version DOI because a version DOI is minted when its release is archived, which is after the commit the release is cut from. A manuscript cannot contain the identifier of the deposit that contains it. Development continues at <https://github.com/terryfinberg/mortality-analysis>. The four CDC WONDER export files the analysis reads are redistributed inside the archive rather than described, each carrying WONDER's own query-parameter footer and a SHA-256 digest that the test suite recomputes; the underlying mortality and population data are U.S. federal government works in the public domain.
 
 ---
 
@@ -293,8 +307,6 @@ Klein RJ, Schoenborn CA. Age adjustment using the 2000 projected U.S. population
 Noymer A, Garenne M. The 1918 influenza epidemic's effects on sex differentials in mortality in the United States. *Population and Development Review* 2000;26(3):565-581. doi:10.1111/j.1728-4457.2000.00565.x
 
 Woolf SH, Schoomaker H. Life expectancy and mortality rates in the United States, 1959-2017. *JAMA* 2019;322(20):1996-2016. doi:10.1001/jama.2019.16932
-
-Human Mortality Database. University of California, Berkeley, and Max Planck Institute for Demographic Research. https://www.mortality.org/
 
 National Center for Health Statistics. Deaths: Final Data series. National Vital Statistics Reports. https://www.cdc.gov/nchs/products/nvsr.htm
 

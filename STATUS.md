@@ -1,11 +1,28 @@
 # Status
 
 **Last updated:** 2026-09-07 · **Branch:** `main` ·
-**Remote:** `origin` → `github.com/terryfinberg/mortality-analysis` · **`v0.1.3` tagged,
-pushed, archived and citable; it is the release the Demographic Research submission is
-built from**
+**Remote:** `origin` → `github.com/terryfinberg/mortality-analysis` · **`v0.1.4` tagged;
+it is the release the Demographic Research submission is built from, pending its version
+DOI**
 
-> ## ✅ `v0.1.3` is tagged. It is the release to submit from.
+> ## ✅ `v0.1.4` is tagged. It is the release to submit from.
+>
+> **`v0.1.4` closes the last substantial item on the Demographic Research gap list.** The
+> abstract is now structured: 244 words excluding headings against DR's 250, under all six
+> mandatory headings in order, pure ASCII, with every figure in RESULTS bound to a token
+> rather than typed. That was the one item that was real work rather than mechanics, and it
+> had been open since the gap list was written.
+>
+> Two reference-list changes come with it. The Human Mortality Database entry is **removed**:
+> the analysis never used it and listing it implied otherwise. Woolf and Schoomaker 2019
+> is **kept and now cited**, in one sentence in 5.1 noting that the rise in the two midlife
+> bands is consistent with increases documented over a longer and earlier window. Every
+> entry is now cited and every citation resolves.
+>
+> `dist/` is built from the tagged tree. **Submit `dist/manuscript-anonymous-journal.docx`.**
+> See step 11.
+>
+> ### `v0.1.3` added the journal format
 >
 > **`v0.1.3` is the Demographic Research submission release.** It adds `--journal`, which
 > lays the manuscript out the way DR requires and checks the built file rather than
@@ -14,8 +31,8 @@ built from**
 > read the built `.docx` and `.pdf` instead of only the markdown. `dist/` is built from the
 > tagged tree. **Submit `dist/manuscript-anonymous-journal.docx`.** See step 10.
 >
-> The other six reference entries are deliberately unchanged: DR does not require the list
-> reformatted until acceptance. The one entry for the newly cited NVSR report **is** in the
+> The remaining entries keep their Vancouver styling: DR does not require the list
+> reformatted until acceptance. The entry for the newly cited NVSR report **is** in the
 > list, alphabetised under H, because leaving it out would have left the in-text citation
 > resolving to nothing.
 >
@@ -109,7 +126,7 @@ exactly zero.
 and hash-verified, all 150 data rows are populated from those exports and personally
 attested, 14 of the 15 annual totals are corroborated against NCHS's published NVSR reports,
 and `python -m src.report` produces `results.json`, five figures and a built manuscript with
-every value substituted from code. 246 tests pass. The arithmetic has been reviewed and its
+every value substituted from code. 249 tests pass. The arithmetic has been reviewed and its
 findings fixed, `figures/` is tracked so a release archives the images the paper shows, and
 `main` is pushed to GitHub.
 
@@ -230,7 +247,7 @@ points at, so the file never described a release that did not exist.
 
 Nothing in this restructure was allowed to touch a computed value. `python -m src.report` was
 re-run afterwards and `git diff` reports **no change** in `data/processed/results.json` or in
-any of the five figures. 246 tests pass, including the sweep in `tests/test_documents.py` for
+any of the five figures. 249 tests pass, including the sweep in `tests/test_documents.py` for
 statistic-shaped literals: the new §4.4 table and every figure quoted in the new abstract are
 bound to tokens, not typed.
 
@@ -618,7 +635,7 @@ Verified by mutation, three ways: an em dash in `README.md`, one in `STATUS.md` 
 the quote, and one **on the quote's own line**. All three fail. The exemption covers its
 exact text and does not widen to the line around it.
 
-`results.json` and all five figures are byte-identical to `v0.1.1`. 246 tests pass.
+`results.json` and all five figures are byte-identical to `v0.1.1`. 249 tests pass.
 
 ### 10. Cut `v0.1.3`: the Demographic Research submission
 
@@ -712,6 +729,39 @@ that reformatted until acceptance. What the check did surface is that **Woolf an
 2019 and the Human Mortality Database are in the reference list and cited by nothing** --
 the same defect as the uncited figure `tests/test_export.py` was written to catch. Fixing it
 is an editorial judgement about the prose and belongs with the abstract rewrite.
+
+### 11. Cut `v0.1.4`: the structured abstract, and a reference list that resolves
+
+**The abstract was the last substantial gap.** DR wants 250 words under six headings, with
+CONTRIBUTION mandatory; the old one ran 548 words of continuous argument across six
+paragraphs, structured rhetorically so that it built towards the denominator finding rather
+than declaring it. The replacement declares. It is 244 words excluding headings, 250
+including them, pure ASCII, all six headings present and in order.
+
+**Every figure in RESULTS is a token.** The abstract is the most quoted part of a paper and
+the furthest from the code that produced its numbers, so a literal there would agree with
+`results.json` on the day it was typed and quietly stop agreeing after. Four tests hold the
+abstract now: headings present and in order, the word limit, no hand-typed decimal in the
+template, and the ASCII check that was already there. The count is taken from
+`manuscript_built.md` and never from the template, because a `{{TOKEN}}` is one word in the
+source and often more in the built document, so counting the template would flatter the
+total against the limit that actually applies.
+
+The hand count and the programmatic count differed by one, 243 against 244, and the
+difference is not in the numbers: token substitution preserves the word count exactly, so
+the built abstract counts the same as the text it was written from. Both are under 250 and
+the section breakdown is in the commit message.
+
+**Two uncited references, resolved in opposite directions.** The right fix depends on why an
+entry is uncited. Woolf and Schoomaker 2019 documents rising US midlife mortality over
+1959-2017, which is the pattern section 5.1 finds in the two rising bands over a shorter and
+later window, so it was kept and is now cited in one sentence there. The Human Mortality
+Database was never read by any code path in this repository, so it was deleted: a reference
+list is a claim about what a paper drew on, and listing an unused database overstates it.
+
+Every entry is now cited and every citation resolves. The dangling-citation direction is
+under test from `v0.1.3`; the uncited-entry direction is checked against the table in
+`docs/demographic-research-gap.md`.
 
 ### 7. Confirm the preprint license before posting
 
