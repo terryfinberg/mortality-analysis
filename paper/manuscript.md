@@ -186,7 +186,7 @@ The age-to-rate ratio ranges from {{RATIO_RANGE_LOW}} to {{RATIO_RANGE_HIGH}} ac
 
 **The strongest evidence for this section is not ours.** NCHS has itself published two different crude death rates for 2020, and has named denominator rebasing as the reason. NVSR Vol. 74 No. 11 states in its methods:
 
-> "Rates for 2020 have been revised, using blended base population estimates, and may differ from those published in 'Births: Final Data for 2020' and 'Deaths: Final Data for 2020,' which were based on postcensal population estimates based on the 2010 census."
+> "Rates for 2020 have been revised, using blended base population estimates, and may differ from those published in 'Births: Final Data for 2020' and 'Deaths: Final Data for 2020,' which were based on postcensal population estimates based on the 2010 census." (Hamilton, Driscoll, and Miniño 2025: 2)
 
 This is worth stating plainly because it converts an argument into an instance. The claim that a crude rate is a statement about a denominator as much as about mortality does not rest on our own sensitivity analysis alone: the agency that publishes the rates has published two values for the same year, in two of its own reports, and attributed the difference to the population base. Any comparison of crude rates across publications, or across years spanning a rebasing, has to establish that the denominators share a basis before the difference can be read as mortality.
 
@@ -274,13 +274,11 @@ A reader who needs a single-vintage series should build one and should expect th
 
 **Ethics.** This analysis uses publicly available aggregate vital statistics published by the U.S. National Center for Health Statistics and population estimates published by the U.S. Census Bureau. No individual-level data were accessed and no human subjects research was conducted. Institutional review board approval was therefore not required.
 
-**Author contributions.** T.F. is the sole author, and directed and takes responsibility for every aspect of the work: conceptualisation, data curation, analysis, software, and writing. The analysis software and a draft of this manuscript were produced with AI assistance, as set out under Declaration of AI assistance; that assistance is recorded as provenance and confers no authorship.
+**Author contributions.** T.F. is the sole author, and directed and takes responsibility for every aspect of the work: conceptualisation, data curation, analysis, software, and writing. The analysis software and a draft of this manuscript were produced with AI assistance, as set out under Disclosure about the AI use; that assistance is recorded as provenance and confers no authorship.
 
 **ORCID.** Terry Finberg, <https://orcid.org/0009-0006-1598-4200>.
 
 **Data availability.** All code and data needed to reproduce every number and figure in this manuscript are archived at <https://doi.org/10.5281/zenodo.22263667>. This manuscript belongs to release `v{{RELEASE_VERSION}}`, which the archive records in its `CITATION.cff`; the Zenodo record lists every release with its own version DOI, so the exact deposit these results were computed from is one step from that link. The concept DOI is cited here rather than a version DOI because a version DOI is minted when its release is archived, which is after the commit the release is cut from. A manuscript cannot contain the identifier of the deposit that contains it. Development continues at <https://github.com/terryfinberg/mortality-analysis>. The four CDC WONDER export files the analysis reads are redistributed inside the archive rather than described, each carrying WONDER's own query-parameter footer and a SHA-256 digest that the test suite recomputes; the underlying mortality and population data are U.S. federal government works in the public domain.
-
-**Declaration of AI assistance.** This work was produced with AI assistance (Anthropic's Claude, via Claude Code), including the analysis software, its tests and documentation, and drafting of this manuscript. The author directed the work, verified every data value against the CDC WONDER export it was taken from, and is solely responsible for the analysis, its interpretation, and its conclusions. No AI system meets authorship criteria and none is listed as an author.
 
 ---
 
@@ -297,6 +295,12 @@ Woolf SH, Schoomaker H. Life expectancy and mortality rates in the United States
 Human Mortality Database. University of California, Berkeley, and Max Planck Institute for Demographic Research. https://www.mortality.org/
 
 National Center for Health Statistics. Deaths: Final Data series. National Vital Statistics Reports. https://www.cdc.gov/nchs/products/nvsr.htm
+
+---
+
+## Disclosure about the AI use
+
+This work was produced with AI assistance (Anthropic's Claude, via Claude Code), including the analysis software, its tests and documentation, and drafting of this manuscript. The author directed the work, verified every data value against the CDC WONDER export it was taken from, and is solely responsible for the analysis, its interpretation, and its conclusions. No AI system meets authorship criteria and none is listed as an author.
 
 ---
 

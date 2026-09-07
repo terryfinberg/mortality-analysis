@@ -180,3 +180,46 @@ def test_the_shortfall_token_tracks_the_ratio(results):
     moved["decomposition"][0]["ratio"] = ratio + 1.0
     assert report._flatten(moved)["DECOMP_PRE_RATE_SHORTFALL_PCT"] != \
         flat["DECOMP_PRE_RATE_SHORTFALL_PCT"]
+
+
+# --------------------------------------------------------------------------
+# Demographic Research: a direct quotation carries a page number
+# --------------------------------------------------------------------------
+
+
+MANUSCRIPT = ROOT / "paper" / "manuscript.md"
+
+# (Leone and Hinde 2007: 162) -- surname(s) or a corporate body, a year, a
+# colon, and a page or range. The colon is the part DR is specific about.
+PAGE_CITATION = re.compile(r"\([A-Z][^()]*\s\d{4}(?:[a-z])?:\s?\d+(?:-\d+)?\)")
+
+
+def test_every_direct_quotation_carries_a_page_number():
+    """DR requires a page number after a direct quotation, colon-separated.
+
+    The manuscript has exactly one block quotation -- NVSR Vol. 74 No. 11's
+    methods, in section 4.4 -- and it is load-bearing: it is the passage that
+    turns this paper's argument about denominators into an instance of one.
+    A second quotation added later must carry a page too, and the citation is
+    the sort of thing that gets written as a to-do and stays one.
+    """
+    lines = MANUSCRIPT.read_text(encoding="utf-8").splitlines()
+    quotes = [(i + 1, ln) for i, ln in enumerate(lines) if ln.startswith(">")]
+    assert quotes, "the NVSR quotation is gone; this test guards nothing"
+
+    unpaged = [f"line {n}: {ln[:70]}" for n, ln in quotes
+               if not PAGE_CITATION.search(ln)]
+    assert not unpaged, (
+        "a direct quotation with no page number in its citation:\n"
+        + "\n".join(unpaged)
+        + "\nDemographic Research requires (Author Year: page)."
+    )
+
+
+def test_the_page_citation_pattern_would_reject_a_missing_page():
+    """A pattern that matches anything reports the absence of a check as a pass."""
+    assert PAGE_CITATION.search("(National Center for Health Statistics 2025: 2)")
+    assert PAGE_CITATION.search("(Leone and Hinde 2007: 162)")
+    # No page, so not acceptable after a quotation.
+    assert not PAGE_CITATION.search("(National Center for Health Statistics 2025)")
+    assert not PAGE_CITATION.search("(Milewski 2007)")

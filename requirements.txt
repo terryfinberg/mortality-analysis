@@ -2,5 +2,9 @@ pandas>=2.0
 numpy>=1.24
 matplotlib>=3.7
 pytest>=7.4
+# Reads glyph positions back out of a built PDF, so --journal can check the
+# layout it claims rather than assert it. Optional at runtime: the export
+# says so and carries on when it is missing.
+pdfplumber>=0.11
 jupyterlab>=4.0
 ipykernel>=6.25

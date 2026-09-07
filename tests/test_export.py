@@ -20,6 +20,7 @@ import json
 import re
 import shutil
 import unicodedata
+import zipfile
 
 import pytest
 
@@ -230,6 +231,12 @@ ALLOWED_NON_ASCII = {
     "“": "left double quotation mark",
     "”": "right double quotation mark",
     "–": "en dash",
+    # A person's name, not punctuation: Arialdi M. Miniño, an author of NVSR
+    # Vol. 74 No. 11, cited in section 4.4. The allowlist is about marks the
+    # build might manufacture or an editor might paste by accident, and a
+    # correctly spelled surname is neither. Spelling it "Minino" to keep the
+    # file ASCII would be misspelling a cited author.
+    "ñ": "latin small letter n with tilde",
 }
 
 # `README.md` and `STATUS.md` are working documents rather than submitted
@@ -504,6 +511,101 @@ def test_the_leak_check_actually_catches_a_leak():
         export._assert_anonymous("See https://github.com/someone/repo")
 
 
+# --------------------------------------------------------------------------
+# Anonymisation of the built file, not just of the markdown
+# --------------------------------------------------------------------------
+#
+# The tests above prove the prose is clean. A .docx is a zip of XML, and the
+# name can be in half a dozen parts the markdown never touches: document
+# properties, a header or footer, a hyperlink target, a comment. Those come
+# from pandoc and its reference document, so they can be reintroduced by a
+# change that never goes near the manuscript -- which is exactly what adding
+# a reference document for --journal is.
+
+
+def _plant(src, dst, part, xml):
+    """Copy a .docx, adding one part carrying the author's name."""
+    with zipfile.ZipFile(src) as z, \
+            zipfile.ZipFile(dst, "w", zipfile.ZIP_DEFLATED) as out:
+        for item in z.infolist():
+            if item.filename != part:
+                out.writestr(item, z.read(item.filename))
+        out.writestr(part, xml)
+    return dst
+
+
+@pytest.mark.skipif(shutil.which("pandoc") is None, reason="pandoc not installed")
+@pytest.mark.parametrize("journal", [False, True], ids=["default", "journal"])
+def test_the_built_anonymous_docx_carries_no_identity(identity, tmp_path, journal):
+    md = export.prepare(identity, anonymous=True)
+    out = export.build_docx(md, tmp_path / "anon.docx", identity.keywords,
+                            journal=journal)
+    export.assert_file_anonymous(out)
+
+
+@pytest.mark.skipif(shutil.which("pandoc") is None, reason="pandoc not installed")
+@pytest.mark.parametrize("part,xml", [
+    # The vector this test exists for: a running head naming the author, put
+    # there by a reference document rather than by the manuscript.
+    ("word/header1.xml",
+     '<?xml version="1.0"?><w:hdr xmlns:w="http://schemas.openxmlformats.org'
+     '/wordprocessingml/2006/main"><w:p><w:r><w:t>Terry Finberg</w:t></w:r>'
+     "</w:p></w:hdr>"),
+    # The one that survives every visual check, because nothing renders it.
+    ("docProps/custom.xml",
+     '<?xml version="1.0"?><Properties><property name="Author">'
+     "Terry Finberg</property></Properties>"),
+    # A link back to the repository, which identifies as surely as a byline.
+    ("word/_rels/header1.xml.rels",
+     '<?xml version="1.0"?><Relationships Target='
+     '"https://github.com/terryfinberg/mortality-analysis"/>'),
+])
+def test_a_planted_leak_in_the_built_docx_is_caught(identity, tmp_path, part, xml):
+    """The check must fail on a file it was not shown in advance.
+
+    A leak check that has only ever been run on clean input is a check whose
+    search may not work at all. Each of these puts the name somewhere the
+    markdown-level check cannot see and the eye cannot either.
+    """
+    md = export.prepare(identity, anonymous=True)
+    clean = export.build_docx(md, tmp_path / "clean.docx", identity.keywords,
+                              journal=True)
+    export.assert_file_anonymous(clean)
+
+    leaky = _plant(clean, tmp_path / "leaky.docx", part, xml)
+    with pytest.raises(export.ExportError, match="identifying"):
+        export.assert_file_anonymous(leaky)
+
+
+@pytest.mark.skipif(shutil.which("pandoc") is None, reason="pandoc not installed")
+def test_the_keywords_property_is_actually_set(identity, tmp_path):
+    """It was not, silently, for three releases.
+
+    `--metadata keywords=a, b` gives pandoc a string where the docx writer
+    wants a list. It does not warn and it does not fail: it writes an empty
+    <cp:keywords/> and exits 0, so the code, the tests and the gap list all
+    claimed a property no built file had. Read it back out of the file.
+    """
+    md = export.prepare(identity, anonymous=False)
+    out = export.build_docx(md, tmp_path / "k.docx", identity.keywords)
+    with zipfile.ZipFile(out) as z:
+        core = z.read("docProps/core.xml").decode("utf-8")
+    assert identity.keywords
+    for keyword in identity.keywords:
+        assert keyword in core, f"{keyword!r} is not in the Keywords property"
+
+
+@pytest.mark.skipif(shutil.which("pandoc") is None, reason="pandoc not installed")
+def test_the_docx_leak_check_reads_the_parts_nobody_looks_at(identity, tmp_path):
+    """Every XML part is searched, not only the ones a reader sees."""
+    md = export.prepare(identity, anonymous=True)
+    out = export.build_docx(md, tmp_path / "anon.docx", identity.keywords)
+    searched = export._docx_strings(out)
+    for part in ("docProps/core.xml", "word/document.xml",
+                 "word/_rels/document.xml.rels"):
+        assert f"[{part}]" in searched, f"{part} is not being searched"
+
+
 def test_anonymous_and_identified_differ_only_where_intended(identity):
     """The science must be byte-identical; only the front matter moves."""
     ident = export.prepare(identity, anonymous=False)
@@ -525,6 +627,207 @@ def test_pandoc_accepts_the_prepared_document(identity, tmp_path):
     out = tmp_path / "smoke.docx"
     export.build_docx(md, out)
     assert out.exists() and out.stat().st_size > 0
+
+
+# --------------------------------------------------------------------------
+# Journal manuscript format
+# --------------------------------------------------------------------------
+#
+# Demographic Research requires double spacing, 12pt or larger, and no page
+# numbers, headers or footers, and says it will not edit submissions to
+# conform. Every test here reads the requirement back out of a built file,
+# because all four are properties of the output and none of them is visible
+# in the code that asks for them.
+
+W = export._W
+
+
+def test_the_journal_stem_cannot_collide_with_the_preprint_stem():
+    """A layout difference is the one difference a file listing hides."""
+    stems = {export.stem_for(a, j) for a in (False, True) for j in (False, True)}
+    assert len(stems) == 4
+    assert export.stem_for(False, False) == "manuscript"
+    assert "journal" in export.stem_for(True, True)
+
+
+def test_journal_styles_double_space_and_raise_small_type():
+    """The style rewrite, on a document small enough to read in the failure."""
+    styles = (
+        '<?xml version="1.0"?>'
+        f'<w:styles xmlns:w="{export.WORD_NS}">'
+        "<w:docDefaults><w:pPrDefault><w:pPr>"
+        '<w:spacing w:after="200"/>'
+        "</w:pPr></w:pPrDefault></w:docDefaults>"
+        '<w:style w:styleId="Single"><w:pPr>'
+        '<w:spacing w:after="80" w:line="240" w:lineRule="auto"/>'
+        "</w:pPr></w:style>"
+        '<w:style w:styleId="Small"><w:rPr><w:sz w:val="20"/>'
+        '<w:szCs w:val="20"/></w:rPr></w:style>'
+        '<w:style w:styleId="Big"><w:rPr><w:sz w:val="56"/></w:rPr></w:style>'
+        "</w:styles>"
+    ).encode()
+
+    out = export._journal_styles(styles).decode()
+
+    # Every paragraph spacing, including one that explicitly asked for single.
+    assert out.count(f'w:line="{export.JOURNAL_LINE_TWIPS}"') == 2
+    assert 'w:line="240"' not in out
+    # Small type raised to the floor, large type left where it was.
+    assert 'w:val="20"' not in out
+    assert f'w:val="{export.JOURNAL_MIN_HALF_POINTS}"' in out
+    assert 'w:val="56"' in out
+
+
+def test_journal_styles_leave_character_spacing_alone():
+    """w:spacing means two different things depending on its parent.
+
+    Inside w:pPr it is the space between lines. Inside w:rPr it is the space
+    between letters, and doubling that would letterspace the manuscript.
+    """
+    styles = (
+        '<?xml version="1.0"?>'
+        f'<w:styles xmlns:w="{export.WORD_NS}">'
+        "<w:docDefaults><w:pPrDefault><w:pPr>"
+        '<w:spacing w:after="200"/></w:pPr></w:pPrDefault></w:docDefaults>'
+        '<w:style w:styleId="Tight"><w:rPr>'
+        '<w:spacing w:val="-10"/></w:rPr></w:style>'
+        "</w:styles>"
+    ).encode()
+
+    out = export._journal_styles(styles).decode()
+    assert '<w:spacing w:val="-10" />' in out or 'w:val="-10"' in out
+    assert out.count(f'w:line="{export.JOURNAL_LINE_TWIPS}"') == 1
+
+
+def test_a_reference_document_with_nothing_to_change_is_an_error():
+    """Failing open here would ship a single-spaced submission.
+
+    pandoc's default reference document is a file this repository does not
+    control. If its shape changes so that no spacing is found, the build must
+    stop rather than produce something that looks built.
+    """
+    empty = (f'<?xml version="1.0"?><w:styles xmlns:w="{export.WORD_NS}"/>'
+             ).encode()
+    with pytest.raises(export.ExportError, match="double-spaced"):
+        export._journal_styles(empty)
+
+
+@pytest.mark.skipif(shutil.which("pandoc") is None, reason="pandoc not installed")
+def test_the_journal_docx_meets_all_four_requirements(identity, tmp_path):
+    md = export.prepare(identity, anonymous=True)
+    out = export.build_docx(md, tmp_path / "j.docx", identity.keywords,
+                            journal=True)
+    # build_docx runs this itself; run it again so a failure lands here.
+    export._assert_journal_docx(out)
+
+    with zipfile.ZipFile(out) as z:
+        names = z.namelist()
+        styles = z.read("word/styles.xml").decode()
+    assert not [n for n in names if "header" in n or "footer" in n]
+    assert f'w:line="{export.JOURNAL_LINE_TWIPS}"' in styles
+
+
+@pytest.mark.skipif(shutil.which("pandoc") is None, reason="pandoc not installed")
+def test_the_journal_docx_check_catches_a_document_that_is_not_one(
+        identity, tmp_path):
+    """The requirement check must fail on the default build."""
+    md = export.prepare(identity, anonymous=True)
+    plain = export.build_docx(md, tmp_path / "plain.docx", identity.keywords)
+    with pytest.raises(export.ExportError):
+        export._assert_journal_docx(plain)
+
+
+@pytest.mark.skipif(shutil.which("pandoc") is None or export.find_pdf_engine() is None,
+                    reason="needs pandoc and a PDF engine")
+def test_the_journal_pdf_meets_all_four_requirements(identity, tmp_path):
+    pytest.importorskip("pdfplumber")
+    md = export.prepare(identity, anonymous=True)
+    out, _ = export.build_pdf(md, tmp_path / "j.pdf", journal=True)
+    export._assert_journal_pdf(out)
+
+
+@pytest.mark.skipif(shutil.which("pandoc") is None or export.find_pdf_engine() is None,
+                    reason="needs pandoc and a PDF engine")
+def test_the_default_pdf_would_fail_the_journal_check(identity, tmp_path):
+    """Proof the PDF check measures something.
+
+    The default build numbers its pages and sets 11pt, so it must fail. If
+    this passes, the check is not looking at the page.
+    """
+    pytest.importorskip("pdfplumber")
+    md = export.prepare(identity, anonymous=True)
+    out, _ = export.build_pdf(md, tmp_path / "plain.pdf", journal=False)
+    with pytest.raises(export.ExportError):
+        export._assert_journal_pdf(out)
+
+
+def test_journal_mode_refuses_the_browser_fallback(monkeypatch, tmp_path):
+    """A layout requirement cannot be met by an engine we cannot pin."""
+    monkeypatch.setattr(export, "find_pdf_engine", lambda: None)
+    with pytest.raises(export.ExportError, match="real PDF engine"):
+        export.build_pdf("# x\n", tmp_path / "out.pdf", allow_browser=True,
+                         journal=True)
+
+
+# --------------------------------------------------------------------------
+# The build record
+# --------------------------------------------------------------------------
+
+
+def test_the_manifest_describes_the_directory_not_the_last_run(monkeypatch, tmp_path):
+    """dist/ accumulates across runs; the record has to cover all of it.
+
+    The earlier version listed only the files one invocation wrote and headed
+    them with that run's commit, so `--docx` produced a manifest naming one
+    file, four undescribed files sitting beside it, and a commit that was not
+    the one the PDFs came from.
+    """
+    monkeypatch.setattr(export, "DIST", tmp_path)
+    (tmp_path / "manuscript.docx").write_bytes(b"docx")
+    (tmp_path / "manuscript.pdf").write_bytes(b"pdf")
+
+    export.write_manifest({"manuscript.docx": {
+        "built": "2026-01-01T00:00:00+00:00", "describe": "v9.9.9",
+        "commit": "abc", "tree": "clean", "engine": "-",
+        "pandoc": "pandoc 3.6.2", "layout": "default",
+    }})
+    text = (tmp_path / "BUILD.txt").read_text(encoding="utf-8")
+
+    # Both files appear, and the one this run did not build is not claimed.
+    assert "manuscript.docx" in text and "manuscript.pdf" in text
+    assert "UNKNOWN" in text
+    assert text.index("manuscript.pdf") < text.index("UNKNOWN")
+
+
+def test_the_manifest_flags_a_directory_built_from_two_commits(monkeypatch, tmp_path):
+    """Artifacts from different trees do not go in one submission."""
+    monkeypatch.setattr(export, "DIST", tmp_path)
+    facts = {"built": "2026-01-01T00:00:00+00:00", "describe": "v9.9.9",
+             "tree": "clean", "engine": "typst", "pandoc": "p", "layout": "default"}
+    for name in ("a.pdf", "b.pdf"):
+        (tmp_path / name).write_bytes(b"x")
+    export.write_manifest({
+        "a.pdf": facts | {"commit": "aaa"},
+        "b.pdf": facts | {"commit": "bbb"},
+    })
+    assert "MIXED" in (tmp_path / "BUILD.txt").read_text(encoding="utf-8")
+
+
+def test_the_manifest_forgets_files_that_are_gone(monkeypatch, tmp_path):
+    """An entry describing a file nobody can open describes nothing."""
+    monkeypatch.setattr(export, "DIST", tmp_path)
+    facts = {"built": "x", "describe": "v1", "commit": "c", "tree": "clean",
+             "engine": "-", "pandoc": "p", "layout": "default"}
+    (tmp_path / "gone.pdf").write_bytes(b"x")
+    export.write_manifest({"gone.pdf": facts})
+    (tmp_path / "gone.pdf").unlink()
+    (tmp_path / "here.pdf").write_bytes(b"x")
+    export.write_manifest({"here.pdf": facts})
+
+    text = (tmp_path / "BUILD.txt").read_text(encoding="utf-8")
+    assert "gone.pdf" not in text
+    ledger = json.loads((tmp_path / export.LEDGER).read_text(encoding="utf-8"))
+    assert set(ledger) == {"here.pdf"}
 
 
 def test_new_band_tokens_are_derived_not_typed():

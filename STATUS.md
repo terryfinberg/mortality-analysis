@@ -1,10 +1,23 @@
 # Status
 
-**Last updated:** 2026-09-04 · **Branch:** `main` ·
-**Remote:** `origin` → `github.com/terryfinberg/mortality-analysis` · **`v0.1.2` tagged,
-archived and citable; it is the release the preprint cites**
+**Last updated:** 2026-09-07 · **Branch:** `main` ·
+**Remote:** `origin` → `github.com/terryfinberg/mortality-analysis` · **`v0.1.3` tagged;
+it is the release the Demographic Research submission is built from**
 
-> ## ✅ `v0.1.2` is tagged. It is the release to post.
+> ## ✅ `v0.1.3` is tagged. It is the release to submit from.
+>
+> **`v0.1.3` is the Demographic Research submission release.** It adds `--journal`, which
+> lays the manuscript out the way DR requires and checks the built file rather than
+> trusting it; moves the AI disclosure into a section under DR's own title; puts the page
+> number on the manuscript's one direct quotation; and makes the anonymisation leak check
+> read the built `.docx` and `.pdf` instead of only the markdown. `dist/` is built from the
+> tagged tree. **Submit `dist/manuscript-anonymous-journal.docx`.** See step 10.
+>
+> The reference list is deliberately unchanged: DR does not require it reformatted until
+> acceptance. The entry for the newly cited NVSR report is drafted and checked in
+> `docs/demographic-research-gap.md`, not inserted.
+>
+> ### `v0.1.2` remains the release the preprint cites
 >
 > **`v0.1.1` renders a typographic error the source never contained.** Its PDF sets
 > `2023's` as `2023′s`, with a prime where the apostrophe belongs, in the abstract, in
@@ -87,7 +100,7 @@ exactly zero.
 and hash-verified, all 150 data rows are populated from those exports and personally
 attested, 14 of the 15 annual totals are corroborated against NCHS's published NVSR reports,
 and `python -m src.report` produces `results.json`, five figures and a built manuscript with
-every value substituted from code. 223 tests pass. The arithmetic has been reviewed and its
+every value substituted from code. 244 tests pass. The arithmetic has been reviewed and its
 findings fixed, `figures/` is tracked so a release archives the images the paper shows, and
 `main` is pushed to GitHub.
 
@@ -208,7 +221,7 @@ points at, so the file never described a release that did not exist.
 
 Nothing in this restructure was allowed to touch a computed value. `python -m src.report` was
 re-run afterwards and `git diff` reports **no change** in `data/processed/results.json` or in
-any of the five figures. 223 tests pass, including the sweep in `tests/test_documents.py` for
+any of the five figures. 244 tests pass, including the sweep in `tests/test_documents.py` for
 statistic-shaped literals: the new §4.4 table and every figure quoted in the new abstract are
 bound to tokens, not typed.
 
@@ -596,7 +609,91 @@ Verified by mutation, three ways: an em dash in `README.md`, one in `STATUS.md` 
 the quote, and one **on the quote's own line**. All three fail. The exemption covers its
 exact text and does not widen to the line around it.
 
-`results.json` and all five figures are byte-identical to `v0.1.1`. 223 tests pass.
+`results.json` and all five figures are byte-identical to `v0.1.1`. 244 tests pass.
+
+### 10. Cut `v0.1.3`: the Demographic Research submission
+
+The managing editor answered the two questions this repository had been holding open, and
+both answers are recorded in `docs/demographic-research-gap.md`: a preprint is fine and is
+not prior publication; the anonymisation requirement applies to **the manuscript file
+only**, with the data availability statement going in the web form, editors-only, where it
+may carry the author's name and the repository URL. Replicability materials are provided on
+acceptance, so no anonymised archive is needed at submission.
+
+**What changed in the build.**
+
+`write_manifest()` now describes the *directory*, one entry per file, rather than the last
+run. The old version listed only the files one invocation wrote and headed them with that
+run's commit, so `--docx` produced a `BUILD.txt` naming one file, four undescribed files
+sitting beside it, and a commit that was not the one the PDFs came from. `dist/` accumulates
+across runs; a record that quietly attributes all of it to the newest run reads as an answer,
+which is worse than no record. Provenance is kept per file in `dist/.build-record.json`, a
+file with no entry is listed as `UNKNOWN` rather than claimed, and a directory holding
+artifacts from two commits says `MIXED` at the top.
+
+`--journal` lays the document out as DR requires: double-spaced, 12pt or larger, no page
+numbers, no headers or footers. **The ordinary build failed three of the four** -- 11pt,
+single-spaced, and typst numbers pages by default, which is pandoc's `page-numbering`
+defaulting to `"1"` and not anything this repository asked for. It is a modifier, not a
+target: output goes to a `-journal` stem, because layout is the one difference a file
+listing hides. Both formats are read back after building rather than trusted, and both
+checks are tested against the default build to prove they fail on it.
+
+The AI disclosure moved out of Declarations into its own top-level section titled
+**Disclosure about the AI use**, DR's exact wording, placed after References.
+
+**The leak check now runs on the built file.** This was the point of doing it in this order.
+Checking the markdown proves the prose is clean and says nothing about the `.docx`, which is
+a zip of XML in which the name can sit in `docProps/core.xml`, in a header or footer part,
+in a hyperlink target, or in a comment -- none of which come from the manuscript. Adding a
+reference document for `--journal` is precisely the change that could put a running head
+back. `assert_file_anonymous()` searches every XML part of the built file as bytes, plus a
+PDF's rendered text and metadata, and runs on every anonymised artifact before the build
+reports success. Three tests plant a leak the markdown check cannot see and assert each is
+caught.
+
+**One real defect found by the new check**, though not a leak: `cp:keywords` was empty in
+every `.docx` this repository had produced. `--metadata keywords=a, b` hands pandoc a string
+where the docx writer wants a list; it writes an empty `<cp:keywords/>` and exits 0. The
+code, the tests and the gap list all claimed a property no built file had, because nothing
+looked at the built file. Fixed with a metadata file, and tested by reading it back out.
+
+**Two things reported and deliberately not changed.**
+
+*The significance scan found nothing.* Zero occurrences of "significant" in any form, no
+p-values, no asterisks marking p-value intervals, in either `paper/manuscript.md` or
+`paper/manuscript_built.md`. This paper is decomposition and measurement throughout and
+reports no inferential tests, so DR's discouraged construction and its forbidden one have
+nothing to appear in. The scan is a check, not a change.
+
+**The one direct quotation now carries its page.** DR requires a page number after a direct
+quotation, colon-separated. Section 4.4 quotes NVSR Vol. 74 No. 11 verbatim and is the
+manuscript's only quotation; the passage is on **page 2**, in the report's Methods section,
+verified against the PDF. It reads `(Hamilton, Driscoll, and Miniño 2025: 2)`, bylined,
+because DR's corporate-body form is for website content with no personal author and NVSR
+74-11 has three named authors on its cover. The same sentence recurs on pages 3 and 10 as
+figure and table notes, but both are abbreviated and neither is the sentence quoted here. A
+test holds it, and a second test asserts the pattern rejects a citation with no page,
+because a quotation added later is exactly where this would recur.
+
+**That citation put the first non-ASCII letter in the manuscript.** `ñ`, in Miniño, is now
+in `ALLOWED_NON_ASCII` and mapped to `n` in `ASCII_PUNCTUATION`. Every other entry in both
+tables is a punctuation mark the build might manufacture; this one is a surname, allowed
+because the alternative is misspelling a cited author to keep a file plain. The typography
+guard caught it on the first run after the edit, which is the guard working as designed
+rather than an obstacle to it.
+
+The reference-list entry is drafted and checked against the cover page in
+`docs/demographic-research-gap.md`, under DR's *Research report or working paper* template.
+**It is not in the manuscript**: the list stays as it is until acceptance, so the in-text
+citation has no matching entry yet.
+
+*There were no numeric in-text citations to convert.* The paper cites by name and year in
+running prose throughout; only the reference list is Vancouver-styled, and DR does not want
+that reformatted until acceptance. What the check did surface is that **Woolf and Schoomaker
+2019 and the Human Mortality Database are in the reference list and cited by nothing** --
+the same defect as the uncited figure `tests/test_export.py` was written to catch. Fixing it
+is an editorial judgement about the prose and belongs with the abstract rewrite.
 
 ### 7. Confirm the preprint license before posting
 

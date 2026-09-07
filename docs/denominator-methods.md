@@ -270,7 +270,18 @@ states in its methods:**
 > "Rates for 2020 have been revised, using blended base population estimates,
 > and may differ from those published in 'Births: Final Data for 2020' and
 > 'Deaths: Final Data for 2020,' which were based on postcensal population
-> estimates based on the 2010 census."
+> estimates based on the 2010 census." (Hamilton, Driscoll, and Miniño 2025: 2)
+
+The page is the Methods section on **page 2** of the report, checked against the
+PDF at <https://www.cdc.gov/nchs/data/nvsr/nvsr74/nvsr74-11.pdf>. The same
+sentence appears twice more, abbreviated, as a figure note on page 3 and a table
+note on page 10; those drop "using blended base population estimates" and the
+closing clause, so page 2 is the only place the sentence quoted here appears in
+full.
+
+The report is bylined, so it is cited by its authors and not by the agency:
+Brady E. Hamilton, Anne K. Driscoll and Arialdi M. Miniño, read off the cover
+page.
 
 That is the agency publishing two different crude death rates for the same year,
 in two of its own reports, and naming the denominator rebasing as the cause.

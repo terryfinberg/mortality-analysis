@@ -26,6 +26,17 @@ file itself:
 
     python -m src.export --anonymous
 
+And a manuscript-format variant, for a venue that specifies page layout:
+
+    python -m src.export --journal
+
+``--journal`` is a modifier rather than a target: it changes how the DOCX and
+PDF are laid out and writes them under a ``-journal`` stem, so a journal build
+never overwrites the preprint artifacts. Demographic Research requires
+double-spaced text, 12pt or larger, and no page numbers, headers or footers,
+and states that it will not edit submissions to conform -- which makes the
+layout a build output rather than something to fix in Word before uploading.
+
 Outputs land in ``dist/``, which is gitignored. They are derived artifacts and
 are rebuilt from source in one command, so committing them would be committing
 a copy of something the repository can already produce.
@@ -33,11 +44,16 @@ a copy of something the repository can already produce.
 from __future__ import annotations
 
 import argparse
+import io
+import json
 import re
 import shutil
 import subprocess
 import sys
+import tempfile
 import unicodedata
+import xml.etree.ElementTree as ET
+import zipfile
 from dataclasses import dataclass
 from datetime import datetime
 from pathlib import Path
@@ -167,7 +183,9 @@ def _anonymise(text: str, identity: Identity) -> str:
     return text
 
 
-def _assert_anonymous(text: str) -> None:
+def _assert_anonymous(text: str, where: str = "anonymised build",
+                      advice: str = "Add a rule to ANONYMOUS_RULES in "
+                                    "src/export.py.") -> None:
     hits = sorted({
         m.group(0)
         for pattern in IDENTIFYING
@@ -175,10 +193,85 @@ def _assert_anonymous(text: str) -> None:
     })
     if hits:
         raise ExportError(
-            "anonymised build still contains identifying strings: "
+            f"{where} still contains identifying strings: "
             + ", ".join(repr(h) for h in hits)
-            + "\nAdd a rule to ANONYMOUS_RULES in src/export.py."
+            + "\n" + advice
         )
+
+
+# --------------------------------------------------------------------------
+# The same check, run against the file that actually gets uploaded
+# --------------------------------------------------------------------------
+#
+# Checking the markdown proves the prose is clean. It says nothing about the
+# document built from it, and the document is what a reviewer opens. A .docx
+# is a zip of XML: the name can be sitting in docProps/core.xml, in a header
+# or footer part, in a hyperlink target in document.xml.rels, or in a comment,
+# and none of those come from the markdown at all -- they come from pandoc,
+# from its reference document, and from whatever metadata is passed on the
+# command line. A reference document is exactly the kind of change that can
+# put a header back.
+#
+# So the built artifact is searched rather than reasoned about, and searched
+# as bytes: every XML part, not merely the text a reader sees.
+
+
+def _docx_strings(path: Path) -> str:
+    """Every text-bearing part of a .docx, concatenated.
+
+    Includes the parts nobody thinks of as content -- properties, headers,
+    footers, relationship targets, comments -- because those are where an
+    identity survives a build that stripped it from the body.
+    """
+    with zipfile.ZipFile(path) as z:
+        return "\n".join(
+            f"[{name}]\n" + z.read(name).decode("utf-8", "replace")
+            for name in z.namelist()
+            if name.endswith((".xml", ".rels"))
+        )
+
+
+def _pdf_strings(path: Path) -> str:
+    """A PDF's rendered text and its document metadata."""
+    import pdfplumber
+
+    parts = []
+    with pdfplumber.open(path) as pdf:
+        parts.append(repr(pdf.metadata))
+        for page in pdf.pages:
+            parts.append(page.extract_text() or "")
+    return "\n".join(parts)
+
+
+def assert_file_anonymous(path: Path) -> None:
+    """Search a built artifact for the identity the build was meant to remove.
+
+    Raises ExportError naming what was found and where. A .pdf is skipped
+    with a printed notice when pdfplumber is absent, on the same terms as the
+    layout check: an unverified claim is reported, never made silently.
+    """
+    if path.suffix == ".docx":
+        text = _docx_strings(path)
+    elif path.suffix == ".pdf":
+        try:
+            text = _pdf_strings(path)
+        except ImportError:
+            print(f"    ({path.name} unverified: pdfplumber is not installed)",
+                  file=sys.stderr)
+            return
+    else:
+        text = path.read_text(encoding="utf-8", errors="replace")
+
+    _assert_anonymous(
+        text,
+        where=f"the built file {path.name}",
+        advice=(
+            "The markdown was clean, so this came from the build: document "
+            "properties, a header or footer part, a hyperlink target, or "
+            "metadata passed to pandoc. Fix it in src/export.py; do not hand-"
+            "edit the artifact."
+        ),
+    )
 
 
 def prepare(identity: Identity, anonymous: bool) -> str:
@@ -265,6 +358,12 @@ ASCII_PUNCTUATION = {
     " ": " ",    # no-break space
     "·": "-",    # middle dot
     "­": "",     # soft hyphen
+    # Not punctuation, and here for the same reason as the rest: a form is
+    # going to reject the character, and the fallback has to be a decision
+    # rather than a deletion. "Minino" loses a diacritic; dropping the
+    # letter gives "Minio", which is a different name that still reads
+    # like one.
+    "ñ": "n",    # latin small letter n with tilde (Miniño, NVSR 74-11)
 }
 
 ABSTRACT_HEADING = "## Abstract"
@@ -404,18 +503,289 @@ def _pandoc(md: str, out: Path, writer: str, extra: list[str]) -> None:
             print(f"    pandoc: {line}", file=sys.stderr)
 
 
-def build_docx(md: str, out: Path, keywords: list[str] | None = None) -> Path:
-    extra = ["--to", "docx", "--toc-depth", "3"]
-    if keywords:
-        # Word's Keywords document property. Passed here rather than in the
-        # YAML block because the same key breaks the typst writer; see
-        # prepare().
-        extra += ["--metadata", "keywords=" + ", ".join(keywords)]
-    _pandoc(md, out, "docx", extra)
+# --------------------------------------------------------------------------
+# Journal manuscript format
+# --------------------------------------------------------------------------
+#
+# Demographic Research requires four things of a submitted file: double
+# spacing, a body font of 12pt or larger, no page numbers, and no headers or
+# footers. It also says it will not edit submissions to conform. That last
+# sentence is why this lives in the build rather than in a checklist: a
+# requirement enforced by the recipient and not by the sender is a requirement
+# somebody eventually forgets on the one upload that matters.
+#
+# Neither output format has a switch for this, so each is handled where it can
+# be checked afterwards rather than trusted.
+
+# w:line is in twentieths of a point and w:lineRule="auto" reads it as a
+# multiple of single spacing, so 480 twips = 24pt = double.
+JOURNAL_LINE_TWIPS = 480
+
+# Word font sizes are in half-points. 24 = 12pt, the floor DR sets.
+JOURNAL_MIN_HALF_POINTS = 24
+
+JOURNAL_FONTSIZE = "12pt"
+
+# typst: `leading` is the gap between the bottom edge of one line and the top
+# edge of the next, so it only means anything once the edges are pinned to the
+# font's own ascender and descender. With those pinned, a 1em leading puts
+# baselines 1em + (ascender + descender) apart -- a shade over double, and
+# comparable to what Word calls double spacing, which is also measured off the
+# font's line height rather than off the point size.
+# The raw rule is not cosmetic. typst sets `raw` -- inline code, and this
+# manuscript names files and modules in it constantly -- at 0.8em, which at a
+# 12pt body is 9.6pt and under the floor. DR's rule is about the file, not
+# about the body text.
+#
+# The size is absolute rather than `1em` because inside a `show raw` rule the
+# em is already the shrunk one, so `size: 1em` is a no-op that looks like a
+# fix.
+JOURNAL_TYPST_HEADER = (
+    '#set text(top-edge: "ascender", bottom-edge: "descender")\n'
+    "#set par(leading: 1em, spacing: 1em)\n"
+    f"#show raw: set text(size: {JOURNAL_FONTSIZE})"
+)
+
+# LaTeX: setspace for the spacing, and \ps@plain aliased to \ps@empty because
+# \maketitle sets the title page to `plain` on its own, which is the one page
+# \pagestyle{empty} does not reach.
+JOURNAL_LATEX_HEADER = (
+    r"\usepackage{setspace}"
+    "\n"
+    r"\AtBeginDocument{\pagestyle{empty}\let\ps@plain\ps@empty"
+    r"\thispagestyle{empty}}"
+)
+
+WORD_NS = "http://schemas.openxmlformats.org/wordprocessingml/2006/main"
+_W = f"{{{WORD_NS}}}"
+
+
+def _journal_styles(styles_xml: bytes) -> bytes:
+    """Double-space and 12pt-floor every style in a reference document.
+
+    Two passes, both attribute edits on elements that already exist. Nothing
+    is inserted: a ``w:pPr`` has a schema-mandated child order, and a spacing
+    element appended to the end of one is the kind of file Word opens and
+    silently repairs. Styles that carry no spacing of their own inherit the
+    document default, which this does set, so the pass is complete without
+    adding anything.
+    """
+    ET.register_namespace("w", WORD_NS)
+    root = ET.fromstring(styles_xml)
+
+    # Paragraph spacing. Only w:spacing inside a w:pPr: the identically named
+    # element inside a w:rPr is *character* spacing, and doubling that would
+    # letterspace the document.
+    spaced = 0
+    for ppr in root.iter(f"{_W}pPr"):
+        spacing = ppr.find(f"{_W}spacing")
+        if spacing is None:
+            continue
+        spacing.set(f"{_W}line", str(JOURNAL_LINE_TWIPS))
+        spacing.set(f"{_W}lineRule", "auto")
+        spaced += 1
+
+    # Font sizes below the floor are raised to it; anything already larger is
+    # left alone, since DR sets a minimum and not a size.
+    for tag in (f"{_W}sz", f"{_W}szCs"):
+        for el in root.iter(tag):
+            try:
+                half_points = int(el.get(f"{_W}val", "0"))
+            except ValueError:
+                continue
+            if half_points < JOURNAL_MIN_HALF_POINTS:
+                el.set(f"{_W}val", str(JOURNAL_MIN_HALF_POINTS))
+
+    if not spaced:
+        raise ExportError(
+            "the reference document has no paragraph spacing to change, so "
+            "the journal DOCX would not be double-spaced. Pandoc's default "
+            "reference.docx has changed shape; fix _journal_styles() in "
+            "src/export.py."
+        )
+    return b'<?xml version="1.0" encoding="UTF-8" standalone="yes"?>\n' + \
+        ET.tostring(root, encoding="utf-8")
+
+
+def build_reference_docx(out: Path) -> Path:
+    """Pandoc's own reference document, restyled for a journal manuscript.
+
+    Built from ``--print-default-data-file`` rather than committed as a binary.
+    A checked-in .docx is a file nobody can diff, review, or regenerate when
+    pandoc's defaults move under it, and the only thing this one does is set
+    four attributes.
+    """
+    result = subprocess.run(
+        [_require_pandoc(), "--print-default-data-file", "reference.docx"],
+        capture_output=True, timeout=60,
+    )
+    if result.returncode != 0 or not result.stdout:
+        raise ExportError(
+            "pandoc could not produce its default reference.docx:\n"
+            + result.stderr.decode("utf-8", "replace").strip()
+        )
+
+    out.parent.mkdir(parents=True, exist_ok=True)
+    with zipfile.ZipFile(io.BytesIO(result.stdout)) as src, \
+            zipfile.ZipFile(out, "w", zipfile.ZIP_DEFLATED) as dst:
+        for item in src.infolist():
+            data = src.read(item.filename)
+            if item.filename == "word/styles.xml":
+                data = _journal_styles(data)
+            dst.writestr(item, data)
     return out
 
 
-def build_pdf(md: str, out: Path, allow_browser: bool = False) -> tuple[Path, str]:
+def _assert_journal_docx(path: Path) -> None:
+    """The four requirements, checked in the built file.
+
+    Read back rather than assumed. The reference document is generated from
+    whatever pandoc is installed, so every one of these can regress without
+    this repository changing a line.
+    """
+    with zipfile.ZipFile(path) as z:
+        names = z.namelist()
+        parts = [n for n in names
+                 if re.search(r"word/(header|footer)\d*\.xml$", n)]
+        if parts:
+            raise ExportError(
+                f"{path.name} carries header or footer parts ({', '.join(parts)}), "
+                "which Demographic Research does not allow."
+            )
+        document = z.read("word/document.xml").decode("utf-8")
+        styles = z.read("word/styles.xml").decode("utf-8")
+
+    # A page number in a Word file is a PAGE field, not a character.
+    if re.search(r"\bPAGE\b", document):
+        raise ExportError(
+            f"{path.name} contains a PAGE field, so it is numbering its pages."
+        )
+
+    root = ET.fromstring(styles)
+    default = root.find(f"{_W}docDefaults/{_W}pPrDefault/{_W}pPr/{_W}spacing")
+    line = default.get(f"{_W}line") if default is not None else None
+    if line != str(JOURNAL_LINE_TWIPS):
+        raise ExportError(
+            f"{path.name} has a default line spacing of {line!r}, not "
+            f"{JOURNAL_LINE_TWIPS} twips (double)."
+        )
+
+    small = sorted({
+        int(m) for xml in (styles, document)
+        for m in re.findall(r'<w:sz(?:Cs)?\s+w:val="(\d+)"', xml)
+        if int(m) < JOURNAL_MIN_HALF_POINTS
+    })
+    if small:
+        raise ExportError(
+            f"{path.name} sets type below {JOURNAL_MIN_HALF_POINTS / 2}pt: "
+            + ", ".join(f"{s / 2}pt" for s in small)
+        )
+
+
+def _assert_journal_pdf(path: Path) -> None:
+    """The same four requirements, measured in the rendered pages.
+
+    A PDF has no styles to inspect, so this reads glyph positions instead:
+    where the text sits on the page, how far apart the baselines are, and how
+    small the smallest character is. That is engine-independent, which matters
+    because the LaTeX and typst paths reach the same layout by unrelated
+    means and only one of them can be exercised on any given machine.
+    """
+    try:
+        import pdfplumber
+    except ImportError:
+        print("    (pdf layout unverified: pdfplumber is not installed)",
+              file=sys.stderr)
+        return
+
+    body_size = float(JOURNAL_FONTSIZE.rstrip("pt"))
+    smallest, gaps, numbered = None, [], []
+    with pdfplumber.open(path) as pdf:
+        for page in pdf.pages:
+            chars = page.chars
+            if not chars:
+                continue
+            for c in chars:
+                size = round(c["size"], 1)
+                smallest = size if smallest is None else min(smallest, size)
+
+            lines: dict[float, list] = {}
+            for c in chars:
+                lines.setdefault(round(c["top"], 1), []).append(c)
+            tops = sorted(lines)
+            gaps += [b - a for a, b in zip(tops, tops[1:]) if 0 < b - a < 60]
+
+            # A page number is a last line of bare digits, set off from the
+            # text above it. Prose does not end a page that way, and a folio
+            # is the same shape whether the engine put it in a footer or drew
+            # it directly, which is why this looks at the glyphs.
+            last = "".join(c["text"] for c in lines[tops[-1]]).strip()
+            if len(tops) > 1 and last.isdigit() and tops[-1] - tops[-2] > 40:
+                numbered.append(page.page_number)
+
+    if numbered:
+        raise ExportError(
+            f"{path.name} ends {len(numbered)} page(s) with a line of bare "
+            f"digits (first: page {numbered[0]}), which is a page number. "
+            "Demographic Research does not allow them."
+        )
+    if smallest is not None and smallest < body_size:
+        raise ExportError(
+            f"{path.name} sets type at {smallest}pt, below the "
+            f"{body_size:g}pt floor."
+        )
+    if gaps:
+        # The modal gap is the body's line spacing: headings and figures
+        # contribute outliers in both directions, and there are far more body
+        # lines than either.
+        modal = max(set(round(g, 1) for g in gaps),
+                    key=lambda g: sum(abs(x - g) < 0.2 for x in gaps))
+        if modal < 1.8 * body_size:
+            raise ExportError(
+                f"{path.name} sets {modal}pt between baselines at "
+                f"{body_size:g}pt, which is not double-spaced."
+            )
+
+
+def build_docx(md: str, out: Path, keywords: list[str] | None = None,
+               journal: bool = False) -> Path:
+    extra = ["--to", "docx", "--toc-depth", "3"]
+
+    # Word's Keywords document property. Set here rather than in the YAML
+    # block because the same key breaks the typst writer; see prepare().
+    #
+    # It goes in a metadata *file*, as a list, because `--metadata
+    # keywords=a, b` does not work: pandoc parses it as a string, the docx
+    # writer wants a list, and the mismatch is silent -- it writes an empty
+    # <cp:keywords/> and exits 0. Through v0.1.2 the property was empty in
+    # every .docx the repository produced while the code, the tests and the
+    # gap list all said otherwise. Nothing failed because nothing looked at
+    # the built file; assert_file_anonymous does now.
+    with tempfile.TemporaryDirectory() as tmp:
+        if keywords:
+            meta = Path(tmp) / "keywords.yaml"
+            meta.write_text(
+                yaml.safe_dump({"keywords": list(keywords)}, allow_unicode=True),
+                encoding="utf-8",
+            )
+            extra += ["--metadata-file", str(meta)]
+
+        if not journal:
+            _pandoc(md, out, "docx", extra)
+            return out
+
+        # The reference document is a build artifact, not an output: it goes
+        # to the same temporary directory, so dist/ holds only things
+        # somebody submits.
+        reference = build_reference_docx(Path(tmp) / "journal-reference.docx")
+        _pandoc(md, out, "docx", extra + ["--reference-doc", str(reference)])
+
+    _assert_journal_docx(out)
+    return out
+
+
+def build_pdf(md: str, out: Path, allow_browser: bool = False,
+              journal: bool = False) -> tuple[Path, str]:
     """Returns (path, description of the engine used).
 
     The browser fallback is opt-in. It was not, and the reason it is now is
@@ -435,9 +805,14 @@ def build_pdf(md: str, out: Path, allow_browser: bool = False) -> tuple[Path, st
         if writer == "latex":
             extra += [
                 "--variable", "geometry:margin=1in",
-                "--variable", "fontsize=11pt",
+                "--variable", f"fontsize={JOURNAL_FONTSIZE if journal else '11pt'}",
                 "--variable", "linkcolor=blue",
             ]
+            if journal:
+                extra += [
+                    "--variable", "linestretch=2",
+                    "--variable", f"header-includes={JOURNAL_LATEX_HEADER}",
+                ]
         elif writer == "typst":
             # A font must be named. Pandoc's typst template defaults to
             # `font: ()` and typst 0.15 rejects an empty fallback list with
@@ -468,9 +843,21 @@ def build_pdf(md: str, out: Path, allow_browser: bool = False) -> tuple[Path, st
             extra += [
                 "--to", "typst-smart",
                 "--variable", f"mainfont={TYPST_FONT}",
-                "--variable", "fontsize=11pt",
+                "--variable", f"fontsize={JOURNAL_FONTSIZE if journal else '11pt'}",
             ]
+            if journal:
+                # Pandoc defaults `page-numbering` to "1", so the normal build
+                # does number its pages -- setting the variable to nothing is
+                # what reaches `numbering: none` in the template's else branch.
+                # There is no `--variable page-numbering=none`: that would ask
+                # typst to print the word.
+                extra += [
+                    "--variable", "page-numbering=",
+                    "--variable", f"header-includes={JOURNAL_TYPST_HEADER}",
+                ]
         _pandoc(md, out, writer, extra)
+        if journal:
+            _assert_journal_pdf(out)
         return out, name
 
     install_hint = (
@@ -485,6 +872,15 @@ def build_pdf(md: str, out: Path, allow_browser: bool = False) -> tuple[Path, st
     if not allow_browser:
         raise ExportError(
             "No PDF engine found, and the browser fallback is opt-in.\n"
+            f"{install_hint}"
+        )
+    if journal:
+        # The fallback exists to produce a rough preview. A journal-format PDF
+        # is the opposite of that: its whole value is that the layout is the
+        # one the journal asked for, and headless Chrome cannot be held to it.
+        raise ExportError(
+            "--journal needs a real PDF engine; the browser fallback cannot be "
+            "held to a page layout.\n"
             f"{install_hint}"
         )
 
@@ -527,8 +923,32 @@ def _git(*args: str) -> str:
         return "?"
 
 
-def write_manifest(engine: str | None, files: list[Path]) -> Path:
-    """Record what produced these artifacts, next to the artifacts.
+MANIFEST = "BUILD.txt"
+
+# The per-file provenance BUILD.txt is rendered from. Kept beside the
+# artifacts and not in the text file itself, because BUILD.txt is written for
+# a person to read and parsing prose back out of it would make its wording
+# load-bearing.
+LEDGER = ".build-record.json"
+
+
+def _build_facts(engine: str | None, journal: bool) -> dict[str, str]:
+    """What was true of the tree and the toolchain for one file."""
+    described = _git("describe", "--tags", "--always", "--dirty")
+    return {
+        "built": datetime.now().astimezone().isoformat(timespec="seconds"),
+        "describe": described,
+        "commit": _git("rev-parse", "HEAD"),
+        "tree": ("DIRTY -- does not match any commit"
+                 if described.endswith("-dirty") else "clean"),
+        "engine": engine or "-",
+        "pandoc": _pandoc_version(),
+        "layout": "journal manuscript format" if journal else "default",
+    }
+
+
+def write_manifest(produced: dict[str, dict[str, str]]) -> Path:
+    """Record what produced everything in this directory, next to it.
 
     The engine is printed on every run, but a printed line lives only as long
     as the terminal does. Once it is gone the only way to answer "which engine
@@ -539,24 +959,88 @@ def write_manifest(engine: str | None, files: list[Path]) -> Path:
     PDF built from a working tree with uncommitted changes does not correspond
     to any archived release, and that is exactly the divergence between a
     posted preprint and its deposit that the release ordering exists to stop.
+
+    This describes the *directory*, not the run that last touched it. The
+    earlier version listed only the files one invocation happened to write, so
+    ``--docx`` left behind a manifest naming one file and four others sitting
+    beside it undescribed -- and, worse, headed by that run's commit, which
+    was not the commit the PDFs came from. dist/ is not rebuilt wholesale;
+    files accumulate across runs, and a build record that quietly attributes
+    all of them to the newest one is worse than no record, because it reads as
+    an answer. Each file therefore carries its own facts, and a directory
+    holding files from more than one commit says so at the top.
     """
-    described = _git("describe", "--tags", "--always", "--dirty")
+    DIST.mkdir(exist_ok=True)
+    ledger_path = DIST / LEDGER
+    try:
+        ledger = json.loads(ledger_path.read_text(encoding="utf-8"))
+    except (OSError, ValueError):
+        ledger = {}
+    ledger.update(produced)
+
+    present = sorted(
+        p.name for p in DIST.iterdir()
+        if p.is_file() and p.name not in (MANIFEST, LEDGER)
+    )
+    # An entry whose file is gone describes nothing; a file with no entry was
+    # not put there by this module and is not going to be claimed as if it was.
+    ledger = {name: facts for name, facts in ledger.items() if name in present}
+    ledger_path.write_text(json.dumps(ledger, indent=2, sort_keys=True) + "\n",
+                           encoding="utf-8")
+
     lines = [
         "Build record for the artifacts in this directory.",
         "Written by src/export.py. Not committed; dist/ is gitignored.",
         "",
-        f"built            {datetime.now().astimezone().isoformat(timespec='seconds')}",
-        f"git describe     {described}",
-        f"commit           {_git('rev-parse', 'HEAD')}",
-        f"working tree     {'DIRTY -- does not match any commit' if described.endswith('-dirty') else 'clean'}",
-        f"pdf engine       {engine or '(no PDF built)'}",
-        f"pandoc           {_pandoc_version()}",
+        "Every file now in dist/ is listed, with the state of the tree and the",
+        "toolchain at the moment that file was built. Files are not rebuilt",
+        "together, so these can differ; where they do, that is the point.",
         "",
-        "files:",
-        *(f"  {p.name}" for p in files),
     ]
-    path = DIST / "BUILD.txt"
-    path.write_text("\n".join(lines) + "\n", encoding="utf-8")
+
+    commits = {facts["commit"] for facts in ledger.values()}
+    unrecorded = [name for name in present if name not in ledger]
+    if len(commits) > 1:
+        lines += [
+            "MIXED: these artifacts were not all built from the same commit.",
+            "Rebuild the directory from one tree before submitting or archiving.",
+            "",
+        ]
+    elif commits and not unrecorded:
+        described = next(iter(ledger.values()))["describe"]
+        lines += [f"All artifacts built from {described}.", ""]
+
+    for name in present:
+        facts = ledger.get(name)
+        size = f"{(DIST / name).stat().st_size:,} bytes"
+        if facts is None:
+            lines += [
+                f"{name}  ({size})",
+                "    provenance     UNKNOWN -- not built by src/export.py",
+                "",
+            ]
+            continue
+        lines += [
+            f"{name}  ({size})",
+            f"    built          {facts['built']}",
+            f"    git describe   {facts['describe']}",
+            f"    commit         {facts['commit']}",
+            f"    working tree   {facts['tree']}",
+            f"    layout         {facts['layout']}",
+            f"    pdf engine     {facts['engine']}",
+            f"    pandoc         {facts['pandoc']}",
+            "",
+        ]
+
+    if unrecorded:
+        lines += [
+            "Files marked UNKNOWN were in dist/ before this build, or were put",
+            "there by something else. Nothing here vouches for them.",
+            "",
+        ]
+
+    path = DIST / MANIFEST
+    path.write_text("\n".join(lines).rstrip("\n") + "\n", encoding="utf-8")
     return path
 
 
@@ -569,7 +1053,21 @@ def _pandoc_version() -> str:
         return "?"
 
 
-def run(pdf: bool, docx: bool, anonymous: bool, allow_browser: bool = False) -> list[Path]:
+def stem_for(anonymous: bool, journal: bool) -> str:
+    """The output name, which says which variant it is.
+
+    A journal build differs from a preprint build only in layout, and layout
+    is the one difference nobody notices in a file listing. It gets its own
+    stem so the two cannot overwrite each other and so dist/ answers "which of
+    these do I upload" without opening anything.
+    """
+    return "manuscript" + ("-anonymous" if anonymous else "") + \
+        ("-journal" if journal else "")
+
+
+def run(pdf: bool, docx: bool, anonymous: bool, allow_browser: bool = False,
+        journal: bool = False) -> dict[str, dict[str, str]]:
+    """Build one variant. Returns each file written, with its provenance."""
     if not SOURCE.exists():
         raise ExportError(
             f"{SOURCE.relative_to(ROOT)} does not exist. Run "
@@ -580,21 +1078,25 @@ def run(pdf: bool, docx: bool, anonymous: bool, allow_browser: bool = False) -> 
     md = prepare(identity, anonymous)
     DIST.mkdir(exist_ok=True)
 
-    stem = "manuscript-anonymous" if anonymous else "manuscript"
-    written: list[Path] = []
+    stem = stem_for(anonymous, journal)
+    written: dict[str, dict[str, str]] = {}
 
     if docx:
-        out = build_docx(md, DIST / f"{stem}.docx", identity.keywords)
-        print(f"  DOCX  {out.relative_to(ROOT)}")
-        written.append(out)
-    engine = None
+        out = build_docx(md, DIST / f"{stem}.docx", identity.keywords, journal)
+        if anonymous:
+            assert_file_anonymous(out)
+        print(f"  DOCX  {out.relative_to(ROOT)}"
+              f"{'  [no identity in the file]' if anonymous else ''}")
+        written[out.name] = _build_facts(None, journal)
     if pdf:
-        out, engine = build_pdf(md, DIST / f"{stem}.pdf", allow_browser)
-        print(f"  PDF   {out.relative_to(ROOT)}  [{engine}]")
+        out, engine = build_pdf(md, DIST / f"{stem}.pdf", allow_browser, journal)
+        if anonymous:
+            assert_file_anonymous(out)
+        print(f"  PDF   {out.relative_to(ROOT)}  [{engine}]"
+              f"{'  [no identity in the file]' if anonymous else ''}")
         if "fallback" in engine:
             print("  ^^^^  NOT a submission artifact. See --allow-browser-fallback.")
-        written.append(out)
-    run.last_engine = engine  # type: ignore[attr-defined]
+        written[out.name] = _build_facts(engine, journal)
     return written
 
 
@@ -619,6 +1121,13 @@ def main(argv: list[str] | None = None) -> int:
         help="build identified and anonymised variants in one run",
     )
     ap.add_argument(
+        "--journal", action="store_true",
+        help="lay the document out as a journal manuscript: double-spaced, "
+             "12pt, no page numbers, headers or footers, as Demographic "
+             "Research requires. Writes to a -journal stem, so it does not "
+             "overwrite the preprint artifacts.",
+    )
+    ap.add_argument(
         "--allow-browser-fallback", action="store_true",
         help="permit rendering the PDF through headless Chrome when no real "
              "engine is installed. Produces a preview, not a submission "
@@ -637,10 +1146,12 @@ def main(argv: list[str] | None = None) -> int:
 
     try:
         variants = [False, True] if args.both else [args.anonymous]
-        produced: list[Path] = []
+        produced: dict[str, dict[str, str]] = {}
         for anonymous in variants if (pdf or docx) else []:
-            print("anonymised:" if anonymous else "identified:")
-            produced += run(pdf, docx, anonymous, args.allow_browser_fallback)
+            label = "anonymised" if anonymous else "identified"
+            print(f"{label}{', journal format' if args.journal else ''}:")
+            produced |= run(pdf, docx, anonymous, args.allow_browser_fallback,
+                            args.journal)
         if abstract:
             # Written once, not per variant. The abstract names no author and
             # cites no DOI, so an anonymised copy would be the same bytes
@@ -649,12 +1160,10 @@ def main(argv: list[str] | None = None) -> int:
             out = build_abstract(DIST / "abstract.txt")
             print(f"\n  TXT   {out.relative_to(ROOT)}  ASCII abstract, for "
                   "submission forms that reject Unicode")
-            produced.append(out)
-        manifest = write_manifest(
-            getattr(run, "last_engine", None), produced
-        )
+            produced[out.name] = _build_facts(None, False)
+        manifest = write_manifest(produced)
         print(f"\n  {manifest.relative_to(ROOT)}  records the engine, commit "
-              "and tree state")
+              "and tree state of every file in dist/")
     except ExportError as exc:
         print(f"\nerror: {exc}", file=sys.stderr)
         return 1

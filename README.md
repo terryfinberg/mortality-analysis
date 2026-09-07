@@ -191,6 +191,7 @@ python -m src.export --docx       # Demographic Research prefers .docx
 python -m src.export --abstract   # dist/abstract.txt, for the submission form
 python -m src.export --anonymous  # author name, ORCID, affiliation and repo links removed
 python -m src.export --both       # identified and anonymised, in one run
+python -m src.export --journal    # double-spaced, 12pt, no page numbers or running heads
 ```
 
 `dist/abstract.txt` exists because a submission form is not a document. medRxiv's abstract
@@ -228,16 +229,26 @@ error: No PDF engine found, and the browser fallback is opt-in.
 preview, not a submission: it depends on a browser version this repository cannot pin, and it
 needs 23 pages where typst needs 17. A run that uses it says so twice.
 
-Every run reports its engine, and writes `dist/BUILD.txt` recording the engine, the commit,
-whether the working tree was clean, and the pandoc version:
+Every run reports its engine, and writes `dist/BUILD.txt`. The manifest describes **the
+directory**, not the run that last touched it: one entry per file now in `dist/`, each with
+the engine, commit, tree state and layout that file was built with.
 
 ```
-  PDF   dist\manuscript.pdf  [typst]
+  PDF   dist\manuscript-journal.pdf  [typst]
 
-git describe     v0.1.1
-working tree     clean
-pdf engine       typst
+manuscript-journal.pdf  (739,851 bytes)
+    git describe   v0.1.3
+    working tree   clean
+    layout         journal manuscript format
+    pdf engine     typst
 ```
+
+Per-file, because `dist/` is not rebuilt wholesale. Files accumulate across runs, so a
+manifest listing only the files one invocation wrote -- and heading them with *that* run's
+commit -- attributes the rest of the directory to a tree they did not come from. It reads as
+an answer, which is worse than no record. A file `export.py` did not put there is listed as
+`UNKNOWN` rather than claimed, and a directory holding artifacts from two commits says
+`MIXED` at the top.
 
 The manifest exists because a printed line lives only as long as the terminal does, and
 "which engine produced this PDF" then becomes a question answerable only by reading the
@@ -245,6 +256,39 @@ file's metadata. **The `working tree` line matters as much as the engine**: a su
 built from a tree with uncommitted changes corresponds to no archived release, which is the
 divergence between a posted preprint and its deposit that the release ordering exists to
 prevent.
+
+### `--journal`: the layout the journal asked for
+
+Demographic Research requires double spacing, 12pt or larger, and no page numbers, headers
+or footers, and states that it **will not edit submissions to conform**. A requirement
+enforced by the recipient and not by the sender is one somebody eventually forgets on the
+one upload that matters, so it is a build mode rather than a checklist item.
+
+It is a modifier, not a target: it changes the layout and writes to a `-journal` stem, so a
+journal build never overwrites the preprint artifacts. Layout is the one difference a file
+listing hides, and `dist/` should answer "which of these do I upload" without opening
+anything.
+
+Neither format has a switch for this. The DOCX gets a reference document generated at build
+time from pandoc's own default -- `--print-default-data-file reference.docx` -- with four
+attributes changed: double line spacing at the document default, and every font size below
+12pt raised to it. It is generated rather than committed because a checked-in `.docx` is a
+file nobody can diff or regenerate when pandoc's defaults move under it. The PDF sets
+`fontsize`, a leading measured off the font's own ascender and descender, and -- for typst --
+`page-numbering` to nothing, because **pandoc defaults it to `"1"` and the ordinary build
+does number its pages**.
+
+Both are then read back rather than trusted. `_assert_journal_docx` opens the built zip and
+checks for header and footer parts, `PAGE` fields, the default line spacing and any type
+under 12pt; `_assert_journal_pdf` measures glyph positions in the rendered pages, which is
+engine-independent and so covers the LaTeX and typst paths equally. Tests assert both checks
+**fail on the default build**, since a requirement check that has only ever seen conforming
+input is a check that may not be looking.
+
+One thing typst does that the code has to undo: it sets `raw` -- inline code, which this
+manuscript uses constantly for filenames -- at `0.8em`, which is 9.6pt under a 12pt body and
+below the floor. `#show raw: set text(size: 1em)` is *not* the fix; inside a `show raw` rule
+the em is already the shrunk one, so it is a no-op that looks like one.
 
 The typst path names `Libertinus Serif` explicitly. Pandoc's typst template defaults to an
 empty font list, which typst 0.15 rejects outright with *"font fallback list must not be
@@ -268,12 +312,30 @@ have caught the original defect (the source file was innocent and the build was 
 is worth remembering the next time a rendering fault looks like a typo in the prose.
 
 `--anonymous` is for Demographic Research, which requires identifying information removed from
-PDF submissions. It strips the byline, deletes the ORCID declaration, and replaces the
+the manuscript file. It strips the byline, deletes the ORCID declaration, and replaces the
 repository URL and DOI in the data availability statement with a note saying they were
 withheld, rather than deleting the statement, which would read as an author who never wrote
 one. `tests/test_export.py` asserts that nothing identifying survives, and that the check
 itself catches a planted leak. See [`docs/demographic-research-gap.md`](docs/demographic-research-gap.md)
 for what still does not conform to that journal's house style.
+
+**The check runs on the built file, not only on the markdown.** Clean prose says nothing
+about the document built from it, and the document is what a reviewer opens. A `.docx` is a
+zip of XML, and the name can be sitting in `docProps/core.xml`, in a header or footer part,
+in a hyperlink target in `document.xml.rels`, or in a comment -- none of which come from the
+manuscript. They come from pandoc, from its reference document, and from metadata passed on
+the command line, so **adding a reference document for `--journal` is exactly the kind of
+change that can put a running head back**. `assert_file_anonymous` searches every XML part
+of the built file as bytes, and the PDF's rendered text and document metadata, and runs on
+every anonymised artifact before the build reports success. Three tests plant a leak the
+markdown-level check cannot see -- a header naming the author, a custom document property, a
+relationship pointing at the repository -- and assert each is caught.
+
+That check found a real defect on its first run, though not a leak: `cp:keywords` was empty
+in every `.docx` this repository had ever produced. `--metadata keywords=a, b` hands pandoc
+a string where the docx writer wants a list, and the mismatch is silent -- an empty
+`<cp:keywords/>` and exit 0. The keywords now go in a metadata file, and a test reads them
+back out of the built file rather than out of the command line.
 
 ### Regenerated figures: when to commit them
 
