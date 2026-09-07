@@ -82,3 +82,14 @@ identifiers:
   - type: doi
     value: "10.5281/zenodo.22648433"
     description: "Version DOI for release v0.1.3."
+  # Fifth allocation, and the one that retires the last attempt to read a
+  # shape into these. The gaps, in order, are 1, 3,523, 47,826, 333,416 and
+  # 2,278: up four orders of magnitude across four releases, then back down
+  # three in a single step. A note in STATUS.md called that growth "roughly an
+  # order of magnitude" each time, which was an inference drawn from four
+  # points, in a passage written to warn against inferring from these. The
+  # only durable statement is that the next one is unpredictable. Copied from
+  # the minted record, as every one of these must be.
+  - type: doi
+    value: "10.5281/zenodo.22650711"
+    description: "Version DOI for release v0.1.4."

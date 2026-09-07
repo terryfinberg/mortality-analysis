@@ -74,18 +74,27 @@ DOI**
 > | **Version `v0.1.1`** | [10.5281/zenodo.22267191](https://doi.org/10.5281/zenodo.22267191) | same |
 > | **Version `v0.1.2`** | [10.5281/zenodo.22315017](https://doi.org/10.5281/zenodo.22315017) | same |
 > | **Version `v0.1.3`** | [10.5281/zenodo.22648433](https://doi.org/10.5281/zenodo.22648433) | same |
+> | **Version `v0.1.4`** | [10.5281/zenodo.22650711](https://doi.org/10.5281/zenodo.22650711) | same |
 >
-> **The allocation is not sequential, and four releases have now shown it.** `v0.1.0`'s
+> **The allocation is not sequential, and five releases have now shown it.** `v0.1.0`'s
 > version DOI was the concept DOI plus one, which made `22263669` look like a safe guess
-> for the next one. `v0.1.1` landed at `22267191`, some three and a half thousand away.
-> `v0.1.2` landed at `22315017`, another forty-eight thousand on. `v0.1.3` landed at
-> `22648433`, **333,416** further still. Zenodo assigns at deposit time. A version DOI is
-> only ever copied from the record it was minted on.
+> for the next one. Zenodo assigns at deposit time. A version DOI is only ever copied from
+> the record it was minted on.
 >
-> The four gaps run 1, 3,523, 47,826 and 333,416. Each one is roughly an order of magnitude
-> on the last, which is the shape of a counter shared with every other deposit on Zenodo
-> rather than a sequence belonging to this record. It is not converging on a magnitude and
-> there is nothing here to extrapolate from.
+> The five gaps, in order: **1, 3,523, 47,826, 333,416, 2,278.**
+>
+> **That sequence has no shape, and this paragraph has twice claimed otherwise.** After
+> `v0.1.2` it said the gaps were growing. After `v0.1.3` it said each was roughly an order
+> of magnitude on the last, which fitted four points and was wrong at the fifth: `v0.1.4`
+> landed 2,278 away, smaller than `v0.1.1`'s gap and two orders of magnitude below
+> `v0.1.3`'s. A passage written to warn against inferring a rule from these numbers
+> inferred one, twice.
+>
+> The reason there is nothing to find: this counter is shared with every deposit on Zenodo,
+> so the distance between two versions of *this* record measures how busy the platform was
+> in between. It is not a property of this record at all. **The only durable statement is
+> that the next one is unpredictable**, which is the whole reason the rule above is "copy
+> it from the minted record" and not "check it looks right".
 >
 > The manuscript, `README.md` and `paper/medrxiv_submission.md` all cite the concept DOI
 > and say why. The manuscript names its own release from `{{RELEASE_VERSION}}`, which
